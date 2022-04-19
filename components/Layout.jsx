@@ -2,8 +2,14 @@ import Head from "next/head";
 import Header from "./Header";
 import "bulma/css/bulma.css";
 import Footer from "./Footer";
+import { useRouter } from "next/router";
+import Showcase from "./Showcase";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function Layout({ title, keywords, description, children }) {
+  const router = useRouter();
+
   return (
     <div>
       <Head>
@@ -16,9 +22,12 @@ export default function Layout({ title, keywords, description, children }) {
         ></meta>
       </Head>
       <Header />
+      {router.pathname === "/" && <Showcase />}
       <section className="section">
-        <div className="container"> {children}</div>
+        <div className="container">{children}</div>
       </section>
+
+      <ToastContainer />
       <Footer />
     </div>
   );

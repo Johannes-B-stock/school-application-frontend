@@ -1,15 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
+import { useContext } from "react";
+import AuthContext from "@/context/AuthContext";
 
 export default function Header() {
-  //   const dispatch = useDispatch();
-  //   const { user } = useSelector((state) => state.auth);
-  //   console.log(user);
-  const onLogout = () => {
-    // dispatch(logout());
-    // dispatch(reset());
-    // navigate("/");
-  };
+  const { user, logout } = useContext(AuthContext);
 
   return (
     <nav className="navbar" role="navigation" aria-label="main navigation">
@@ -41,37 +36,41 @@ export default function Header() {
           <Link href="/">
             <a className="navbar-item">Home</a>
           </Link>
-          {/* {user && ( */}
-          <div className="navbar-item has-dropdown is-hoverable">
-            <a className="navbar-link">Profile</a>
+          {user && (
+            <div className="navbar-item has-dropdown is-hoverable">
+              <a className="navbar-link">Profile</a>
 
-            <div className="navbar-dropdown">
-              {/* {user && ( */}
-              <Link href="/schools">
-                <a className="navbar-item">My Schools</a>
-              </Link>
-              <a className="navbar-item" onClick={onLogout}>
-                Logout
-              </a>
-
-              {/* )} */}
+              <div className="navbar-dropdown">
+                <Link href="/applications">
+                  <a className="navbar-item">My Applications</a>
+                </Link>
+                <Link href="/schools">
+                  <a className="navbar-item">My Schools</a>
+                </Link>
+                <hr className="navbar-divider"></hr>
+                <a className="navbar-item" onClick={logout}>
+                  Logout
+                </a>
+              </div>
             </div>
-          </div>
-          {/* )} */}
+          )}
         </div>
 
         <div className="navbar-end">
           <div className="navbar-item">
             <div className="buttons">
-              <button className="button is-primary" onClick={onLogout}>
-                Logout
-              </button>
-              <Link href="/login">
-                <a className="button is-light">Login</a>
-              </Link>
-              <Link href="/register">
-                <a className="button is-primary">Register</a>
-              </Link>
+              {user ? (
+                <></>
+              ) : (
+                <>
+                  <Link href="/account/login">
+                    <a className="button is-light">Login</a>
+                  </Link>
+                  <Link href="/account/register">
+                    <a className="button is-primary">Register</a>
+                  </Link>
+                </>
+              )}
             </div>
           </div>
         </div>
