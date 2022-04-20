@@ -54,6 +54,5 @@ export async function getServerSideProps() {
 
   return {
     props: { schools: schools },
-    revalidate: 1,
   };
 }
