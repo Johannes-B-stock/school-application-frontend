@@ -29,7 +29,7 @@ export default function SchoolsPage({ schools }) {
   );
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const query = qs.stringify(
     {
       filters: {

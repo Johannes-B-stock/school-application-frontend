@@ -26,7 +26,7 @@ export default function HomePage({ schools }) {
   );
 }
 
-export async function getStaticProps() {
+export async function getServerSideProps() {
   const query = qs.stringify({
     filters: {
       isPublic: {
