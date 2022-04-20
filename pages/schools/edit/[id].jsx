@@ -1,7 +1,7 @@
 import Layout from "@/components/Layout";
 import { useRouter } from "next/router";
 import { useState } from "react";
-import styles from "@/styles/SchoolForm.module.css";
+import styles from "@/styles/Form.module.css";
 import { toast } from "react-toastify";
 import { API_URL } from "@/config/index";
 import qs from "qs";

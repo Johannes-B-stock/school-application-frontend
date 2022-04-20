@@ -4,7 +4,7 @@ import { useState } from "react";
 import styles from "@/styles/Form.module.css";
 import { toast } from "react-toastify";
 import { API_URL } from "@/config/index";
-import { parseCookie } from "@/helpers/";
+import { parseCookie } from "@/helpers/index";
 
 export default function CreateSchoolPage({ token }) {
   const [values, setValues] = useState({

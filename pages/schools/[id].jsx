@@ -63,22 +63,7 @@ export default function SchoolDetails({ school }) {
   );
 }
 
-export async function getStaticPaths() {
-  const res = await fetch(`${API_URL}/api/schools`);
-  const result = await res.json();
-  const schools = result.data;
-
-  const paths = schools.map((school) => ({
-    params: { id: school.id.toString() },
-  }));
-
-  return {
-    paths,
-    fallback: true,
-  };
-}
-
-export async function getStaticProps({ params: { id } }) {
+export async function getServerSideProps({ params: { id } }) {
   const query = qs.stringify(
     {
       filters: {
@@ -104,7 +89,7 @@ export async function getStaticProps({ params: { id } }) {
     props: {
       school: school,
     },
-    revalidate: 1,
+    // revalidate: 1,
   };
 }
 
