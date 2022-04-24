@@ -1,11 +1,12 @@
 import Layout from "@/components/Layout";
 import SchoolItem from "@/components/SchoolItem";
 import { API_URL } from "@/config/index";
+import getPageContent from "lib/pageContent";
 import qs from "qs";
 
-export default function HomePage({ schools }) {
+export default function HomePage({ schools, pageContent }) {
   return (
-    <Layout>
+    <Layout pageContent={pageContent}>
       <div className="content">
         <h1>Upcoming Schools</h1>
         {schools.length === 0 && <h3>No schools to apply at the moment</h3>}
@@ -44,7 +45,8 @@ export async function getServerSideProps() {
     image: data.attributes.image?.data?.attributes.formats.small.url ?? null,
   }));
 
+  const pageContent = await getPageContent();
   return {
-    props: { schools },
+    props: { schools, pageContent },
   };
 }

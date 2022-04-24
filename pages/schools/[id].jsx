@@ -5,8 +5,11 @@ import { toast } from "react-toastify";
 import Link from "next/link";
 import qs from "qs";
 import { useRouter } from "next/router";
+import { useContext } from "react";
+import AuthContext from "@/context/AuthContext";
 
 export default function SchoolDetails({ school }) {
+  const { user } = useContext(AuthContext);
   const router = useRouter();
 
   const handleDelete = async (e) => {
@@ -51,13 +54,17 @@ export default function SchoolDetails({ school }) {
             <a className="button m-1 is-primary">Apply</a>
           </Link>
         )}
-        <Link href={`/schools/edit/${school.id}`}>
-          <a className="button m-1 is-secondary">Edit</a>
-        </Link>
-
-        <a onClick={handleDelete} className="button m-1 is-danger">
-          Delete
-        </a>
+        {user && user.role?.name === "SchoolAdmin" && (
+          <>
+            {" "}
+            <Link href={`/schools/edit/${school.id}`}>
+              <a className="button m-1 is-secondary">Edit</a>
+            </Link>
+            <a onClick={handleDelete} className="button m-1 is-danger">
+              Delete
+            </a>
+          </>
+        )}
       </div>
     </Layout>
   );

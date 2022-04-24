@@ -1,8 +1,9 @@
 import Layout from "@/components/Layout";
+import getPageContent from "lib/pageContent";
 
-export default function ContactPage() {
+export default function ContactPage({ pageContent }) {
   return (
-    <Layout>
+    <Layout pageContent={pageContent}>
       <section className="hero is-fullheight">
         <div className="hero-body">
           <div className="container has-text-centered">
@@ -74,4 +75,11 @@ export default function ContactPage() {
       </section>
     </Layout>
   );
+}
+
+export async function getStaticProps() {
+  const pageContent = await getPageContent();
+  return {
+    props: { pageContent },
+  };
 }

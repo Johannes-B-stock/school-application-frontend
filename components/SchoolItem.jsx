@@ -3,7 +3,6 @@ import Image from "next/image";
 import styles from "@/styles/SchoolItem.module.css";
 
 export default function SchoolItem({ school }) {
-  //   console.log(school.image);
   return (
     <div className={`card ${styles.schoolItem}`}>
       <div className="card-image">

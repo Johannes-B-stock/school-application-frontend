@@ -1,7 +1,6 @@
-import { API_URL } from "@/config/index";
 import cookie from "cookie";
 
-export default async function login(req, res) {
+export default async function logout(req, res) {
   if (req.method === "POST") {
     res.setHeader(
       "Set-Cookie",

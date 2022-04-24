@@ -1,12 +1,15 @@
 import Layout from "@/components/Layout";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import styles from "@/styles/Form.module.css";
 import { toast } from "react-toastify";
 import { API_URL } from "@/config/index";
 import { parseCookie } from "@/helpers/index";
+import AuthContext from "@/context/AuthContext";
+import NotAuthorized from "@/components/NotAuthorized";
 
 export default function CreateSchoolPage({ token }) {
+  const { user } = useContext(AuthContext);
   const [values, setValues] = useState({
     name: "",
     description: "",
@@ -38,11 +41,9 @@ export default function CreateSchoolPage({ token }) {
       body: JSON.stringify({ data: values }),
     });
     if (!res.ok) {
-      console.log(res);
       toast.error(res.statusText ?? "Something went wrong.");
     } else {
       const school = await res.json();
-      console.log(school);
       router.push(`/schools/${school.data.id}`);
     }
   };
@@ -57,7 +58,7 @@ export default function CreateSchoolPage({ token }) {
     setValues({ ...values, [name]: checked });
   };
 
-  return (
+  return user && user?.role?.name === "SchoolAdmin" ? (
     <Layout>
       <div className="content">
         <h1>Create School</h1>
@@ -267,6 +268,8 @@ export default function CreateSchoolPage({ token }) {
         </form>
       </div>
     </Layout>
+  ) : (
+    <NotAuthorized />
   );
 }
 

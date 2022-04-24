@@ -1,14 +1,24 @@
 import { API_URL } from "@/config/index";
 import cookie from "cookie";
+import qs from "qs";
 
-export default async function login(req, res) {
+export default async function user(req, res) {
   if (req.method === "GET") {
     if (!req.headers.cookie) {
       res.status(403).json({ message: "Not authorized" });
       return;
     }
     const { token } = cookie.parse(req.headers.cookie);
-    const strapiRes = await fetch(`${API_URL}/api/users/me`, {
+    const query = qs.stringify({
+      populate: [
+        "role",
+        "schools",
+        "school_applications",
+        "picture",
+        "address",
+      ],
+    });
+    const strapiRes = await fetch(`${API_URL}/api/users/me?${query}`, {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,

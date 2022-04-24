@@ -1,13 +1,17 @@
 import Layout from "@/components/Layout";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useState, useContext } from "react";
 import styles from "@/styles/Form.module.css";
 import { toast } from "react-toastify";
 import { API_URL } from "@/config/index";
 import qs from "qs";
 import Image from "next/image";
+import AuthContext from "@/context/AuthContext";
+import NotAuthorized from "@/components/NotAuthorized";
 
 export default function EditSchoolPage({ school }) {
+  const { user } = useContext(AuthContext);
+
   const [values, setValues] = useState({
     name: school.name,
     description: school.description,
@@ -60,7 +64,7 @@ export default function EditSchoolPage({ school }) {
     setValues({ ...values, [name]: checked });
   };
 
-  return (
+  return user && user.role?.name === "SchoolAdmin" ? (
     <Layout>
       <div className="content">
         <h1>Edit School</h1>
@@ -284,6 +288,8 @@ export default function EditSchoolPage({ school }) {
         )}
       </div>
     </Layout>
+  ) : (
+    <NotAuthorized />
   );
 }
 
