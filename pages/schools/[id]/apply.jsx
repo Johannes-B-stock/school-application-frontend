@@ -6,11 +6,14 @@ import Layout from "@/components/Layout";
 import { useState } from "react";
 import cookie from "cookie";
 import styles from "@/styles/Form.module.css";
+import { toast } from "react-toastify";
 
-export default function ApplyPage({ school, questions }) {
+export default function ApplyPage({ school, questions, token }) {
   const [answers, setAnswers] = useState(
     questions.map((q) => ({ ...q, answer: "" }))
   );
+
+  const router = useRouter();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,10 +30,13 @@ export default function ApplyPage({ school, questions }) {
         },
       }),
     });
+    const application = await res.json();
+
     if (!res.ok) {
-      toast.error(res.statusText ?? "Something went wrong.");
+      toast.error(
+        application.error?.message ?? res.statusText ?? "Something went wrong."
+      );
     } else {
-      const application = await res.json();
       router.push(`/applications/${application.data.id}`);
     }
   };
@@ -107,7 +113,7 @@ export async function getServerSideProps({ params: { id }, req }) {
     return;
   }
   const { token } = cookie.parse(req.headers.cookie);
-
+  console.log(token);
   const res = await fetch(`${API_URL}/api/schools/${id}?${query}`, {
     method: "GET",
     headers: {
@@ -149,6 +155,6 @@ export async function getServerSideProps({ params: { id }, req }) {
       ...data.attributes,
     })) ?? null;
   return {
-    props: { school, questions },
+    props: { school, questions, token },
   };
 }

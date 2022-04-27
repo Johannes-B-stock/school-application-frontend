@@ -7,8 +7,15 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [error, setError] = useState(null);
-
+  const [loadingInitial, setLoadingInitial] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    if (error) {
+      setError(null);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [router.pathname]);
 
   useEffect(() => {
     checkUserLoggedIn();
@@ -30,14 +37,32 @@ export const AuthProvider = ({ children }) => {
 
       if (res.ok) {
         setUser(data.user);
-        router.push("/account/dashboard");
+        router.push(router.query?.returnUrl ?? "/account/dashboard");
       } else {
         setError(data.message);
-        setTimeout(() => setError(null), 10);
       }
     } catch (error) {
       setError(error?.message ?? error);
-      setTimeout(() => setError(null), 10);
+    }
+  };
+
+  // Callback for google login
+  const googleCallback = async (values) => {
+    try {
+      const res = await fetch(`${NEXT_URL}/api/google-callback`, {
+        method: "POST",
+        body: JSON.stringify(values),
+      });
+      const resultData = await res.json();
+
+      if (res.ok && resultData.user) {
+        setUser(resultData.user);
+        router.push(router.query?.returnUrl ?? "/account/dashboard");
+      } else {
+        setError(resultData?.message);
+      }
+    } catch (error) {
+      setError(error?.message ?? error);
     }
   };
 
@@ -57,14 +82,12 @@ export const AuthProvider = ({ children }) => {
 
       if (res.ok) {
         setUser(data.user);
-        router.push("/account/dashboard");
+        router.push(router.query?.returnUrl ?? "/account/dashboard");
       } else {
         setError(data.message);
-        setTimeout(() => setError(null), 10);
       }
     } catch (error) {
       setError(error?.message ?? error);
-      setTimeout(() => setError(null), 10);
     }
   };
 
@@ -79,20 +102,24 @@ export const AuthProvider = ({ children }) => {
   // Check if user is logged in
 
   const checkUserLoggedIn = async () => {
-    const res = await fetch(`${NEXT_URL}/api/user`);
-    const data = await res.json();
-    if (res.ok) {
-      setUser(data.user);
-    } else {
-      setUser(null);
+    try {
+      const res = await fetch(`${NEXT_URL}/api/user`);
+      const data = await res.json();
+      if (res.ok) {
+        setUser(data.user);
+      } else {
+        setUser(null);
+      }
+    } finally {
+      setLoadingInitial(false);
     }
   };
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, error, register, login, logout }}
+      value={{ user, setUser, error, googleCallback, register, login, logout }}
     >
-      {children}
+      {!loadingInitial && children}
     </AuthContext.Provider>
   );
 };

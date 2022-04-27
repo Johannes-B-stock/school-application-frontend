@@ -25,6 +25,8 @@ export default async function register(req, res) {
         );
         res.status(200).json({ user: data.user });
       } else {
+        console.log(strapiRes);
+        console.log(data);
         res.status(strapiRes.status).json({ message: data.error.message });
       }
     } catch (error) {

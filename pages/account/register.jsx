@@ -3,15 +3,26 @@ import Link from "next/link";
 import { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
+import { useRouter } from "next/router";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle } from "@fortawesome/free-brands-svg-icons";
+import { API_URL } from "@/config/index";
 
 export default function Register() {
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
   });
-  const { register, error } = useContext(AuthContext);
+  const { user, register, error } = useContext(AuthContext);
+
+  const router = useRouter();
+
+  if (user) {
+    router.push("/");
+  }
 
   useEffect(() => {
     error && toast.error(error);
@@ -24,7 +35,8 @@ export default function Register() {
     }));
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
+    setIsLoading(true);
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
@@ -34,8 +46,9 @@ export default function Register() {
         email: formData.email,
         password: formData.password,
       };
-      register(userData);
+      await register(userData);
     }
+    setIsLoading(false);
   };
   return (
     <Layout title="User registration">
@@ -77,6 +90,7 @@ export default function Register() {
                   type="password"
                   placeholder="Password"
                   id="password"
+                  autoComplete="on"
                   name="password"
                   value={formData.password}
                   onChange={onChange}
@@ -90,13 +104,18 @@ export default function Register() {
                   type="password"
                   placeholder="Confirm Password"
                   id="confirmPassword"
+                  autoComplete="on"
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={onChange}
                 />
               </div>
             </div>
-            <button className="button is-block is-primary is-fullwidth is-medium">
+            <button
+              className={`button is-block is-primary is-fullwidth is-medium ${
+                isLoading && "is-loading"
+              }`}
+            >
               Submit
             </button>
             <br />
@@ -107,6 +126,18 @@ export default function Register() {
               </em>
             </small>
           </form>
+          <br />
+          <div className="separator has-text-grey is-italic">or</div>
+          <br />
+          <button
+            className="button is-light is-fullwidth is-medium"
+            onClick={() => router.push(`${API_URL}/api/connect/google`)}
+          >
+            <span className="icon">
+              <FontAwesomeIcon icon={faGoogle} />
+            </span>
+            <span>Login with Google</span>
+          </button>
         </div>
       </div>
     </Layout>

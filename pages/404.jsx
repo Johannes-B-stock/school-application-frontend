@@ -1,10 +1,9 @@
 import Link from "next/link";
 import Layout from "@/components/Layout";
-import getPageContent from "lib/pageContent";
 
-export default function NotFoundPage({ pageContent }) {
+export default function NotFoundPage() {
   return (
-    <Layout title="Page not Found" pageContent={pageContent}>
+    <Layout title="Page not Found">
       <section className="hero is-danger">
         <div className="hero-body">
           <p className="title">404 Page not found</p>
@@ -18,11 +17,4 @@ export default function NotFoundPage({ pageContent }) {
       </section>
     </Layout>
   );
-}
-
-export async function getStaticProps() {
-  const pageContent = await getPageContent();
-  return {
-    props: { pageContent },
-  };
 }

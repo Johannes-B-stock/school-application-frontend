@@ -7,13 +7,7 @@ import Showcase from "./Showcase";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function Layout({
-  title,
-  keywords,
-  description,
-  children,
-  pageContent,
-}) {
+export default function Layout({ title, keywords, description, children }) {
   const router = useRouter();
 
   return (
@@ -27,14 +21,8 @@ export default function Layout({
           content="width=device-width, initial-scale=1"
         ></meta>
       </Head>
-      <Header brandImage={pageContent.brandImage} />
-      {router.pathname === "/" && (
-        <Showcase
-          imageUrl={pageContent.showcase}
-          title={pageContent.showcaseTitle}
-          subtitle={pageContent.showcaseSubtitle}
-        />
-      )}
+      <Header />
+      {router.pathname === "/" && <Showcase />}
       <section className="section">
         <div className="container">{children}</div>
       </section>
@@ -49,10 +37,4 @@ Layout.defaultProps = {
   title: "School Application | Apply for schools",
   description: "Apply for schools and manage your schools",
   keywords: "ywam, school application, base, university",
-  pageContent: {
-    brandImage:
-      "https://res.cloudinary.com/johnny-boy/image/upload/v1650448727/thumbnail_university_d8f6c86ddb.png",
-    showcase:
-      "https://res.cloudinary.com/johnny-boy/image/upload/v1649361607/large_showcase_85ca7afc73.png",
-  },
 };

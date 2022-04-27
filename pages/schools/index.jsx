@@ -53,6 +53,6 @@ export async function getServerSideProps() {
   }));
 
   return {
-    props: { schools: schools },
+    props: { schools },
   };
 }

@@ -2,24 +2,14 @@ import { API_URL } from "@/config/index";
 import cookie from "cookie";
 import qs from "qs";
 
-export default async function login(req, res) {
+export default async function googleCallback(req, res) {
   if (req.method === "POST") {
-    const { identifier, password } = req.body;
-    const query = qs.stringify({
-      populate: [
-        "role",
-        "schools",
-        "school_applications",
-        "picture",
-        "address",
-      ],
-    });
-    const strapiRes = await fetch(`${API_URL}/api/auth/local`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ identifier, password }),
-    });
     try {
+      const body = JSON.parse(req.body);
+      const strapiRes = await fetch(
+        `${API_URL}/api/auth/google/callback?access_token=${body.access_token}`
+      );
+
       const data = await strapiRes.json();
 
       if (strapiRes.ok) {
@@ -33,6 +23,15 @@ export default async function login(req, res) {
             path: "/",
           })
         );
+        const query = qs.stringify({
+          populate: [
+            "role",
+            "schools",
+            "school_applications",
+            "picture",
+            "address",
+          ],
+        });
         const strapiRes = await fetch(`${API_URL}/api/users/me?${query}`, {
           method: "GET",
           headers: {
@@ -47,10 +46,10 @@ export default async function login(req, res) {
       }
     } catch (error) {
       console.log(error);
-      res.status(strapiRes.status).json({ message: strapiRes.statusText });
+      res.status(405).json({
+        message:
+          error?.message ?? error ?? "already registered with another provider",
+      });
     }
-  } else {
-    res.setHeader("Allow", ["POST"]);
-    res.status(405).json({ message: `Method ${req.method} not allowed` });
   }
 }

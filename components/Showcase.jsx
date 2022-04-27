@@ -1,15 +1,21 @@
 import styles from "@/styles/Showcase.module.css";
+import PageContentContext from "@/context/PageContentContext";
+import { useContext } from "react";
 
-export default function Showcase({ imageUrl, title, subtitle }) {
+export default function Showcase() {
+  const { pageContent } = useContext(PageContentContext);
+
   return (
-    <section
-      className={`hero is-medium is-link has-text-centered ${styles.showcase}`}
-      style={{ "background-image": `url(${imageUrl})` }}
-    >
-      <div className="hero-body">
-        <p className="title">{title}</p>
-        <p className="subtitle">{subtitle}</p>
-      </div>
-    </section>
+    pageContent && (
+      <section
+        className={`hero is-medium is-link has-text-centered ${styles.showcase}`}
+        style={{ backgroundImage: `url(${pageContent?.showcase})` }}
+      >
+        <div className="hero-body">
+          <p className="title">{pageContent?.showcaseTitle}</p>
+          <p className="subtitle">{pageContent?.showcaseSubtitle}</p>
+        </div>
+      </section>
+    )
   );
 }

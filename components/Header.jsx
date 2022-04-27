@@ -2,9 +2,12 @@ import Link from "next/link";
 import Image from "next/image";
 import { useContext, useState } from "react";
 import AuthContext from "@/context/AuthContext";
+import PageContentContext from "@/context/PageContentContext";
 
-export default function Header({ brandImage }) {
+export default function Header() {
   const { user, logout } = useContext(AuthContext);
+  const { pageContent } = useContext(PageContentContext);
+
   const [isActive, setisActive] = useState(false);
 
   return (
@@ -16,8 +19,13 @@ export default function Header({ brandImage }) {
       <div className="navbar-brand ml-5">
         <Link href="/">
           <a className="navbar-item">
-            {brandImage && (
-              <Image alt="logo" src={brandImage} width="112" height="112" />
+            {pageContent?.brandImage && (
+              <Image
+                alt="logo"
+                src={pageContent?.brandImage}
+                width="112"
+                height="112"
+              />
             )}
           </a>
         </Link>

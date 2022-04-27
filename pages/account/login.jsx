@@ -3,8 +3,13 @@ import Link from "next/link";
 import { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
+import { useRouter } from "next/router";
+import { API_URL } from "@/config/index";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 
 export default function Login() {
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -12,7 +17,9 @@ export default function Login() {
   const { login, error } = useContext(AuthContext);
   useEffect(() => {
     error && toast.error(error);
-  });
+  }, [error]);
+
+  const router = useRouter();
 
   const onChange = (e) => {
     setFormData((prevState) => ({
@@ -21,10 +28,13 @@ export default function Login() {
     }));
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
-    login(formData);
+    setIsLoading(true);
+    await login(formData);
+    setIsLoading(false);
   };
+
   return (
     <Layout title="Login to page">
       <div className="columns is-centered has-text-centered ">
@@ -40,6 +50,7 @@ export default function Login() {
                   placeholder="Email"
                   id="email"
                   name="email"
+                  autoComplete="on"
                   value={formData.email}
                   onChange={onChange}
                 />
@@ -53,13 +64,16 @@ export default function Login() {
                   placeholder="Password"
                   id="password"
                   name="password"
+                  autoComplete="on"
                   value={formData.password}
                   onChange={onChange}
                 />
               </div>
             </div>
             <button
-              className="button is-block is-primary is-fullwidth is-medium"
+              className={`button is-block is-primary is-fullwidth is-medium ${
+                isLoading && "is-loading"
+              }`}
               type="submit"
             >
               Submit
@@ -72,6 +86,18 @@ export default function Login() {
               </em>
             </small>
           </form>
+          <br />
+          <div className="separator has-text-grey is-italic">or</div>
+          <br />
+          <button
+            className="button is-light is-fullwidth is-medium"
+            onClick={() => router.push(`${API_URL}/api/connect/google`)}
+          >
+            <span className="icon">
+              <FontAwesomeIcon icon={faGoogle} />
+            </span>
+            <span>Login with Google</span>
+          </button>
         </div>
       </div>
     </Layout>

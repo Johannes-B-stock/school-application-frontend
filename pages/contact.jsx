@@ -1,9 +1,18 @@
 import Layout from "@/components/Layout";
-import getPageContent from "lib/pageContent";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faFacebook,
+  faInstagram,
+  faTwitter,
+} from "@fortawesome/free-brands-svg-icons";
+import PageContentContext from "@/context/PageContentContext";
+import { useContext } from "react";
 
-export default function ContactPage({ pageContent }) {
+export default function ContactPage() {
+  const { pageContent } = useContext(PageContentContext);
+
   return (
-    <Layout pageContent={pageContent}>
+    <Layout>
       <section className="hero is-fullheight">
         <div className="hero-body">
           <div className="container has-text-centered">
@@ -11,34 +20,47 @@ export default function ContactPage({ pageContent }) {
               <div className="column is-two-thirds has-text-left">
                 <h1 className="title is-1">Contact Us</h1>
                 <p className="is-size-4">
-                  Lorem ipsum dolor sit amet consectetur adipisicing elit. Nulla
-                  eligendi soluta voluptate facere molestiae consequatur.
+                  {pageContent?.contact ? (
+                    pageContent.contact
+                  ) : (
+                    <>
+                      Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                      Nulla eligendi soluta voluptate facere molestiae
+                      consequatur.
+                    </>
+                  )}
                 </p>
                 <div className="social-media">
-                  <a
-                    href="https://facebook.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="button is-light is-large"
-                  >
-                    <i className="fa fa-facebook-square" aria-hidden="true"></i>
-                  </a>
-                  <a
-                    href="https://instagram.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="button is-light is-large"
-                  >
-                    <i className="fa fa-instagram" aria-hidden="true"></i>
-                  </a>
-                  <a
-                    href="https://twitter.com"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="button is-light is-large"
-                  >
-                    <i className="fa fa-twitter" aria-hidden="true"></i>
-                  </a>
+                  {pageContent?.facebookLink && (
+                    <a
+                      href={pageContent.facebookLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="button is-light is-large"
+                    >
+                      <FontAwesomeIcon icon={faFacebook} aria-hidden="true" />
+                    </a>
+                  )}
+                  {pageContent?.instagramLink && (
+                    <a
+                      href={pageContent?.instagramLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="button is-light is-large"
+                    >
+                      <FontAwesomeIcon icon={faInstagram} aria-hidden="true" />
+                    </a>
+                  )}
+                  {pageContent?.twitterLink && (
+                    <a
+                      href={pageContent.twitterLink}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="button is-light is-large"
+                    >
+                      <FontAwesomeIcon icon={faTwitter} aria-hidden="true" />
+                    </a>
+                  )}
                 </div>
               </div>
               <div className="column is-one-third has-text-left">
@@ -75,11 +97,4 @@ export default function ContactPage({ pageContent }) {
       </section>
     </Layout>
   );
-}
-
-export async function getStaticProps() {
-  const pageContent = await getPageContent();
-  return {
-    props: { pageContent },
-  };
 }

@@ -1,9 +1,7 @@
 import Layout from "@/components/Layout";
 import AuthContext from "@/context/AuthContext";
-import getPageContent from "lib/pageContent";
 import { useContext, useState, useEffect } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/router";
 import styles from "@/styles/ProfilePage.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -14,9 +12,9 @@ import { toast } from "react-toastify";
 import AddressEdit from "@/components/AddressEdit";
 import ProfileHeaderCard from "@/components/ProfileHeaderCard";
 import ProfileSidebar from "@/components/ProfileSidebar";
-import { faFileUpload, faUpload } from "@fortawesome/free-solid-svg-icons";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 
-export default function ProfilePage({ pageContent, token }) {
+export default function ProfilePage({ token }) {
   const router = useRouter();
   const { user, setUser } = useContext(AuthContext);
 
@@ -102,7 +100,7 @@ export default function ProfilePage({ pageContent, token }) {
   };
 
   return (
-    <Layout pageContent={pageContent}>
+    <Layout>
       <ProfileHeaderCard user={user} />
       <div className="columns">
         <div className="column is-4">
@@ -335,10 +333,9 @@ export default function ProfilePage({ pageContent, token }) {
 }
 
 export async function getServerSideProps({ req }) {
-  const pageContent = await getPageContent();
   const { token } = parseCookie(req);
 
   return {
-    props: { pageContent, token },
+    props: { token: token ?? null },
   };
 }

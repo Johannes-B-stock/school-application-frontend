@@ -1,17 +1,9 @@
 import Layout from "@/components/Layout";
-import getPageContent from "lib/pageContent";
 
-export default function About({ pageContent }) {
+export default function About() {
   return (
-    <Layout pageContent={pageContent}>
+    <Layout>
       <h1>About this page</h1>
     </Layout>
   );
-}
-
-export async function getStaticProps() {
-  const pageContent = await getPageContent();
-  return {
-    props: { pageContent },
-  };
 }
