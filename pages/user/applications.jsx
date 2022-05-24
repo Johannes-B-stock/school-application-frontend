@@ -14,7 +14,7 @@ export default function ApplicationsPage({ applications, token }) {
     <Layout>
       <ProfileHeaderCard user={user} />
       <div className="columns">
-        <div className="column is-4">
+        <div className="column is-3">
           <ProfileSidebar />
         </div>
         <div className="column">

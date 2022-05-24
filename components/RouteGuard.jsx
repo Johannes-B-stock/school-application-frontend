@@ -12,10 +12,21 @@ export default function RouteGuard({ children }) {
       "/account/login",
       "/",
       "/account/register",
-      "/user/googleCallback",
+      "/account/googleCallback",
+      "/about",
+      "/contact",
+      "/references/",
+      "/404",
     ];
     const path = router.asPath.split("?")[0];
-    if (!user && !publicPaths.includes(path)) {
+    if (
+      !user &&
+      !publicPaths.some(
+        (publicPath) =>
+          publicPath === path ||
+          (publicPath.endsWith("/") && path.includes(publicPath))
+      )
+    ) {
       setAuthorized(false);
       router.push({
         pathname: "/account/login",

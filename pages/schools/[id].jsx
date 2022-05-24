@@ -20,7 +20,6 @@ export default function SchoolDetails({ school }) {
           "Content-Type": "application/json",
         },
       });
-      console.log(res);
       if (!res.ok) {
         toast.error(res.statusText);
       } else {

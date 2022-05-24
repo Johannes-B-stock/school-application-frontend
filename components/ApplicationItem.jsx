@@ -27,7 +27,7 @@ export default function ApplicationItem({ application, token }) {
 
     if (res.ok) {
       toast.success("Application successfully deleted.");
-      router.push("/user/applications");
+      router.reload();
     } else {
       toast.error(`Delete failed: ${res.statusText}`);
     }
@@ -107,18 +107,24 @@ export default function ApplicationItem({ application, token }) {
         <Link href={`/applications/${application.id}`}>
           <a className="card-footer-item">Details</a>
         </Link>
-
-        {application.state === "created" ? (
+        {application.state === "created" && application.step === 3 ? (
+          <a onClick={onSubmit} className="card-footer-item">
+            Submit
+          </a>
+        ) : (
+          <span
+            className="card-footer-item disabled"
+            title="You can only submit when the application is finished and not yet submitted"
+          >
+            Submit
+          </span>
+        )}
+        {application.state === "created" && (
           <>
-            <a onClick={onSubmit} className="card-footer-item">
-              Submit
-            </a>
             <a onClick={onDelete} className="card-footer-item">
               Delete
             </a>
           </>
-        ) : (
-          <span className="card-footer-item">Submit</span>
         )}
       </footer>
     </div>

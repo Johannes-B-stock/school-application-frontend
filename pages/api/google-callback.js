@@ -1,6 +1,7 @@
 import { API_URL } from "@/config/index";
 import cookie from "cookie";
 import qs from "qs";
+import { parseCookie } from "@/helpers/index";
 
 export default async function googleCallback(req, res) {
   if (req.method === "POST") {
@@ -13,6 +14,9 @@ export default async function googleCallback(req, res) {
       const data = await strapiRes.json();
 
       if (strapiRes.ok) {
+        // if (parseCookie(req).CookieConsent !== "true") {
+        //   throw new Error("Can not set cookie because cookies are not allowed");
+        // }
         res.setHeader(
           "Set-Cookie",
           cookie.serialize("token", data.jwt, {

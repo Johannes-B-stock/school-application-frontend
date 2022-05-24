@@ -1,4 +1,3 @@
-import { useRouter } from "next/router";
 import { createContext, useState, useEffect } from "react";
 import { NEXT_URL } from "../config";
 
@@ -7,8 +6,6 @@ const PageContentContext = createContext();
 export const PageContentProvider = ({ children }) => {
   const [pageContent, setPageContent] = useState(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
-
-  const router = useRouter();
 
   useEffect(() => {
     getPageContent();

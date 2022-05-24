@@ -10,7 +10,14 @@ countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
 countries.registerLocale(require("i18n-iso-countries/langs/fr.json"));
 countries.registerLocale(require("i18n-iso-countries/langs/de.json"));
 
-export default function AddressEdit({ token, user, address }) {
+export default function AddressEdit({
+  token,
+  user,
+  address,
+  alwaysEdit,
+  noButtons,
+  bindSave,
+}) {
   const router = useRouter();
 
   const { setUser } = useContext(AuthContext);
@@ -20,7 +27,7 @@ export default function AddressEdit({ token, user, address }) {
     value: addressEdit?.country,
     label: countries.getName(addressEdit?.country, router.locale.split("-")[0]),
   });
-  const [allowAddressEdit, setAllowAddressEdit] = useState(false);
+  const [allowAddressEdit, setAllowAddressEdit] = useState(alwaysEdit ?? false);
   const countryList = useMemo(
     () =>
       Object.keys(countries.getNames(router.locale.split("-")[0] ?? "en")).map(
@@ -43,15 +50,25 @@ export default function AddressEdit({ token, user, address }) {
   };
 
   const onSaveAddress = async (e) => {
-    e.preventDefault();
+    e?.preventDefault();
 
-    const hasOnlyEmptyValues = Object.values(addressEdit).some(
+    const newAddress = {
+      ...addressEdit,
+      firstname: addressEdit.firstname || user.firstname,
+      lastname: addressEdit.lastname || user.lastname,
+    };
+
+    const hasSomeEmptyValues = Object.values(newAddress).some(
       (value) => value === ""
     );
 
-    if (hasOnlyEmptyValues) {
-      toast.error("Please fill in all fields!");
-      return;
+    if (hasSomeEmptyValues) {
+      if (noButtons) {
+        throw new Error("Please fill in all fields!");
+      } else {
+        toast.error("Please fill in all fields!");
+        return;
+      }
     }
 
     if (!address) {
@@ -71,14 +88,17 @@ export default function AddressEdit({ token, user, address }) {
           },
         }),
       });
+      const addressResult = await res.json();
+
       if (!res.ok) {
         toast.error(res.statusText ?? "Something went wrong.");
+        if (noButtons) {
+          throw new Error(addressResult.error?.message ?? res.statusText);
+        }
       } else {
-        const updatedAddress = await res.json();
-        console.log(updatedAddress);
         toast.success("Saved successfully");
-        setAllowAddressEdit(false);
-        setUser({ ...user, address: updatedAddress.data.attributes });
+        !alwaysEdit && setAllowAddressEdit(false);
+        setUser({ ...user, address: addressResult.data.attributes });
       }
     } else {
       // Update existing address
@@ -95,18 +115,23 @@ export default function AddressEdit({ token, user, address }) {
           },
         }),
       });
+      const addressResult = await res.json();
+
       if (!res.ok) {
         toast.error(res.statusText ?? "Something went wrong.");
+        if (noButtons) {
+          throw new Error(addressResult.error?.message ?? res.statusText);
+        }
       } else {
-        const updatedAddress = await res.json();
-        setAllowAddressEdit(false);
-        setUser({ ...user, address: updatedAddress.data.attributes });
+        !alwaysEdit && setAllowAddressEdit(false);
+        setUser({ ...user, address: addressResult.data.attributes });
 
         toast.success("Saved successfully");
-        console.log(updatedAddress);
       }
     }
   };
+
+  bindSave && bindSave(onSaveAddress);
 
   const handleAddressEditCancel = () => {
     setAllowAddressEdit(false);
@@ -117,38 +142,31 @@ export default function AddressEdit({ token, user, address }) {
     <form>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">First Name:</label>
+          <label className="label">Name:</label>
         </div>
         <div className="field-body">
           <div className="field">
-            <p className="control is-expanded">
+            <p className="control">
               <input
                 className="input"
                 type="text"
-                id="firstname"
+                placeholder="First name"
                 name="firstname"
-                placeholder="First Name"
-                value={addressEdit?.firstname}
+                id="firstname"
+                value={addressEdit?.firstname || user.firstname}
                 onChange={handleAddressInputChange}
               />
             </p>
           </div>
-        </div>
-      </div>
-      <div className="field is-horizontal">
-        <div className="field-label is-normal">
-          <label className="label">Last Name:</label>
-        </div>
-        <div className="field-body">
           <div className="field">
-            <p className="control is-expanded">
+            <p className="control">
               <input
                 className="input"
                 type="text"
-                id="lastname"
+                placeholder="Last name"
                 name="lastname"
-                placeholder="Last Name"
-                value={addressEdit?.lastname}
+                id="lastname"
+                value={addressEdit?.lastname || user.lastname}
                 onChange={handleAddressInputChange}
               />
             </p>
@@ -240,30 +258,24 @@ export default function AddressEdit({ token, user, address }) {
         </div>
       </div>
 
-      <div className="field is-grouped">
-        <div className="control">
-          <div className="button is-primary" onClick={onSaveAddress}>
-            Save
+      {!noButtons && (
+        <div className="field is-grouped">
+          <div className="control">
+            <div className="button is-primary" onClick={onSaveAddress}>
+              Save
+            </div>
+          </div>
+          <div className="control">
+            {" "}
+            <div className="button" onClick={handleAddressEditCancel}>
+              Cancel
+            </div>
           </div>
         </div>
-        <div className="control">
-          {" "}
-          <div className="button" onClick={handleAddressEditCancel}>
-            Cancel
-          </div>
-        </div>
-      </div>
+      )}
     </form>
   ) : (
     <>
-      <div className="columns">
-        <div className="column is-3">First Name:</div>
-        <div className="column">{addressEdit?.firstname}</div>
-      </div>
-      <div className="columns">
-        <div className="column is-3">Last Name:</div>
-        <div className="column">{addressEdit?.lastname}</div>
-      </div>
       <div className="columns">
         <div className="column is-3">Street:</div>
         <div className="column is-5">{addressEdit?.street}</div>
@@ -284,9 +296,11 @@ export default function AddressEdit({ token, user, address }) {
           {countries.getName(addressEdit?.country, router.locale.split("-")[0])}
         </div>
       </div>
-      <div className="button" onClick={() => setAllowAddressEdit(true)}>
-        Edit
-      </div>
+      {!noButtons && (
+        <div className="button" onClick={() => setAllowAddressEdit(true)}>
+          Edit
+        </div>
+      )}
     </>
   );
 }

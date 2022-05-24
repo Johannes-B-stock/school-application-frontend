@@ -24,11 +24,9 @@ export default function EditSchoolPage({ school }) {
   });
   const router = useRouter();
 
-  console.log(school.image);
   const [imagePreview, setImagePreview] = useState(
     school.image ? school.image.data.attributes.formats.thumbnail : null
   );
-  console.log(imagePreview);
   const handleUpdate = async (e) => {
     e.preventDefault();
 

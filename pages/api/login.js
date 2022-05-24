@@ -1,4 +1,5 @@
 import { API_URL } from "@/config/index";
+import { parseCookie } from "@/helpers/index";
 import cookie from "cookie";
 import qs from "qs";
 
@@ -22,6 +23,11 @@ export default async function login(req, res) {
     try {
       const data = await strapiRes.json();
 
+      if (parseCookie(req).CookieConsent !== "true") {
+        throw new Error(
+          "Can not store cookie because cookies are not accepted."
+        );
+      }
       if (strapiRes.ok) {
         res.setHeader(
           "Set-Cookie",

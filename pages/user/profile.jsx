@@ -54,7 +54,7 @@ export default function ProfilePage({ token }) {
       toast.error(res.statusText ?? "Something went wrong.");
     } else {
       const updatedUser = await res.json();
-      setUser(updatedUser);
+      setUser({ ...user, ...updatedUser });
       toast.success("Saved successfully");
     }
   };
@@ -103,7 +103,7 @@ export default function ProfilePage({ token }) {
     <Layout>
       <ProfileHeaderCard user={user} />
       <div className="columns">
-        <div className="column is-4">
+        <div className="column is-3">
           <ProfileSidebar />
         </div>
         <div className="column">
@@ -178,7 +178,52 @@ export default function ProfilePage({ token }) {
                       </div>
                     </div>
                   </div>
-
+                  <div className="field is-horizontal">
+                    <div className="field-label is-normal">
+                      <label className="label">First Name:</label>
+                    </div>
+                    <div className="field-body">
+                      <div className="field">
+                        <p className="control is-expanded has-icons-left">
+                          <input
+                            className="input"
+                            type="text"
+                            id="firstname"
+                            name="firstname"
+                            placeholder="user"
+                            value={userEdit?.firstname}
+                            onChange={handleInputChange}
+                          />
+                          <span className="icon is-small is-left">
+                            <FontAwesomeIcon icon={faUser} />
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="field is-horizontal">
+                    <div className="field-label is-normal">
+                      <label className="label">Last Name:</label>
+                    </div>
+                    <div className="field-body">
+                      <div className="field">
+                        <p className="control is-expanded has-icons-left">
+                          <input
+                            className="input"
+                            type="text"
+                            id="lastname"
+                            name="lastname"
+                            placeholder="user"
+                            value={userEdit?.lastname}
+                            onChange={handleInputChange}
+                          />
+                          <span className="icon is-small is-left">
+                            <FontAwesomeIcon icon={faUser} />
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                   <div className="field is-horizontal">
                     <div className="field-label is-normal">
                       <label className="label">Email:</label>
@@ -285,6 +330,16 @@ export default function ProfilePage({ token }) {
                   <div className="columns">
                     <div className="column is-3">User Name:</div>
                     <div className="column">{user?.username}</div>
+                  </div>
+
+                  <div className="columns">
+                    <div className="column is-3">First Name:</div>
+                    <div className="column">{user?.firstname}</div>
+                  </div>
+
+                  <div className="columns">
+                    <div className="column is-3">Last Name:</div>
+                    <div className="column">{user?.lastname}</div>
                   </div>
 
                   <div className="columns">

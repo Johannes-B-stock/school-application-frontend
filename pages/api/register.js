@@ -11,7 +11,9 @@ export default async function register(req, res) {
     });
     try {
       const data = await strapiRes.json();
-
+      if (parseCookie(req).CookieConsent !== "true") {
+        throw new Error("Can not set cookie because cookies are not allowed.");
+      }
       if (strapiRes.ok) {
         res.setHeader(
           "Set-Cookie",

@@ -3,15 +3,12 @@ import { useRouter } from "next/router";
 import qs from "qs";
 import { API_URL } from "@/config/index";
 import Layout from "@/components/Layout";
-import { useState } from "react";
 import cookie from "cookie";
-import styles from "@/styles/Form.module.css";
 import { toast } from "react-toastify";
+import ReactMarkdown from "react-markdown";
 
 export default function ApplyPage({ school, questions, token }) {
-  const [answers, setAnswers] = useState(
-    questions.map((q) => ({ ...q, answer: "" }))
-  );
+  const answers = questions.map((q) => ({ ...q, answer: "" }));
 
   const router = useRouter();
 
@@ -31,73 +28,61 @@ export default function ApplyPage({ school, questions, token }) {
       }),
     });
     const application = await res.json();
-
     if (!res.ok) {
       toast.error(
         application.error?.message ?? res.statusText ?? "Something went wrong."
       );
     } else {
+      await Promise.all(
+        answers.map(async (answer) => {
+          const answerRes = await fetch(`${API_URL}/api/answers`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              data: {
+                school_application: application.data.id,
+                question: answer.id,
+                answer: answer.answer,
+              },
+            }),
+          });
+          const answerResult = await answerRes.json();
+
+          if (answerRes.ok) {
+            console.log(answerResult);
+          } else {
+            toast.error(answerResult.error?.message ?? answerRes.statusText);
+          }
+        })
+      );
+
       router.push(`/applications/${application.data.id}`);
     }
-  };
-
-  const onAnswered = (e) => {
-    const updatedAnswer = answers.find(
-      (answer) => answer.id.toString() === e.target.name
-    );
-    const index = answers.indexOf(updatedAnswer);
-    updatedAnswer.answer = e.target.value;
-    const newAnswers = [...answers];
-    newAnswers[index] = { ...newAnswers[index], answer: e.target.value };
-    setAnswers(newAnswers);
   };
 
   return (
     <Layout>
       <div className="content">
-        <h1>Apply for School {school?.name}</h1>
-        <p>Do you really want to apply for the school {school?.name}?</p>
-        <p>
-          You have to pay an application fee of {school?.applicationFee}&euro;
-          for the application to be processed.
-        </p>
-        <p>
-          Further details about the school can be found
-          <Link href={`/schools/${school?.id}`}> here</Link>
-        </p>
-        <form className={`form ${styles.form}`} onSubmit={handleSubmit}>
-          {questions?.map((question) => (
-            <div key={question.id} className="field">
-              <label htmlFor={question.id} className="label">
-                {question.question}
-              </label>
-              <div className="control">
-                <input
-                  type="text"
-                  name={question.id}
-                  className="input"
-                  value={
-                    answers.find((answer) => answer.id === question.id).answer
-                  }
-                  onChange={onAnswered}
-                />
-              </div>
-            </div>
-          ))}
-
-          <div className="field is-grouped">
-            <div className="control">
-              <button type="submit" className="button">
-                Start Application
-              </button>
-            </div>
-            <div className="control">
-              <Link href="/">
-                <a className="button">Cancel</a>
-              </Link>
-            </div>
+        <ReactMarkdown>{school?.preApplicationText}</ReactMarkdown>
+        <div className="field is-grouped">
+          <div className="control">
+            <button
+              type="submit is-primary"
+              className="button"
+              onClick={handleSubmit}
+            >
+              Start Application
+            </button>
           </div>
-        </form>
+          <div className="control">
+            <Link href="/">
+              <a className="button">Cancel</a>
+            </Link>
+          </div>
+        </div>
       </div>
     </Layout>
   );
@@ -105,7 +90,7 @@ export default function ApplyPage({ school, questions, token }) {
 
 export async function getServerSideProps({ params: { id }, req }) {
   const query = qs.stringify({
-    populate: "question_collection",
+    populate: "applicationQuestions",
   });
 
   if (!req.headers.cookie) {
@@ -113,7 +98,6 @@ export async function getServerSideProps({ params: { id }, req }) {
     return;
   }
   const { token } = cookie.parse(req.headers.cookie);
-  console.log(token);
   const res = await fetch(`${API_URL}/api/schools/${id}?${query}`, {
     method: "GET",
     headers: {
@@ -125,12 +109,13 @@ export async function getServerSideProps({ params: { id }, req }) {
     id: result.data.id,
     ...result.data.attributes,
   };
+  console.log(school);
   const questionQuery = qs.stringify(
     {
       filters: {
         collection: {
           id: {
-            $eq: school.question_collection.data.id,
+            $eq: school.applicationQuestions.data.id,
           },
         },
       },
@@ -139,16 +124,14 @@ export async function getServerSideProps({ params: { id }, req }) {
       encodeValuesOnly: true,
     }
   );
-  const quesRes = await fetch(
-    `${API_URL}/api/application-questions?${questionQuery}`,
-    {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const quesRes = await fetch(`${API_URL}/api/questions?${questionQuery}`, {
+    method: "GET",
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
   const questionResult = await quesRes.json();
+  console.log(questionResult);
   const questions =
     questionResult.data?.map((data) => ({
       id: data.id,
