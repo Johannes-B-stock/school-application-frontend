@@ -25,7 +25,6 @@ export default function ReferencePage({ reference }) {
     setIsLoading(true);
     await Promise.all(
       answers.map(async (answer) => {
-        console.log(answer);
         const updateAnswerFetch = await fetch(
           `${API_URL}/api/answers/${answer.id}`,
           {

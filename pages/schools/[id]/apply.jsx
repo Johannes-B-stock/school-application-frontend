@@ -51,9 +51,7 @@ export default function ApplyPage({ school, questions, token }) {
           });
           const answerResult = await answerRes.json();
 
-          if (answerRes.ok) {
-            console.log(answerResult);
-          } else {
+          if (!answerRes.ok) {
             toast.error(answerResult.error?.message ?? answerRes.statusText);
           }
         })
@@ -89,14 +87,14 @@ export default function ApplyPage({ school, questions, token }) {
 }
 
 export async function getServerSideProps({ params: { id }, req }) {
-  const query = qs.stringify({
-    populate: "applicationQuestions",
-  });
-
   if (!req.headers.cookie) {
     res.status(403).json({ message: "Not authorized" });
     return;
   }
+  const query = qs.stringify({
+    populate: "applicationQuestions",
+  });
+
   const { token } = cookie.parse(req.headers.cookie);
   const res = await fetch(`${API_URL}/api/schools/${id}?${query}`, {
     method: "GET",
@@ -109,7 +107,6 @@ export async function getServerSideProps({ params: { id }, req }) {
     id: result.data.id,
     ...result.data.attributes,
   };
-  console.log(school);
   const questionQuery = qs.stringify(
     {
       filters: {
@@ -131,7 +128,6 @@ export async function getServerSideProps({ params: { id }, req }) {
     },
   });
   const questionResult = await quesRes.json();
-  console.log(questionResult);
   const questions =
     questionResult.data?.map((data) => ({
       id: data.id,

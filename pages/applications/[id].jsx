@@ -476,6 +476,12 @@ export default function ApplicationPage({
               <form className={`form`} onSubmit={handleSubmitAnswers}>
                 {Object.entries(groupByQuestionType(answers))
                   .sort()
+                  .map(([type, questions]) => [
+                    type,
+                    questions.sort(
+                      (q1, q2) => q1.question.order - q2.question.order
+                    ),
+                  ])
                   .map(([type, questions]) => (
                     <>
                       <h3 className="title">{type}</h3>

@@ -8,9 +8,7 @@ export default function Footer() {
 
   const changeLocale = (e) => {
     e.preventDefault();
-    console.log(e.target);
     const value = e.target.getAttribute("value");
-    console.log(value);
 
     const { pathname, asPath, query } = router;
     // change just the locale and maintain all other route information including href's query
