@@ -2,8 +2,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import qs from "qs";
 import { API_URL } from "@/config/index";
-import Layout from "@/components/Layout";
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect, useContext, useRef } from "react";
 import styles from "@/styles/Application.module.css";
 import { parseCookie } from "@/helpers/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -11,7 +10,6 @@ import { toast } from "react-toastify";
 import { faAddressCard } from "@fortawesome/free-regular-svg-icons";
 import {
   faCheck,
-  faCross,
   faMailBulk,
   faQuestion,
   faXmark,
@@ -21,9 +19,9 @@ import AddressEdit from "@/components/AddressEdit";
 import AuthContext from "@/context/AuthContext";
 import NotAuthorized from "@/components/NotAuthorized";
 import { sendReference } from "lib/references";
-import { submitApplication, updateStep } from "lib/application";
+import { submitApplication, updateState, updateStep } from "lib/application";
 import { updateMe } from "lib/user";
-import { submitAnswers } from "lib/answers";
+import ApplicationQuestions from "@/components/ApplicationQuestions";
 
 export default function ApplicationPage({
   application,
@@ -33,7 +31,6 @@ export default function ApplicationPage({
   address,
 }) {
   const router = useRouter();
-
   useEffect(() => {
     if (error) {
       toast.error(`${error.status} - ${error.message}`);
@@ -41,7 +38,6 @@ export default function ApplicationPage({
   }, [router, error]);
   const { user } = useContext(AuthContext);
   const [applicationEdit, setApplicationEdit] = useState(application);
-  const [answers, setAnswers] = useState(answerDetails);
   const [isLoadingNext, setIsLoadingNext] = useState(false);
   const [isLoadingBack, setIsLoadingBack] = useState(false);
   const [userEdit, setUserEdit] = useState(user);
@@ -68,20 +64,21 @@ export default function ApplicationPage({
     router.push("/404");
     return;
   }
-  if (application.user.data.id !== user.id) {
+  console.log(application);
+  console.log(user);
+  if (application.user.data.id !== user?.id) {
     return <NotAuthorized />;
   }
-  const onAnswered = (e) => {
-    const updatedAnswer = answers.find(
-      (answer) => answer.id.toString() === e.target.name
-    );
-    const index = answers.indexOf(updatedAnswer);
-    updatedAnswer.answer = e.target.value;
-    const newAnswers = [...answers];
-    newAnswers[index] = updatedAnswer;
-    setAnswers(newAnswers);
-  };
 
+  let addressSaveFunction = undefined;
+
+  function bindAddressSave(saveFunction) {
+    addressSaveFunction = saveFunction;
+  }
+  let questionSaveFunction = undefined;
+  function bindQuestionSave(saveFunction) {
+    questionSaveFunction = saveFunction;
+  }
   const onReference1ValueChanged = (e) => {
     const { name, value } = e.target;
     setReference1({ ...reference1, [name]: value });
@@ -91,12 +88,6 @@ export default function ApplicationPage({
     const { name, value } = e.target;
     setReference2({ ...reference2, [name]: value });
   };
-
-  let addressSaveFunction = undefined;
-
-  function bindAddressSave(saveFunction) {
-    addressSaveFunction = saveFunction;
-  }
 
   const goBack = async () => {
     if (applicationEdit.step === 0 || isLoadingBack || isLoadingNext) {
@@ -124,7 +115,10 @@ export default function ApplicationPage({
           await addressSaveFunction();
         }
         if (applicationEdit.step === 1) {
-          await submitAnswers(answers, token);
+          if (!questionSaveFunction) {
+            throw new Error("can not save questions!");
+          }
+          await questionSaveFunction();
         }
         if (applicationEdit.step === 2) {
           if (!reference1.emailSend || !reference2.emailSend) {
@@ -143,15 +137,6 @@ export default function ApplicationPage({
       toast.error(error.message ?? error);
     } finally {
       setIsLoadingNext(false);
-    }
-  };
-
-  const handleSubmitAnswers = async (e) => {
-    try {
-      e?.preventDefault();
-      await submitAnswers(answers, token);
-    } catch (error) {
-      toast.error(error.message ?? error);
     }
   };
 
@@ -176,17 +161,6 @@ export default function ApplicationPage({
         step: nextStep,
       });
     }
-  }
-
-  function groupByQuestionType(answers) {
-    return answers.reduce((prev, curr) => {
-      const key = curr.question.type.name ?? "General";
-      if (!prev[key]) {
-        prev[key] = [];
-      }
-      prev[key].push(curr);
-      return prev;
-    }, {});
   }
 
   const sendReference1 = async () => {
@@ -252,7 +226,7 @@ export default function ApplicationPage({
     }
     try {
       setSubmitLoading(true);
-      await submitApplication(application.id, token);
+      await updateState(application.id, token, "submitted");
       setApplicationEdit({ ...applicationEdit, state: "submitted" });
 
       toast.success("Successfully submitted!");
@@ -264,565 +238,467 @@ export default function ApplicationPage({
   };
 
   return (
-    <Layout>
-      <div className="content has-text-centered">
-        <h1>
-          Application for School {application?.school.data.attributes.name}
-        </h1>
-        <p>
-          This is your application for the school{" "}
-          {application?.school.data.attributes.name}
-        </p>
-        <p>
-          You have to pay an application fee of{" "}
-          {application?.school.data.attributes.applicationFee}&euro; for the
-          application to be processed.
-        </p>
-        <p>
-          Further details about the school can be found
-          <Link href={`/schools/${application?.school.data.attributes.id}`}>
-            <a> here</a>
-          </Link>
-        </p>
-        <br />
-        <br />
+    <div className="content has-text-centered">
+      <h1>Application for School {application?.school.data.attributes.name}</h1>
+      <p>
+        This is your application for the school{" "}
+        {application?.school.data.attributes.name}
+      </p>
+      <p>
+        You have to pay an application fee of{" "}
+        {application?.school.data.attributes.applicationFee}&euro; for the
+        application to be processed.
+      </p>
+      <p>
+        Further details about the school can be found
+        <Link href={`/schools/${application?.school.data.attributes.id}`}>
+          <a> here</a>
+        </Link>
+      </p>
+      <br />
+      <br />
 
-        <div className="steps" id="stepsDemo">
+      <div className="steps" id="stepsDemo">
+        <div
+          className={`step-item ${
+            applicationEdit.step === 0 ? "is-active" : "is-completed"
+          }`}
+        >
+          <div className="step-marker">
+            <span className="icon">
+              <FontAwesomeIcon icon={faAddressCard} />
+            </span>
+          </div>
+          <div className="step-details">
+            <p className="step-title">User</p>
+            <p>
+              Please put in your private information like your personal address
+              and name.
+            </p>
+          </div>
+        </div>
+        <div
+          className={`step-item ${
+            applicationEdit.step === 1 ? "is-active" : ""
+          } ${application.step > 1 ? "is-completed" : ""}`}
+        >
+          <div className="step-marker">
+            <FontAwesomeIcon icon={faQuestion} />
+          </div>
+          <div className="step-details">
+            <p className="step-title">Questions</p>
+            <p>Please answer all questions honestly.</p>
+          </div>
+        </div>
+        <div
+          className={`step-item ${
+            applicationEdit.step === 2 ? "is-active" : ""
+          } ${application.step > 2 ? "is-completed" : ""}`}
+        >
+          <div className="step-marker">
+            <FontAwesomeIcon icon={faMailBulk} />
+          </div>
+          <div className="step-details">
+            <p className="step-title">References</p>
+
+            <p>Send out reference requests.</p>
+          </div>
+        </div>
+        <div
+          className={`step-item ${
+            applicationEdit.step === 3 ? "is-active" : ""
+          } ${
+            application.step >= 3 && applicationEdit.state !== "created"
+              ? "is-completed"
+              : ""
+          }`}
+        >
+          <div className="step-marker">
+            <span className="icon">
+              <FontAwesomeIcon icon={faCheck} />
+            </span>
+          </div>
+          <div className="step-details">
+            <p className="step-title">Confirm</p>
+            <p>
+              Final step. You have completed all the previous steps and end the
+              process.
+            </p>
+          </div>
+        </div>
+
+        <div className={`steps-content ${styles.stepContent}`}>
           <div
-            className={`step-item ${
-              applicationEdit.step === 0 ? "is-active" : "is-completed"
+            className={`step-content has-text-centered ${
+              isLoadingBack || isLoadingNext ? "is-active" : ""
             }`}
           >
-            <div className="step-marker">
-              <span className="icon">
-                <FontAwesomeIcon icon={faAddressCard} />
-              </span>
-            </div>
-            <div className="step-details">
-              <p className="step-title">User</p>
-              <p>
-                Please put in your private information like your personal
-                address and name.
-              </p>
-            </div>
+            <GoogleSpinner />
           </div>
           <div
-            className={`step-item ${
-              applicationEdit.step === 1 && "is-active"
-            } ${application.step > 1 && "is-completed"}`}
-          >
-            <div className="step-marker">
-              <FontAwesomeIcon icon={faQuestion} />
-            </div>
-            <div className="step-details">
-              <p className="step-title">Questions</p>
-              <p>Please answer all questions honestly.</p>
-            </div>
-          </div>
-          <div
-            className={`step-item ${
-              applicationEdit.step === 2 && "is-active"
-            } ${application.step > 2 && "is-completed"}`}
-          >
-            <div className="step-marker">
-              <FontAwesomeIcon icon={faMailBulk} />
-            </div>
-            <div className="step-details">
-              <p className="step-title">References</p>
-
-              <p>Send out reference requests.</p>
-            </div>
-          </div>
-          <div
-            className={`step-item ${
-              applicationEdit.step === 3 && "is-active"
-            } ${
-              application.step >= 3 &&
-              applicationEdit.state !== "created" &&
-              "is-completed"
+            className={`step-content has-text-centered ${
+              applicationEdit.step === 0 && !(isLoadingBack || isLoadingNext)
+                ? "is-active"
+                : ""
             }`}
           >
-            <div className="step-marker">
-              <span className="icon">
-                <FontAwesomeIcon icon={faCheck} />
-              </span>
-            </div>
-            <div className="step-details">
-              <p className="step-title">Confirm</p>
-              <p>
-                Final step. You have completed all the previous steps and end
-                the process.
-              </p>
-            </div>
-          </div>
-
-          <div className={`steps-content ${styles.stepContent}`}>
-            <div
-              className={`step-content has-text-centered ${
-                isLoadingBack || isLoadingNext ? "is-active" : ""
-              }`}
-            >
-              <GoogleSpinner />
-            </div>
-            <div
-              className={`step-content has-text-centered ${
-                applicationEdit.step === 0 && !(isLoadingBack || isLoadingNext)
-                  ? "is-active"
-                  : ""
-              }`}
-            >
-              <h1 className="title is-4">Personal Information</h1>
-              <form className="has-text-left">
-                <div className="field is-horizontal">
-                  <div className="field-label is-normal">
-                    <label className="label">First name:</label>
+            <h1 className="title is-4">Personal Information</h1>
+            <form className="has-text-left">
+              <div className="field is-horizontal">
+                <div className="field-label is-normal">
+                  <label className="label">First name:</label>
+                </div>
+                <div className="field-body">
+                  <div className="field">
+                    <p className="control">
+                      <input
+                        type="text"
+                        placeholder="first name"
+                        name="firstname"
+                        id="firstname"
+                        className="input"
+                        value={userEdit?.firstname}
+                        onChange={handleUserInputChange}
+                      />
+                    </p>
                   </div>
-                  <div className="field-body">
-                    <div className="field">
-                      <p className="control">
-                        <input
-                          type="text"
-                          placeholder="first name"
-                          name="firstname"
-                          id="firstname"
-                          className="input"
-                          value={userEdit?.firstname}
-                          onChange={handleUserInputChange}
-                        />
-                      </p>
+                </div>
+              </div>
+              <div className="field is-horizontal">
+                <div className="field-label is-normal">
+                  <label className="label">Last name:</label>
+                </div>
+                <div className="field-body">
+                  <div className="field">
+                    <div className="control">
+                      <input
+                        type="text"
+                        placeholder="last name"
+                        name="lastname"
+                        className="input"
+                        id="lastname"
+                        value={userEdit?.lastname}
+                        onChange={handleUserInputChange}
+                      />
                     </div>
                   </div>
                 </div>
-                <div className="field is-horizontal">
-                  <div className="field-label is-normal">
-                    <label className="label">Last name:</label>
-                  </div>
-                  <div className="field-body">
-                    <div className="field">
-                      <div className="control">
-                        <input
-                          type="text"
-                          placeholder="last name"
-                          name="lastname"
-                          className="input"
-                          id="lastname"
-                          value={userEdit?.lastname}
+              </div>
+              <div className="field is-horizontal">
+                <div className="field-label is-normal">
+                  <label className="label">Gender:</label>
+                </div>
+                <div className="field-body">
+                  <div className="field">
+                    <div className="control is-expanded">
+                      <div className="select">
+                        <select
+                          name="gender"
+                          id="gender"
+                          value={userEdit?.gender}
                           onChange={handleUserInputChange}
-                        />
+                        >
+                          <option value="null">unknown</option>
+                          <option value="male">male</option>
+                          <option value="female">female</option>
+                          <option value="other">other</option>
+                        </select>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div className="field is-horizontal">
-                  <div className="field-label is-normal">
-                    <label className="label">Gender:</label>
-                  </div>
-                  <div className="field-body">
-                    <div className="field">
-                      <div className="control is-expanded">
-                        <div className="select">
-                          <select
-                            name="gender"
-                            id="gender"
-                            value={userEdit?.gender}
-                            onChange={handleUserInputChange}
-                          >
-                            <option value="null">unknown</option>
-                            <option value="male">male</option>
-                            <option value="female">female</option>
-                            <option value="other">other</option>
-                          </select>
-                        </div>
-                      </div>
-                    </div>
+              </div>
+              <div className="field is-horizontal">
+                <div className="field-label is-normal">
+                  <label className="label">Birthday:</label>
+                </div>
+                <div className="field-body">
+                  <div className="field">
+                    <p className="control">
+                      <input
+                        className="input"
+                        type="date"
+                        name="birthday"
+                        value={userEdit?.birthday}
+                        onChange={handleUserInputChange}
+                      />
+                    </p>
                   </div>
                 </div>
-                <div className="field is-horizontal">
-                  <div className="field-label is-normal">
-                    <label className="label">Birthday:</label>
-                  </div>
-                  <div className="field-body">
-                    <div className="field">
-                      <p className="control">
-                        <input
-                          className="input"
-                          type="date"
-                          name="birthday"
-                          value={userEdit?.birthday}
-                          onChange={handleUserInputChange}
-                        />
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </form>
-              <h1 className="title is-4">Address</h1>
-              <AddressEdit
-                token={token}
-                user={userEdit}
-                address={address}
-                alwaysEdit={true}
-                noButtons={true}
-                bindSave={bindAddressSave}
-              />
-            </div>
-            <div
-              className={`step-content has-text-centered ${
-                applicationEdit.step === 1 && !(isLoadingBack || isLoadingNext)
-                  ? "is-active"
-                  : ""
-              }`}
-            >
-              <form className={`form`} onSubmit={handleSubmitAnswers}>
-                {Object.entries(groupByQuestionType(answers))
-                  .sort()
-                  .map(([type, questions]) => [
-                    type,
-                    questions.sort(
-                      (q1, q2) => q1.question.order - q2.question.order
-                    ),
-                  ])
-                  .map(([type, questions]) => (
+              </div>
+            </form>
+            <h1 className="title is-4">Address</h1>
+            <AddressEdit
+              token={token}
+              user={userEdit}
+              address={address}
+              alwaysEdit={true}
+              noButtons={true}
+              bindSave={bindAddressSave}
+            />
+          </div>
+          <div
+            className={`step-content has-text-centered ${
+              applicationEdit.step === 1 && !(isLoadingBack || isLoadingNext)
+                ? "is-active"
+                : ""
+            }`}
+          >
+            <ApplicationQuestions
+              answerDetails={answerDetails}
+              bindSave={bindQuestionSave}
+              disabled={application.step > applicationEdit.step}
+              token={token}
+            />
+          </div>
+          <div
+            className={`step-content has-text-centered ${
+              applicationEdit.step === 2 && !(isLoadingBack || isLoadingNext)
+                ? "is-active"
+                : ""
+            }`}
+          >
+            <h1 className="title is-4">Pick your References</h1>
+            <br />
+
+            <form className="form">
+              <div className="columns has-text-left">
+                <div className="column is-half">
+                  <h4>Reference Person 1</h4>
+
+                  {reference1?.emailSend ? (
                     <>
-                      <h3 className="title">{type}</h3>
-                      <h6 className="subtitle is-6">
-                        {questions[0].question.type?.description ?? ""}
-                      </h6>
-                      {questions.map((answer) => (
-                        <div key={answer.id} className="field">
-                          <label htmlFor={answer.id} className="label">
-                            {answer.question?.question}{" "}
-                            {answer.question.required ? "*" : ""}
-                          </label>
-                          <div className="control">
-                            {(answer.question.inputType === "text" ||
-                              answer.question.inputType == undefined) && (
-                              <input
-                                type="text"
-                                name={answer.id}
-                                className={`input ${
-                                  answer.question.required &&
-                                  answer.answer == "" &&
-                                  "is-danger"
-                                }`}
-                                value={answer.answer}
-                                onChange={onAnswered}
-                                disabled={
-                                  application.step > applicationEdit.step
-                                }
+                      <h6 className="subtitle is-6">Name</h6>
+                      <p>{reference1.name}</p>
+                      <h6 className="subtitle is-6">Relation</h6>
+                      <p>{reference1.relation}</p>
+                      <h6 className="subtitle is-6">Email</h6>
+                      <p>{reference1.email}</p>
+                      <h6 className="subtitle is-6">Status</h6>
+                      <p>
+                        {reference1.submitted ? (
+                          <div>
+                            <span className="icon">
+                              <FontAwesomeIcon
+                                icon={faCheck}
+                                className="has-text-success"
                               />
-                            )}
-                            {answer.question.inputType === "longtext" && (
-                              <textarea
-                                type="text"
-                                name={answer.id}
-                                className={`textarea ${
-                                  answer.question.required &&
-                                  answer.answer == "" &&
-                                  "is-danger"
-                                }`}
-                                value={answer.answer}
-                                disabled={
-                                  application.step > applicationEdit.step
-                                }
-                                onChange={onAnswered}
-                              />
-                            )}
-                            {answer.question.inputType === "bool" && (
-                              <>
-                                <label className="radio">
-                                  <input
-                                    type="radio"
-                                    name={answer.id}
-                                    value={true}
-                                    onChange={onAnswered}
-                                    checked={answer.answer === "true"}
-                                    disabled={
-                                      application.step > applicationEdit.step
-                                    }
-                                  />
-                                  Yes
-                                </label>
-                                <label className="radio">
-                                  <input
-                                    type="radio"
-                                    name={answer.id}
-                                    value={false}
-                                    onChange={onAnswered}
-                                    checked={answer.answer === "false"}
-                                    disabled={
-                                      application.step > applicationEdit.step
-                                    }
-                                  />
-                                  No
-                                </label>
-                              </>
-                            )}
+                            </span>
+                            Reference has been submitted
                           </div>
-                        </div>
-                      ))}
-                      <br />
+                        ) : (
+                          <div>
+                            <span className="icon">
+                              <FontAwesomeIcon
+                                icon={faXmark}
+                                className="has-text-danger"
+                              />
+                            </span>
+                            Reference has not yet been submitted
+                          </div>
+                        )}
+                      </p>
                     </>
-                  ))}
-              </form>
-            </div>
-            <div
-              className={`step-content has-text-centered ${
-                applicationEdit.step === 2 && !(isLoadingBack || isLoadingNext)
-                  ? "is-active"
-                  : ""
-              }`}
-            >
-              <h1 className="title is-4">Pick your References</h1>
-              <br />
+                  ) : (
+                    <>
+                      <div className="field">
+                        <label className="label">Name</label>
+                        <div className="control">
+                          <input
+                            type="text"
+                            name="name"
+                            className="input"
+                            value={reference1.name}
+                            onChange={onReference1ValueChanged}
+                          />
+                        </div>
+                      </div>
+                      <div className="field">
+                        <label className="label">Relation</label>
+                        <div className="control">
+                          <input
+                            type="text"
+                            name="relation"
+                            className="input"
+                            value={reference1.relation}
+                            onChange={onReference1ValueChanged}
+                          />
+                        </div>
+                      </div>
+                      <div className="field">
+                        <label className="label">Email</label>
+                        <div className="control">
+                          <input
+                            type="email"
+                            name="email"
+                            className="input"
+                            value={reference1.email}
+                            onChange={onReference1ValueChanged}
+                          />
+                        </div>
+                      </div>
 
-              <form className="form">
-                <div className="columns has-text-left">
-                  <div className="column is-half">
-                    <h4>Reference Person 1</h4>
-
-                    {reference1?.emailSend ? (
-                      <>
-                        <h6 className="subtitle is-6">Name</h6>
-                        <p>{reference1.name}</p>
-                        <h6 className="subtitle is-6">Relation</h6>
-                        <p>{reference1.relation}</p>
-                        <h6 className="subtitle is-6">Email</h6>
-                        <p>{reference1.email}</p>
-                        <h6 className="subtitle is-6">Status</h6>
-                        <p>
-                          {reference1.submitted ? (
-                            <div>
-                              <span className="icon">
-                                <FontAwesomeIcon
-                                  icon={faCheck}
-                                  className="has-text-success"
-                                />
-                              </span>
-                              Reference has been submitted
-                            </div>
-                          ) : (
-                            <div>
-                              <span className="icon">
-                                <FontAwesomeIcon
-                                  icon={faXmark}
-                                  className="has-text-danger"
-                                />
-                              </span>
-                              Reference has not yet been submitted
-                            </div>
-                          )}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="field">
-                          <label className="label">Name</label>
-                          <div className="control">
-                            <input
-                              type="text"
-                              name="name"
-                              className="input"
-                              value={reference1.name}
-                              onChange={onReference1ValueChanged}
-                            />
-                          </div>
-                        </div>
-                        <div className="field">
-                          <label className="label">Relation</label>
-                          <div className="control">
-                            <input
-                              type="text"
-                              name="relation"
-                              className="input"
-                              value={reference1.relation}
-                              onChange={onReference1ValueChanged}
-                            />
-                          </div>
-                        </div>
-                        <div className="field">
-                          <label className="label">Email</label>
-                          <div className="control">
-                            <input
-                              type="email"
-                              name="email"
-                              className="input"
-                              value={reference1.email}
-                              onChange={onReference1ValueChanged}
-                            />
-                          </div>
-                        </div>
-
-                        <div
-                          className="button is-link"
-                          onClick={sendReference1}
-                        >
-                          Send Email
-                        </div>
-                      </>
-                    )}
-                  </div>
-                  <div className="column is-half">
-                    <h4>Reference Person 2</h4>
-
-                    {reference2?.emailSend ? (
-                      <>
-                        <h5 className="subtitle is-6">Name</h5>
-                        <p>{reference2.name}</p>
-                        <h5 className="subtitle is-6">Relation</h5>
-                        <p>{reference2.relation}</p>
-                        <h5 className="subtitle is-6">Email</h5>
-                        <p>{reference2.email}</p>
-                        <h6 className="subtitle is-6">Status</h6>
-                        <p>
-                          {reference2.submitted ? (
-                            <div>
-                              <span className="icon has-text-success">
-                                <FontAwesomeIcon icon={faCheck} />
-                              </span>
-                              Reference has been submitted
-                            </div>
-                          ) : (
-                            <div>
-                              <span className="icon has-text-danger">
-                                <FontAwesomeIcon icon={faCross} />
-                              </span>
-                              Reference has not yet been submitted
-                            </div>
-                          )}
-                        </p>
-                      </>
-                    ) : (
-                      <>
-                        <div className="field">
-                          <label className="label">Name</label>
-                          <div className="control">
-                            <input
-                              type="text"
-                              name="name"
-                              className="input"
-                              value={reference2.name}
-                              onChange={onReference2ValueChanged}
-                            />
-                          </div>
-                        </div>
-                        <div className="field">
-                          <label className="label">Relation</label>
-                          <div className="control">
-                            <input
-                              type="text"
-                              name="relation"
-                              className="input"
-                              value={reference2.relation}
-                              onChange={onReference2ValueChanged}
-                            />
-                          </div>
-                        </div>
-                        <div className="field">
-                          <label className="label">Email</label>
-                          <div className="control">
-                            <input
-                              type="email"
-                              name="email"
-                              className="input"
-                              value={reference2.email}
-                              onChange={onReference2ValueChanged}
-                            />
-                          </div>
-                        </div>
-
-                        <div
-                          className="button is-link"
-                          onClick={sendReference2}
-                        >
-                          Send Email
-                        </div>
-                      </>
-                    )}
-                  </div>
+                      <div className="button is-link" onClick={sendReference1}>
+                        Send Email
+                      </div>
+                    </>
+                  )}
                 </div>
-              </form>
-            </div>
-            <div
-              className={`step-content has-text-centered ${
-                applicationEdit.step === 3 ? "is-active" : ""
-              }`}
-            >
-              <h1 className="title is-4">Confirm</h1>
-              {applicationEdit.state === "created" && (
-                <>
-                  <p>
-                    I hereby confirm that I answered all questions to my best
-                    knowledge and that I want to apply.
-                  </p>
+                <div className="column is-half">
+                  <h4>Reference Person 2</h4>
 
-                  <div
-                    className={`button is-primary ${
-                      submitLoading && "is-loading"
-                    }`}
-                    onClick={handleSubmitApplication}
-                  >
-                    Submit
-                  </div>
-                </>
-              )}
-              {applicationEdit.state === "submitted" && (
-                <>
-                  <p>
-                    Your application has been submitted already and is now in
-                    review.
-                  </p>
-                </>
-              )}
-              {applicationEdit.state === "reviewed" && (
-                <>
-                  <p>
-                    Your application has been reviewed. You will soon know if it
-                    has been approved or revoked.
-                  </p>
-                </>
-              )}
-              {applicationEdit.state === "approved" && (
-                <>
-                  <p>Congratulations, your application has been approved!</p>
-                </>
-              )}
-              {applicationEdit.state === "revoked" && (
-                <>
-                  <p>Unfortunately, your application has been revoked!</p>
-                </>
-              )}
-            </div>
+                  {reference2?.emailSend ? (
+                    <>
+                      <h5 className="subtitle is-6">Name</h5>
+                      <p>{reference2.name}</p>
+                      <h5 className="subtitle is-6">Relation</h5>
+                      <p>{reference2.relation}</p>
+                      <h5 className="subtitle is-6">Email</h5>
+                      <p>{reference2.email}</p>
+                      <h6 className="subtitle is-6">Status</h6>
+                      <p>
+                        {reference2.submitted ? (
+                          <div>
+                            <span className="icon has-text-success">
+                              <FontAwesomeIcon icon={faCheck} />
+                            </span>
+                            Reference has been submitted
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="icon has-text-danger">
+                              <FontAwesomeIcon icon={faXmark} />
+                            </span>
+                            Reference has not yet been submitted
+                          </div>
+                        )}
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <div className="field">
+                        <label className="label">Name</label>
+                        <div className="control">
+                          <input
+                            type="text"
+                            name="name"
+                            className="input"
+                            value={reference2.name}
+                            onChange={onReference2ValueChanged}
+                          />
+                        </div>
+                      </div>
+                      <div className="field">
+                        <label className="label">Relation</label>
+                        <div className="control">
+                          <input
+                            type="text"
+                            name="relation"
+                            className="input"
+                            value={reference2.relation}
+                            onChange={onReference2ValueChanged}
+                          />
+                        </div>
+                      </div>
+                      <div className="field">
+                        <label className="label">Email</label>
+                        <div className="control">
+                          <input
+                            type="email"
+                            name="email"
+                            className="input"
+                            value={reference2.email}
+                            onChange={onReference2ValueChanged}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="button is-link" onClick={sendReference2}>
+                        Send Email
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+            </form>
           </div>
-          <div className="steps-actions">
-            <div className="steps-action">
-              <a
-                data-nav="previous"
-                onClick={goBack}
-                className={`button is-light ${
-                  isLoadingBack ? "is-loading" : ""
-                }`}
-                disabled={applicationEdit.step === 0 ? true : false}
-              >
-                Previous
-              </a>
-            </div>
-            <div className="steps-action">
-              <a
-                data-nav="next"
-                onClick={goNext}
-                className={`button is-primary ${
-                  isLoadingNext ? "is-loading" : ""
-                }`}
-                disabled={applicationEdit.step > 2 ? true : false}
-              >
-                Next
-              </a>
-            </div>
+          <div
+            className={`step-content has-text-centered ${
+              applicationEdit.step === 3 ? "is-active" : ""
+            }`}
+          >
+            <h1 className="title is-4">Confirm</h1>
+            {applicationEdit.state === "created" && (
+              <>
+                <p>
+                  I hereby confirm that I answered all questions to my best
+                  knowledge and that I want to apply.
+                </p>
+
+                <div
+                  className={`button is-primary ${
+                    submitLoading && "is-loading"
+                  }`}
+                  onClick={handleSubmitApplication}
+                >
+                  Submit
+                </div>
+              </>
+            )}
+            {applicationEdit.state === "submitted" && (
+              <>
+                <p>
+                  Your application has been submitted already and is now in
+                  review.
+                </p>
+              </>
+            )}
+            {applicationEdit.state === "reviewed" && (
+              <>
+                <p>
+                  Your application has been reviewed. You will soon know if it
+                  has been approved or revoked.
+                </p>
+              </>
+            )}
+            {applicationEdit.state === "approved" && (
+              <>
+                <p>Congratulations, your application has been approved!</p>
+              </>
+            )}
+            {applicationEdit.state === "revoked" && (
+              <>
+                <p>Unfortunately, your application has been revoked!</p>
+              </>
+            )}
+          </div>
+        </div>
+        <div className="steps-actions">
+          <div className="steps-action">
+            <a
+              data-nav="previous"
+              onClick={goBack}
+              className={`button is-light ${isLoadingBack ? "is-loading" : ""}`}
+              disabled={applicationEdit.step === 0 ? true : false}
+            >
+              Previous
+            </a>
+          </div>
+          <div className="steps-action">
+            <a
+              data-nav="next"
+              onClick={goNext}
+              className={`button is-primary ${
+                isLoadingNext ? "is-loading" : ""
+              }`}
+              disabled={applicationEdit.step > 2 ? true : false}
+            >
+              Next
+            </a>
           </div>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }
 

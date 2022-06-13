@@ -1,12 +1,12 @@
 import { API_URL } from "@/config/index";
 import cookie from "cookie";
 import qs from "qs";
-import { parseCookie } from "@/helpers/index";
 
 export default async function googleCallback(req, res) {
   if (req.method === "POST") {
     try {
       const body = JSON.parse(req.body);
+      console.log(req);
       const strapiRes = await fetch(
         `${API_URL}/api/auth/google/callback?access_token=${body.access_token}`
       );
@@ -49,7 +49,6 @@ export default async function googleCallback(req, res) {
         res.status(strapiRes.status).json({ message: data.error.message });
       }
     } catch (error) {
-      console.log(error);
       res.status(405).json({
         message:
           error?.message ?? error ?? "already registered with another provider",

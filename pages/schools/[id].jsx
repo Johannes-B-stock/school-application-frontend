@@ -1,5 +1,4 @@
 import { API_URL } from "@/config/index.js";
-import Layout from "@/components/Layout";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import Link from "next/link";
@@ -11,6 +10,18 @@ import AuthContext from "@/context/AuthContext";
 export default function SchoolDetails({ school }) {
   const { user } = useContext(AuthContext);
   const router = useRouter();
+
+  console.log(school);
+  let schoolInfo = school;
+
+  if (router.locale !== router.defaultLocale) {
+    const localizedSchool = school.localizations.data.find(
+      (schoolLoc) => schoolLoc.attributes.locale === router.locale.split("-")[0]
+    );
+    if (localizedSchool) {
+      schoolInfo = localizedSchool.attributes;
+    }
+  }
 
   const handleDelete = async (e) => {
     if (confirm("Are you sure?")) {
@@ -29,43 +40,41 @@ export default function SchoolDetails({ school }) {
     }
   };
   return (
-    <Layout>
-      <div className="content">
-        <h1>{school.name}</h1>
-        <h4 className="is-italic">
-          {school.startDate} - {school.endDate}
-        </h4>
-        <Image
-          src={school.image ? school.image : "/images/school-default.png"}
-          alt="school image"
-          width="800"
-          height="600"
-        />
+    <div className="content">
+      <h1>{schoolInfo.name}</h1>
+      <h4 className="is-italic">
+        {school.startDate} - {school.endDate}
+      </h4>
+      <Image
+        src={school.image ? school.image : "/images/school-default.png"}
+        alt="school image"
+        width="800"
+        height="600"
+      />
 
-        <p>{school.description}</p>
+      <p>{schoolInfo.description}</p>
 
-        <h3>Fees</h3>
-        <p>Application Fee: {school.applicationFee}&euro;</p>
-        <p>School Fee: {school.schoolFee}&euro;</p>
+      <h3>Fees</h3>
+      <p>Application Fee: {school.applicationFee}&euro;</p>
+      <p>School Fee: {school.schoolFee}&euro;</p>
 
-        {school.acceptingStudents && (
-          <Link href={`/schools/${school.id}/apply`}>
-            <a className="button m-1 is-primary">Apply</a>
+      {school.acceptingStudents && (
+        <Link href={`/schools/${school.id}/apply`}>
+          <a className="button m-1 is-primary">Apply</a>
+        </Link>
+      )}
+      {user && user.role?.name === "SchoolAdmin" && (
+        <>
+          {" "}
+          <Link href={`/schools/edit/${school.id}`}>
+            <a className="button m-1 is-secondary">Edit</a>
           </Link>
-        )}
-        {user && user.role?.name === "SchoolAdmin" && (
-          <>
-            {" "}
-            <Link href={`/schools/edit/${school.id}`}>
-              <a className="button m-1 is-secondary">Edit</a>
-            </Link>
-            <a onClick={handleDelete} className="button m-1 is-danger">
-              Delete
-            </a>
-          </>
-        )}
-      </div>
-    </Layout>
+          <a onClick={handleDelete} className="button m-1 is-danger">
+            Delete
+          </a>
+        </>
+      )}
+    </div>
   );
 }
 
@@ -77,7 +86,7 @@ export async function getServerSideProps({ params: { id } }) {
           $eq: true,
         },
       },
-      populate: ["image"],
+      populate: ["image", "localizations"],
     },
     {
       encodeValuesOnly: true,

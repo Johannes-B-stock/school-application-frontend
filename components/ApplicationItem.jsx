@@ -61,14 +61,10 @@ export default function ApplicationItem({ application, token }) {
   return (
     <div className={`card ${styles.applicationItem}`}>
       <div className="card-content">
-        <p className="title">
-          <Link href={`/schools/${application.school.data.id}`}>
-            <span>
-              Application for school {application.school.data.attributes.name}
-            </span>
-          </Link>
+        <p className="title is-4 has-text-centered">
+          {application.school.data.attributes.name}
         </p>
-        <p className="subtitle is-italic is-6">
+        <p className="mt-3 subtitle is-italic is-6 has-text-grey">
           school starts:{" "}
           {new Date(
             application.school.data.attributes.startDate
@@ -80,27 +76,33 @@ export default function ApplicationItem({ application, token }) {
           ).toLocaleDateString()}
         </p>
         <div className="content has-text-left">
-          <div className="columns is-1">
-            <div className="column is-3">status:</div>
-            <div className="column has-text-weight-bold">
-              {application.state ?? "unknown"}
-            </div>
+          <div className="px-4 mb-5">
+            <progress
+              className="progress is-primary my-3"
+              value={application.step}
+              max="3"
+            >
+              {application.step} / 3
+            </progress>
           </div>
-          <div className="columns is-1">
-            <div className="column is-3">
+          <div className="columns is-mobile is-1">
+            <div className="column is-4 has-text-weight-semibold">status:</div>
+            <div className="column">{application.state ?? "unknown"}</div>
+          </div>
+          <div className="columns is-mobile is-1">
+            <div className="column is-4 has-text-weight-semibold">
               <p>created:</p>
             </div>
             <div className="column">
               {new Date(application.createdAt).toLocaleDateString()}
             </div>
           </div>
-          <div className="columns is-1">
-            <div className="column is-3">updated:</div>
+          <div className="columns is-mobile is-1">
+            <div className="column is-4 has-text-weight-semibold">updated:</div>
             <div className="column">
               {new Date(application.updatedAt).toLocaleDateString()}
             </div>
           </div>
-          <br />
         </div>
       </div>
       <footer className="card-footer">

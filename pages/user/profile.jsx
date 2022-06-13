@@ -1,4 +1,3 @@
-import Layout from "@/components/Layout";
 import AuthContext from "@/context/AuthContext";
 import { useContext, useState, useEffect } from "react";
 import Image from "next/image";
@@ -17,6 +16,7 @@ import { faUpload } from "@fortawesome/free-solid-svg-icons";
 export default function ProfilePage({ token }) {
   const router = useRouter();
   const { user, setUser } = useContext(AuthContext);
+  const [loadingPicture, setLoadingPicture] = useState(false);
 
   const [userEdit, setUserEdit] = useState(user);
   const [allowPersonalEdit, setAllowPersonalEdit] = useState(false);
@@ -60,37 +60,40 @@ export default function ProfilePage({ token }) {
   };
 
   const handleFileChange = async (e) => {
-    const image = e.target.files[0];
+    try {
+      setLoadingPicture(true);
+      const image = e.target.files[0];
 
-    const formData = new FormData();
-    formData.append("files", image);
-    formData.append("ref", "plugin::users-permissions.user");
-    formData.append("refId", user.id);
-    formData.append("field", "picture");
+      const formData = new FormData();
+      formData.append("files", image);
+      formData.append("ref", "plugin::users-permissions.user");
+      formData.append("refId", user.id);
+      formData.append("field", "picture");
 
-    const res = await fetch(`${API_URL}/api/upload`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      body: formData,
-    });
+      const res = await fetch(`${API_URL}/api/upload`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData,
+      });
 
-    if (res.ok) {
-      const res = await fetch(`${API_URL}/users/me`);
       if (res.ok) {
-        const updatedUser = await res.json();
-        setUser(updatedUser);
+        const res = await fetch(`${API_URL}/users/me`);
+        if (res.ok) {
+          const updatedUser = await res.json();
+          setUser(updatedUser);
+        } else {
+          router.reload();
+        }
       } else {
-        router.reload();
-      }
-    } else {
-      try {
         const result = res.json();
         toast.error(result.message ?? res.statusText);
-      } catch (error) {
-        toast.error(res.statusText);
       }
+    } catch (error) {
+      toast.error(res.statusText);
+    } finally {
+      setLoadingPicture(false);
     }
   };
 
@@ -100,7 +103,7 @@ export default function ProfilePage({ token }) {
   };
 
   return (
-    <Layout>
+    <>
       <ProfileHeaderCard user={user} />
       <div className="columns">
         <div className="column is-3">
@@ -109,7 +112,7 @@ export default function ProfilePage({ token }) {
         <div className="column">
           <h1 className="title">Profile Page</h1>
           <div className={`card ${styles.profileCard}`}>
-            <div className="card-header">
+            <div className="card-header background-gradient-light-left">
               <div className="card-header-title">Personal Information</div>
             </div>
             <div className="card-content">
@@ -131,6 +134,7 @@ export default function ProfilePage({ token }) {
                             }
                             width="32"
                             height="32"
+                            objectFit="cover"
                           />
                         </div>
                       </div>
@@ -144,10 +148,16 @@ export default function ProfilePage({ token }) {
                             />
                             <span className="file-cta">
                               <span className="file-icon">
-                                <FontAwesomeIcon icon={faUpload} />
+                                {loadingPicture ? (
+                                  <span className="loading"></span>
+                                ) : (
+                                  <FontAwesomeIcon icon={faUpload} />
+                                )}
                               </span>
                               <span className="file-label">
-                                Upload a new picture
+                                {loadingPicture
+                                  ? "Loading picture"
+                                  : "Upload a new picture"}
                               </span>
                             </span>
                           </label>
@@ -310,7 +320,9 @@ export default function ProfilePage({ token }) {
               ) : (
                 <>
                   <div className="columns">
-                    <div className="column is-3">Avatar:</div>
+                    <div className="column is-3 has-text-weight-semibold">
+                      Avatar:
+                    </div>
                     <div className="column">
                       <div className="image is-32x32 is-rounded">
                         <Image
@@ -322,36 +334,49 @@ export default function ProfilePage({ token }) {
                           }
                           width="32"
                           height="32"
+                          objectFit="cover"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div className="columns">
-                    <div className="column is-3">User Name:</div>
+                    <div className="column is-3 has-text-weight-semibold">
+                      User Name:
+                    </div>
                     <div className="column">{user?.username}</div>
                   </div>
 
                   <div className="columns">
-                    <div className="column is-3">First Name:</div>
+                    <div className="column is-3 has-text-weight-semibold">
+                      First Name:
+                    </div>
                     <div className="column">{user?.firstname}</div>
                   </div>
 
                   <div className="columns">
-                    <div className="column is-3">Last Name:</div>
+                    <div className="column is-3 has-text-weight-semibold">
+                      Last Name:
+                    </div>
                     <div className="column">{user?.lastname}</div>
                   </div>
 
                   <div className="columns">
-                    <div className="column is-3">Email:</div>
+                    <div className="column is-3 has-text-weight-semibold">
+                      Email:
+                    </div>
                     <div className="column">{user?.email}</div>
                   </div>
                   <div className="columns">
-                    <div className="column is-3">Gender:</div>
+                    <div className="column is-3 has-text-weight-semibold">
+                      Gender:
+                    </div>
                     <div className="column">{user?.gender ?? "-"}</div>
                   </div>
                   <div className="columns">
-                    <div className="column is-3">Birthdate:</div>
+                    <div className="column is-3 has-text-weight-semibold">
+                      Birthdate:
+                    </div>
                     <div className="column">
                       {user?.birthday
                         ? new Date(user.birthday).toLocaleDateString(
@@ -361,7 +386,7 @@ export default function ProfilePage({ token }) {
                     </div>
                   </div>
                   <div
-                    className="button"
+                    className="button is-primary"
                     onClick={() => setAllowPersonalEdit(true)}
                   >
                     Edit
@@ -383,7 +408,7 @@ export default function ProfilePage({ token }) {
           </div>
         </div>
       </div>
-    </Layout>
+    </>
   );
 }
 

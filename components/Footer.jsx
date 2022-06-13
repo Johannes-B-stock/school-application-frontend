@@ -1,18 +1,22 @@
+import PageContentContext from "@/context/PageContentContext";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState } from "react";
+import { useContext, useState } from "react";
 
 export default function Footer() {
   const router = useRouter();
   const [langActive, setLangActive] = useState(false);
+  const { triggerSetPageContent } = useContext(PageContentContext);
 
   const changeLocale = (e) => {
     e.preventDefault();
-    const value = e.target.getAttribute("value");
+    const locale = e.target.getAttribute("value");
 
+    document.cookie = `NEXT_LOCALE=${locale}`;
+    triggerSetPageContent();
     const { pathname, asPath, query } = router;
     // change just the locale and maintain all other route information including href's query
-    router.push({ pathname, query }, asPath, { locale: value });
+    router.push({ pathname, query }, asPath, { locale });
     setLangActive(false);
   };
 
@@ -25,15 +29,21 @@ export default function Footer() {
       <div className="container is-max-widescreen">
         <div className="content has-text-centered">
           <nav className="level">
-            <div className="level-left">
+            <div className="level-left is-size-7">
+              <div className="level-item has-text-centered mx-3">
+                <Link href="/impressum">Impressum</Link>
+              </div>
+              <div className="level-item has-text-centered mx-3">
+                <Link href="/privacy">Datenschutz</Link>
+              </div>
+            </div>
+            <div className="level-right">
               <div className="level-item has-text-centered mx-3">
                 <Link href="/about">About</Link>
               </div>
               <div className="level-item has-text-centered mx-3">
                 <Link href="/contact">Contact</Link>
               </div>
-            </div>
-            <div className="level-right">
               <div className="level-item">
                 <div
                   className={`dropdown is-right ${langActive && "is-active"}`}

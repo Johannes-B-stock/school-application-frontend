@@ -21,6 +21,7 @@ export default function ProfileHeaderCard({ user }) {
                   "/images/defaultAvatar.png"
                 }
                 layout="fill"
+                objectFit="cover"
               />
             </figure>
           </div>

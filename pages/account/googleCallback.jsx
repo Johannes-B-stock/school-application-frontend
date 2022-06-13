@@ -36,3 +36,7 @@ export default function GoogleCallback() {
     </section>
   );
 }
+
+GoogleCallback.getLayout = function getLayout(page) {
+  return page;
+};

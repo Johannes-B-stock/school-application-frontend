@@ -1,8 +1,17 @@
-.profileHeaderCard{
-    max-width: 500px;
-    margin-bottom: 50px
+.profileHeaderCard {
+  max-width: 500px;
+  min-width: 400px;
+  margin-bottom: 50px;
 }
 
-.profileCard{
-    max-width: 650px;
+.profileCard {
+  max-width: 650px;
+}
+
+.avatar {
+  width: 130px;
+  height: 130px;
+}
+
+.avatarBox {
 }

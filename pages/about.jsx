@@ -1,9 +1,38 @@
+import ReactMarkdown from "react-markdown";
 import Layout from "@/components/Layout";
+import { API_URL } from "../config";
+import { toast } from "react-toastify";
+import NotAuthorized from "@/components/NotAuthorized";
 
-export default function About() {
+export default function About({ about, error }) {
+  if (error) {
+    if (error.status === 403) {
+      return <NotAuthorized />;
+    }
+    toast.error(error.message);
+  }
   return (
-    <Layout>
-      <h1>About this page</h1>
-    </Layout>
+    <div className="content">
+      {about && <ReactMarkdown>{about.content}</ReactMarkdown>}
+    </div>
   );
+}
+
+export async function getStaticProps({ locale }) {
+  const aboutFetch = await fetch(`${API_URL}/api/about-page?locale=${locale}`);
+
+  let error = null;
+  const aboutResult = await aboutFetch.json();
+
+  if (!aboutFetch.ok) {
+    console.log(aboutResult);
+    error = aboutResult.error;
+  }
+
+  return {
+    props: {
+      about: aboutResult.data?.attributes ?? null,
+      error: error,
+    },
+  };
 }

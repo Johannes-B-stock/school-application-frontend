@@ -1,4 +1,3 @@
-import Layout from "@/components/Layout";
 import { useRouter } from "next/router";
 import { useState, useContext } from "react";
 import styles from "@/styles/Form.module.css";
@@ -25,7 +24,7 @@ export default function EditSchoolPage({ school }) {
   const router = useRouter();
 
   const [imagePreview, setImagePreview] = useState(
-    school.image ? school.image.data.attributes.formats.thumbnail : null
+    school.image ? school.image.data?.attributes.formats.thumbnail : null
   );
   const handleUpdate = async (e) => {
     e.preventDefault();
@@ -63,229 +62,227 @@ export default function EditSchoolPage({ school }) {
   };
 
   return user && user.role?.name === "SchoolAdmin" ? (
-    <Layout>
-      <div className="content">
-        <h1>Edit School</h1>
-        <form
-          className={`${styles.createSchoolForm} form`}
-          onSubmit={handleUpdate}
-        >
-          <div className="field is-horizontal">
-            <div className="field-label">
-              <label className="label" htmlFor="name">
-                Name
+    <div className="content">
+      <h1>Edit School</h1>
+      <form
+        className={`${styles.createSchoolForm} form`}
+        onSubmit={handleUpdate}
+      >
+        <div className="field is-horizontal">
+          <div className="field-label">
+            <label className="label" htmlFor="name">
+              Name
+            </label>
+          </div>
+          <div className="field-body">
+            <div className="field">
+              <div className="control">
+                <input
+                  className="input"
+                  id="name"
+                  name="name"
+                  value={values.name}
+                  type="text"
+                  placeholder="Name of school"
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="field is-horizontal">
+          <div className="field-label is-normal">
+            <label className="label">Description</label>
+          </div>
+          <div className="field-body">
+            <div className="field">
+              <div className="control">
+                <textarea
+                  className="textarea"
+                  id="description"
+                  name="description"
+                  value={values.description}
+                  onChange={handleInputChange}
+                  placeholder="Describe the school in more detail"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="field is-horizontal">
+          <div className="field-label">
+            <label className="label">Start date</label>
+          </div>
+          <div className="field-body">
+            <div className="field">
+              <div className="control">
+                <input
+                  className="input"
+                  id="startDate"
+                  name="startDate"
+                  value={values.startDate}
+                  type="date"
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="field is-horizontal">
+          <div className="field-label">
+            <label className="label">End date</label>
+          </div>
+          <div className="field-body">
+            <div className="field">
+              <div className="control">
+                <input
+                  className="input"
+                  id="endDate"
+                  name="endDate"
+                  value={values.endDate}
+                  type="date"
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="field is-horizontal">
+          <div className="field-label">
+            <label className="label" htmlFor="name">
+              Application Fee
+            </label>
+          </div>
+          <div className="field-body">
+            <div className="field has-addons">
+              <p className="control">
+                <span className="select">
+                  <select
+                    id="currency"
+                    name="currency"
+                    value={values.currency}
+                    onChange={handleInputChange}
+                  >
+                    <option>$</option>
+                    <option>£</option>
+                    <option>€</option>
+                  </select>
+                </span>
+              </p>
+              <div className="control">
+                <input
+                  className="input"
+                  id="applicationFee"
+                  name="applicationFee"
+                  value={values.applicationFee}
+                  type="text"
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="field is-horizontal">
+          <div className="field-label">
+            <label className="label" htmlFor="name">
+              School Fee
+            </label>
+          </div>
+          <div className="field-body">
+            <div className="field has-addons">
+              <p className="control">
+                <span className="select">
+                  <select
+                    id="currency"
+                    name="currency"
+                    value={values.currency}
+                    onChange={handleInputChange}
+                  >
+                    <option>$</option>
+                    <option>£</option>
+                    <option>€</option>
+                  </select>
+                </span>
+              </p>
+              <div className="control">
+                <input
+                  className="input"
+                  id="schoolFee"
+                  name="schoolFee"
+                  value={values.schoolFee}
+                  type="text"
+                  onChange={handleInputChange}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="field is-horizontal">
+          <div className="field-label">
+            <div className="label">is public</div>
+          </div>
+          <div className="field-body">
+            <div className="field">
+              <label className="checkbox">
+                <input
+                  className="mr-3"
+                  type="checkbox"
+                  id="isPublic"
+                  name="isPublic"
+                  checked={values.isPublic}
+                  onChange={handleCheckboxChange}
+                />
+                Set this to true so it can be seen on the overview
               </label>
             </div>
-            <div className="field-body">
-              <div className="field">
-                <div className="control">
-                  <input
-                    className="input"
-                    id="name"
-                    name="name"
-                    value={values.name}
-                    type="text"
-                    placeholder="Name of school"
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            </div>
           </div>
-          <div className="field is-horizontal">
-            <div className="field-label is-normal">
-              <label className="label">Description</label>
-            </div>
-            <div className="field-body">
-              <div className="field">
-                <div className="control">
-                  <textarea
-                    className="textarea"
-                    id="description"
-                    name="description"
-                    value={values.description}
-                    onChange={handleInputChange}
-                    placeholder="Describe the school in more detail"
-                  ></textarea>
-                </div>
-              </div>
-            </div>
+        </div>
+        <div className="field is-horizontal">
+          <div className="field-label">
+            <div className="label">accepts students</div>
           </div>
-          <div className="field is-horizontal">
-            <div className="field-label">
-              <label className="label">Start date</label>
-            </div>
-            <div className="field-body">
-              <div className="field">
-                <div className="control">
-                  <input
-                    className="input"
-                    id="startDate"
-                    name="startDate"
-                    value={values.startDate}
-                    type="date"
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="field is-horizontal">
-            <div className="field-label">
-              <label className="label">End date</label>
-            </div>
-            <div className="field-body">
-              <div className="field">
-                <div className="control">
-                  <input
-                    className="input"
-                    id="endDate"
-                    name="endDate"
-                    value={values.endDate}
-                    type="date"
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="field is-horizontal">
-            <div className="field-label">
-              <label className="label" htmlFor="name">
-                Application Fee
+          <div className="field-body">
+            <div className="field">
+              <label className="checkbox">
+                <input
+                  className="mr-3"
+                  type="checkbox"
+                  id="acceptingStudents"
+                  name="acceptingStudents"
+                  checked={values.acceptingStudents}
+                  onChange={handleCheckboxChange}
+                />
+                When checked, users can apply for this school.
               </label>
             </div>
-            <div className="field-body">
-              <div className="field has-addons">
-                <p className="control">
-                  <span className="select">
-                    <select
-                      id="currency"
-                      name="currency"
-                      value={values.currency}
-                      onChange={handleInputChange}
-                    >
-                      <option>$</option>
-                      <option>£</option>
-                      <option>€</option>
-                    </select>
-                  </span>
-                </p>
-                <div className="control">
-                  <input
-                    className="input"
-                    id="applicationFee"
-                    name="applicationFee"
-                    value={values.applicationFee}
-                    type="text"
-                    onChange={handleInputChange}
-                  />
-                </div>
+          </div>
+        </div>
+        <div className="field is-horizontal is-grouped">
+          <div className="field-label"></div>
+          <div className="field-body">
+            <div className="field is-grouped">
+              <div className="control">
+                <button className="button is-link">Update</button>
+              </div>
+              <div className="control">
+                <button className="button is-link is-light">Cancel</button>
               </div>
             </div>
           </div>
-          <div className="field is-horizontal">
-            <div className="field-label">
-              <label className="label" htmlFor="name">
-                School Fee
-              </label>
-            </div>
-            <div className="field-body">
-              <div className="field has-addons">
-                <p className="control">
-                  <span className="select">
-                    <select
-                      id="currency"
-                      name="currency"
-                      value={values.currency}
-                      onChange={handleInputChange}
-                    >
-                      <option>$</option>
-                      <option>£</option>
-                      <option>€</option>
-                    </select>
-                  </span>
-                </p>
-                <div className="control">
-                  <input
-                    className="input"
-                    id="schoolFee"
-                    name="schoolFee"
-                    value={values.schoolFee}
-                    type="text"
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-          <div className="field is-horizontal">
-            <div className="field-label">
-              <div className="label">is public</div>
-            </div>
-            <div className="field-body">
-              <div className="field">
-                <label className="checkbox">
-                  <input
-                    className="mr-3"
-                    type="checkbox"
-                    id="isPublic"
-                    name="isPublic"
-                    checked={values.isPublic}
-                    onChange={handleCheckboxChange}
-                  />
-                  Set this to true so it can be seen on the overview
-                </label>
-              </div>
-            </div>
-          </div>
-          <div className="field is-horizontal">
-            <div className="field-label">
-              <div className="label">accepts students</div>
-            </div>
-            <div className="field-body">
-              <div className="field">
-                <label className="checkbox">
-                  <input
-                    className="mr-3"
-                    type="checkbox"
-                    id="acceptingStudents"
-                    name="acceptingStudents"
-                    checked={values.acceptingStudents}
-                    onChange={handleCheckboxChange}
-                  />
-                  When checked, users can apply for this school.
-                </label>
-              </div>
-            </div>
-          </div>
-          <div className="field is-horizontal is-grouped">
-            <div className="field-label"></div>
-            <div className="field-body">
-              <div className="field is-grouped">
-                <div className="control">
-                  <button className="button is-link">Update</button>
-                </div>
-                <div className="control">
-                  <button className="button is-link is-light">Cancel</button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </form>
-        <h2>Image Preview</h2>
-        {imagePreview ? (
-          <Image
-            src={imagePreview.url}
-            alt="image preview"
-            height="200"
-            width="300"
-          />
-        ) : (
-          <p>No image uploaded</p>
-        )}
-      </div>
-    </Layout>
+        </div>
+      </form>
+      <h2>Image Preview</h2>
+      {imagePreview ? (
+        <Image
+          src={imagePreview.url}
+          alt="image preview"
+          height="200"
+          width="300"
+        />
+      ) : (
+        <p>No image uploaded</p>
+      )}
+    </div>
   ) : (
     <NotAuthorized />
   );

@@ -4,6 +4,8 @@ import { useRouter } from "next/router";
 export default function ProfileSidebar() {
   const router = useRouter();
 
+  console.log(router.pathname);
+
   return (
     <aside className="menu">
       <ul className="menu-list">
@@ -12,7 +14,7 @@ export default function ProfileSidebar() {
           <Link href="/user/profile">
             <a
               className={`${
-                router.pathname.endsWith("profile") ? "is-active" : ""
+                router.pathname === "/user/profile" ? "is-active" : ""
               }`}
             >
               Profile
@@ -21,10 +23,26 @@ export default function ProfileSidebar() {
         </li>
         <p className="menu-label">Schools</p>
         <li>
-          <Link href="/user/applications">Applications</Link>
+          <Link href="/user/applications">
+            <a
+              className={`${
+                router.pathname === "/user/applications" ? "is-active" : ""
+              }`}
+            >
+              Applications
+            </a>
+          </Link>
         </li>
         <li>
-          <a>Settings</a>
+          <Link href="/user/settings">
+            <a
+              className={`${
+                router.pathname === "/user/settings" ? "is-active" : ""
+              }`}
+            >
+              Settings
+            </a>
+          </Link>
         </li>
       </ul>
     </aside>

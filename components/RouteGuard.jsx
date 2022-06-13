@@ -24,7 +24,9 @@ export default function RouteGuard({ children }) {
       !publicPaths.some(
         (publicPath) =>
           publicPath === path ||
-          (publicPath.endsWith("/") && path.includes(publicPath))
+          (publicPath.length > 1 &&
+            publicPath.endsWith("/") &&
+            path.includes(publicPath))
       )
     ) {
       setAuthorized(false);

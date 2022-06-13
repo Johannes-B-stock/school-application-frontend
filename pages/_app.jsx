@@ -8,16 +8,48 @@ import { PageContentProvider } from "@/context/PageContentContext";
 import RouteGuard from "@/components/RouteGuard";
 import CookieConsent from "react-cookie-consent";
 import { ToastContainer } from "react-toastify";
+import { useRouter } from "next/router";
+import NProgress from "nprogress";
+import "../styles/NProgress.scss";
+import { useEffect } from "react";
+import Layout from "@/components/Layout";
 
 config.autoAddCss = false;
 
 export default function MyApp({ Component, pageProps }) {
+  const router = useRouter();
+
+  NProgress.configure({ showSpinner: false });
+
+  useEffect(() => {
+    const handleStart = () => {
+      NProgress.start();
+    };
+    const handleStop = () => {
+      NProgress.done();
+    };
+
+    router.events.on("routeChangeStart", handleStart);
+    router.events.on("routeChangeComplete", handleStop);
+    router.events.on("routeChangeError", handleStop);
+
+    return () => {
+      router.events.off("routeChangeStart", handleStart);
+      router.events.off("routeChangeComplete", handleStop);
+      router.events.off("routeChangeError", handleStop);
+    };
+  }, [router]);
+
+  const defaultLayout = (page) => {
+    return <Layout>{page}</Layout>;
+  };
+
+  const getLayout = Component.getLayout || defaultLayout;
+
   return (
     <PageContentProvider>
       <AuthProvider>
-        <RouteGuard>
-          <Component {...pageProps} />
-        </RouteGuard>
+        <RouteGuard>{getLayout(<Component {...pageProps} />)}</RouteGuard>
       </AuthProvider>
 
       <ToastContainer />

@@ -1,8 +1,10 @@
 import getPageContent from "lib/pageContent";
+import { parseCookie } from "@/helpers/index";
 
 export default async function pageContent(req, res) {
   if (req.method === "GET") {
-    const pageContent = (await getPageContent()) ?? pageContentDefault;
+    const locale = parseCookie(req).NEXT_LOCALE ?? "en";
+    const pageContent = (await getPageContent(locale)) ?? pageContentDefault;
 
     res.status(200).json({ pageContent });
   } else {

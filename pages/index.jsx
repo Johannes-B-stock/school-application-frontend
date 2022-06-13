@@ -1,29 +1,25 @@
-import Layout from "@/components/Layout";
 import SchoolItem from "@/components/SchoolItem";
 import { API_URL } from "@/config/index";
-import getPageContent from "lib/pageContent";
 import qs from "qs";
 
-export default function HomePage({ schools, pageContent }) {
+export default function HomePage({ schools }) {
   return (
-    <Layout pageContent={pageContent}>
-      <div className="content">
-        <h1>Upcoming Schools</h1>
-        {schools.length === 0 && <h3>No schools to apply at the moment</h3>}
-        <div className="columns is-multiline is-variable">
-          {schools.map((school) => (
-            <div
-              key={school.id}
-              className={`column ${
-                schools.length > 3 && "is-4-tablet is-3-desktop"
-              }`}
-            >
-              <SchoolItem key={school.id} school={school} />
-            </div>
-          ))}
-        </div>
+    <div className="content">
+      <h1>Upcoming Schools</h1>
+      {schools.length === 0 && <h3>No schools to apply at the moment</h3>}
+      <div className="columns is-multiline is-variable">
+        {schools.map((school) => (
+          <div
+            key={school.id}
+            className={`column ${
+              schools.length > 3 && "is-4-tablet is-3-desktop"
+            }`}
+          >
+            <SchoolItem key={school.id} school={school} />
+          </div>
+        ))}
       </div>
-    </Layout>
+    </div>
   );
 }
 
@@ -34,7 +30,7 @@ export async function getServerSideProps() {
         $eq: true,
       },
     },
-    populate: "image",
+    populate: ["image", "localizations"],
     sort: ["startDate", "name"],
   });
   const res = await fetch(`${API_URL}/api/schools?${query}`);
@@ -44,9 +40,7 @@ export async function getServerSideProps() {
     ...data.attributes,
     image: data.attributes.image?.data?.attributes.formats.small.url ?? null,
   }));
-
-  const pageContent = await getPageContent();
   return {
-    props: { schools, pageContent },
+    props: { schools },
   };
 }

@@ -51,95 +51,96 @@ export default function Register() {
     setIsLoading(false);
   };
   return (
-    <Layout title="User registration">
-      <div className="columns is-centered has-text-centered ">
-        <div className="column is-5 box p-5">
-          <h1 className="title is-4">Register</h1>
-          <p className="description">Register now to apply for a school.</p>
-          <form onSubmit={onSubmit}>
-            <div className="field">
-              <div className="control">
-                <input
-                  className="input is-medium"
-                  type="text"
-                  placeholder="Name"
-                  id="name"
-                  name="name"
-                  value={formData.name}
-                  onChange={onChange}
-                />
-              </div>
+    <div className="columns is-centered has-text-centered ">
+      <div className="column is-5 box p-5">
+        <h1 className="title is-4">Register</h1>
+        <p className="description">Register now to apply for a school.</p>
+        <form onSubmit={onSubmit}>
+          <div className="field">
+            <div className="control">
+              <input
+                className="input is-medium"
+                type="text"
+                placeholder="Name"
+                id="name"
+                name="name"
+                value={formData.name}
+                onChange={onChange}
+              />
             </div>
-            <div className="field">
-              <div className="control">
-                <input
-                  className="input is-medium"
-                  type="email"
-                  placeholder="Email"
-                  id="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={onChange}
-                />
-              </div>
+          </div>
+          <div className="field">
+            <div className="control">
+              <input
+                className="input is-medium"
+                type="email"
+                placeholder="Email"
+                id="email"
+                name="email"
+                value={formData.email}
+                onChange={onChange}
+              />
             </div>
-            <div className="field">
-              <div className="control">
-                <input
-                  className="input is-medium"
-                  type="password"
-                  placeholder="Password"
-                  id="password"
-                  autoComplete="on"
-                  name="password"
-                  value={formData.password}
-                  onChange={onChange}
-                />
-              </div>
+          </div>
+          <div className="field">
+            <div className="control">
+              <input
+                className="input is-medium"
+                type="password"
+                placeholder="Password"
+                id="password"
+                autoComplete="on"
+                name="password"
+                value={formData.password}
+                onChange={onChange}
+              />
             </div>
-            <div className="field">
-              <div className="control">
-                <input
-                  className="input is-medium"
-                  type="password"
-                  placeholder="Confirm Password"
-                  id="confirmPassword"
-                  autoComplete="on"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={onChange}
-                />
-              </div>
+          </div>
+          <div className="field">
+            <div className="control">
+              <input
+                className="input is-medium"
+                type="password"
+                placeholder="Confirm Password"
+                id="confirmPassword"
+                autoComplete="on"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={onChange}
+              />
             </div>
-            <button
-              className={`button is-block is-primary is-fullwidth is-medium ${
-                isLoading && "is-loading"
-              }`}
-            >
-              Submit
-            </button>
-            <br />
-            <small>
-              <em>
-                Already have an account?{" "}
-                <Link href="/account/login">Login</Link>
-              </em>
-            </small>
-          </form>
-          <br />
-          <div className="separator has-text-grey is-italic">or</div>
-          <br />
+          </div>
           <button
-            className="button is-light is-fullwidth is-medium"
-            onClick={() => router.push(`${API_URL}/api/connect/google`)}
+            className={`button is-block is-primary is-fullwidth is-medium ${
+              isLoading && "is-loading"
+            }`}
           >
-            <span className="icon">
-              <FontAwesomeIcon icon={faGoogle} />
-            </span>
-            <span>Login with Google</span>
+            Submit
           </button>
-        </div>
+          <br />
+          <small>
+            <em>
+              Already have an account? <Link href="/account/login">Login</Link>
+            </em>
+          </small>
+        </form>
+        <br />
+        <div className="separator has-text-grey is-italic">or</div>
+        <br />
+        <button
+          className="button is-light is-fullwidth is-medium"
+          onClick={() => router.push(`${API_URL}/api/connect/google`)}
+        >
+          <span className="icon">
+            <FontAwesomeIcon icon={faGoogle} />
+          </span>
+          <span>Login with Google</span>
+        </button>
       </div>
-    </Layout>
+    </div>
   );
 }
+
+Register.getLayout = function getLayout(page) {
+  return <Layout title="User registration">{page}</Layout>;
+};

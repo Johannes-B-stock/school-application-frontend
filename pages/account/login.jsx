@@ -36,70 +36,72 @@ export default function Login() {
   };
 
   return (
-    <Layout title="Login to page">
-      <div className="columns is-centered has-text-centered ">
-        <div className="column is-5 box p-5">
-          <h1 className="title is-4">Login</h1>
-          <p className="description">You have to login to see this.</p>
-          <form onSubmit={onSubmit}>
-            <div className="field">
-              <div className="control">
-                <input
-                  className="input is-medium"
-                  type="email"
-                  placeholder="Email"
-                  id="email"
-                  name="email"
-                  autoComplete="on"
-                  value={formData.email}
-                  onChange={onChange}
-                />
-              </div>
+    <div className="columns is-centered has-text-centered ">
+      <div className="column is-5 box p-5">
+        <h1 className="title is-4">Login</h1>
+        <p className="description">You have to login to see this.</p>
+        <form onSubmit={onSubmit}>
+          <div className="field">
+            <div className="control">
+              <input
+                className="input is-medium"
+                type="email"
+                placeholder="Email"
+                id="email"
+                name="email"
+                autoComplete="on"
+                value={formData.email}
+                onChange={onChange}
+              />
             </div>
-            <div className="field">
-              <div className="control">
-                <input
-                  className="input is-medium"
-                  type="password"
-                  placeholder="Password"
-                  id="password"
-                  name="password"
-                  autoComplete="on"
-                  value={formData.password}
-                  onChange={onChange}
-                />
-              </div>
+          </div>
+          <div className="field">
+            <div className="control">
+              <input
+                className="input is-medium"
+                type="password"
+                placeholder="Password"
+                id="password"
+                name="password"
+                autoComplete="on"
+                value={formData.password}
+                onChange={onChange}
+              />
             </div>
-            <button
-              className={`button is-block is-primary is-fullwidth is-medium ${
-                isLoading && "is-loading"
-              }`}
-              type="submit"
-            >
-              Submit
-            </button>
-            <br />
-            <small>
-              <em>
-                Don&apos;t have an account?{" "}
-                <Link href="/account/register">Register</Link>
-              </em>
-            </small>
-          </form>
-          <br />
-          <div className="separator has-text-grey is-italic">or</div>
-          <br />
+          </div>
           <button
-            className="button is-light is-fullwidth is-medium"
-            onClick={() => router.push(`${API_URL}/api/connect/google`)}
+            className={`button is-block is-primary is-fullwidth is-medium ${
+              isLoading && "is-loading"
+            }`}
+            type="submit"
           >
-            <span className="icon">
-              <FontAwesomeIcon icon={faGoogle} />
-            </span>
-            <span>Login with Google</span>
+            Submit
           </button>
-        </div>
+          <br />
+          <small>
+            <em>
+              Don&apos;t have an account?{" "}
+              <Link href="/account/register">Register</Link>
+            </em>
+          </small>
+        </form>
+        <br />
+        <div className="separator has-text-grey is-italic">or</div>
+        <br />
+        <button
+          className="button is-light is-fullwidth is-medium"
+          onClick={() => router.push(`${API_URL}/api/connect/google`)}
+        >
+          <span className="icon">
+            <FontAwesomeIcon icon={faGoogle} />
+          </span>
+          <span>Login with Google</span>
+        </button>
       </div>
-    </Layout>
+    </div>
   );
 }
+
+Login.getLayout = function getLayout(page) {
+  return <Layout title="Login to page">{page}</Layout>;
+};

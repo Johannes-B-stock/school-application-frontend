@@ -1,4 +1,5 @@
 import { API_URL } from "@/config/index";
+import { parseCookie } from "@/helpers/index";
 import cookie from "cookie";
 
 export default async function register(req, res) {

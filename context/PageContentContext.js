@@ -3,17 +3,17 @@ import { NEXT_URL } from "../config";
 
 const PageContentContext = createContext();
 
-export const PageContentProvider = ({ children }) => {
+export const PageContentProvider = ({ children, locale }) => {
   const [pageContent, setPageContent] = useState(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   useEffect(() => {
-    getPageContent();
-  }, []);
+    triggerSetPageContent(locale);
+  }, [locale]);
 
-  const getPageContent = async () => {
+  const triggerSetPageContent = async (locale) => {
     try {
-      const res = await fetch(`${NEXT_URL}/api/page-content`);
+      const res = await fetch(`${NEXT_URL}/api/page-content?locale=${locale}`);
       const data = await res.json();
       if (res.ok) {
         setPageContent(data.pageContent);
@@ -26,7 +26,7 @@ export const PageContentProvider = ({ children }) => {
   };
 
   return (
-    <PageContentContext.Provider value={{ pageContent }}>
+    <PageContentContext.Provider value={{ pageContent, triggerSetPageContent }}>
       {!loadingInitial && children}
     </PageContentContext.Provider>
   );

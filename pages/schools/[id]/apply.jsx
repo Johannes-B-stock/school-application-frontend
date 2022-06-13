@@ -2,87 +2,99 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import qs from "qs";
 import { API_URL } from "@/config/index";
-import Layout from "@/components/Layout";
 import cookie from "cookie";
 import { toast } from "react-toastify";
 import ReactMarkdown from "react-markdown";
+import { useState } from "react";
 
 export default function ApplyPage({ school, questions, token }) {
+  const [isLoading, setIsLoading] = useState(false);
+
   const answers = questions.map((q) => ({ ...q, answer: "" }));
 
   const router = useRouter();
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    try {
+      e.preventDefault();
+      if (isLoading) {
+        return;
+      }
+      setIsLoading(true);
 
-    const res = await fetch(`${API_URL}/api/school-applications`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        data: {
-          school: school.id,
+      const res = await fetch(`${API_URL}/api/school-applications`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      }),
-    });
-    const application = await res.json();
-    if (!res.ok) {
-      toast.error(
-        application.error?.message ?? res.statusText ?? "Something went wrong."
-      );
-    } else {
-      await Promise.all(
-        answers.map(async (answer) => {
-          const answerRes = await fetch(`${API_URL}/api/answers`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              data: {
-                school_application: application.data.id,
-                question: answer.id,
-                answer: answer.answer,
+        body: JSON.stringify({
+          data: {
+            school: school.id,
+          },
+        }),
+      });
+      const application = await res.json();
+      if (!res.ok) {
+        toast.error(
+          application.error?.message ??
+            res.statusText ??
+            "Something went wrong."
+        );
+      } else {
+        await Promise.all(
+          answers.map(async (answer) => {
+            const answerRes = await fetch(`${API_URL}/api/answers`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${token}`,
               },
-            }),
-          });
-          const answerResult = await answerRes.json();
+              body: JSON.stringify({
+                data: {
+                  school_application: application.data.id,
+                  question: answer.id,
+                  answer: answer.answer,
+                },
+              }),
+            });
+            const answerResult = await answerRes.json();
 
-          if (!answerRes.ok) {
-            toast.error(answerResult.error?.message ?? answerRes.statusText);
-          }
-        })
-      );
+            if (!answerRes.ok) {
+              toast.error(answerResult.error?.message ?? answerRes.statusText);
+            }
+          })
+        );
 
-      router.push(`/applications/${application.data.id}`);
+        router.push(`/applications/${application.data.id}`);
+      }
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <Layout>
-      <div className="content">
-        <ReactMarkdown>{school?.preApplicationText}</ReactMarkdown>
-        <div className="field is-grouped">
-          <div className="control">
-            <button
-              type="submit is-primary"
-              className="button"
-              onClick={handleSubmit}
-            >
-              Start Application
-            </button>
-          </div>
-          <div className="control">
-            <Link href="/">
-              <a className="button">Cancel</a>
-            </Link>
-          </div>
+    <div className="content">
+      <ReactMarkdown>{school?.preApplicationText}</ReactMarkdown>
+      <div className="field is-grouped">
+        <div className="control">
+          <button
+            type="submit"
+            className={`button is-primary ${
+              isLoading && "is-loading is-disabled"
+            }`}
+            onClick={handleSubmit}
+          >
+            Start Application
+          </button>
+        </div>
+        <div className="control">
+          <Link href="/">
+            <a className="button">Cancel</a>
+          </Link>
         </div>
       </div>
-    </Layout>
+    </div>
   );
 }
 

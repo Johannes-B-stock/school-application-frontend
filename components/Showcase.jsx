@@ -1,9 +1,13 @@
 import styles from "@/styles/Showcase.module.css";
 import PageContentContext from "@/context/PageContentContext";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
+import { useRouter } from "next/router";
 
 export default function Showcase() {
   const { pageContent } = useContext(PageContentContext);
+  const { locale } = useRouter();
+
+  useEffect(() => {}, [locale, pageContent]);
 
   return (
     pageContent && (

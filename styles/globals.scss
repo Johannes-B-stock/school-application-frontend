@@ -1,6 +1,67 @@
 @charset "utf-8";
 @import "../node_modules/bulma/sass/utilities/initial-variables.sass";
-
+$navbar-item-img-max-height: 2.5rem;
 $navbar-breakpoint: $tablet;
-@import '../node_modules/bulma/bulma.sass';
+@import "../node_modules/bulma/bulma.sass";
 // @import "../node_modules/bulma-steps/bulma-steps.sass";
+
+// @import "../node_modules/bulma-prefers-dark/bulma-prefers-dark.sass";
+
+.loading {
+  @include loader;
+}
+
+.avatarInner {
+  border: 1px solid $white !important;
+  cursor: pointer;
+  border-radius: 50%;
+}
+
+.avatarOuter {
+  border: 2px solid $white !important;
+  border-radius: 50%;
+  height: 42px;
+  cursor: pointer;
+}
+
+.avatarOuter:hover {
+  border: 2px solid $primary !important;
+}
+
+.backgroundGradient {
+  background-image: linear-gradient(to bottom, $info 0%, rgba(0, 0, 0, 0) 35%);
+}
+
+.background-gradient-light-left {
+  background-image: linear-gradient(to right, $primary-light, $info-light);
+}
+
+.background-gradient-primary-right {
+  background-image: linear-gradient(to right, $primary, $primary-light);
+}
+
+.background-gradient-link-right {
+  background-image: linear-gradient(to right, $link, $link-light);
+}
+
+.background-gradient-info-right {
+  background-image: linear-gradient(to right, $info, $info-light);
+}
+
+$collapse-transition-speed: 0.4s !default;
+$collapse-transition-style: ease !default;
+$message-body-padding: 1.25em 1.5em !default;
+
+.is-collapsible {
+  transition: height $collapse-transition-speed $collapse-transition-style;
+  transition: padding 0.3s $collapse-transition-style;
+  //   transition: all 1s ease;
+}
+
+.is-collapsible.is-collapsed {
+  height: 0;
+  overflow-y: hidden;
+  padding: 0;
+  transition: height $collapse-transition-speed $collapse-transition-style;
+  transition: padding 0.3s $collapse-transition-style;
+}

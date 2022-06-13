@@ -277,27 +277,30 @@ export default function AddressEdit({
   ) : (
     <>
       <div className="columns">
-        <div className="column is-3">Street:</div>
+        <div className="column is-3 has-text-weight-semibold">Street:</div>
         <div className="column is-5">{addressEdit?.street}</div>
         <div className="column is-2">{addressEdit?.number}</div>
       </div>
       <div className="columns">
-        <div className="column is-3">City:</div>
+        <div className="column is-3 has-text-weight-semibold">City:</div>
         <div className="column">{addressEdit?.city}</div>
       </div>
       <div className="columns">
-        <div className="column is-3">Postal Code:</div>
+        <div className="column is-3 has-text-weight-semibold">Postal Code:</div>
         <div className="column">{addressEdit?.postalCode}</div>
       </div>
 
       <div className="columns">
-        <div className="column is-3">Country:</div>
+        <div className="column is-3 has-text-weight-semibold">Country:</div>
         <div className="column">
           {countries.getName(addressEdit?.country, router.locale.split("-")[0])}
         </div>
       </div>
       {!noButtons && (
-        <div className="button" onClick={() => setAllowAddressEdit(true)}>
+        <div
+          className="button is-primary"
+          onClick={() => setAllowAddressEdit(true)}
+        >
           Edit
         </div>
       )}

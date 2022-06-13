@@ -1,5 +1,4 @@
 import GoogleSpinner from "@/components/GoogleSpinner";
-import Layout from "@/components/Layout";
 import { API_URL } from "@/config/index";
 import * as qs from "qs";
 import { useState } from "react";
@@ -86,7 +85,7 @@ export default function ReferencePage({ reference }) {
   };
 
   return (
-    <Layout>
+    <>
       <div className="title is-4">Reference</div>
       <br />
       <div className="subtitle is-5">Hello {reference.attributes.name}</div>
@@ -142,7 +141,7 @@ export default function ReferencePage({ reference }) {
           )}
         </div>
       </form>
-    </Layout>
+    </>
   );
 }
 

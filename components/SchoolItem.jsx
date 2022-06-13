@@ -1,8 +1,22 @@
 import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/SchoolItem.module.css";
+import { useRouter } from "next/router";
 
 export default function SchoolItem({ school }) {
+  const router = useRouter();
+  const locale = router.locale.split("-")[0];
+  const useLocale = router.locale !== router.defaultLocale;
+  let schoolInfo = school;
+  if (useLocale) {
+    const localizedSchool = school.localizations.data.find(
+      (schoolLocalization) => schoolLocalization.attributes.locale === locale
+    );
+    if (localizedSchool) {
+      schoolInfo = localizedSchool.attributes;
+    }
+  }
+
   return (
     <div className={`card ${styles.schoolItem}`}>
       <div className="card-image">
@@ -14,13 +28,13 @@ export default function SchoolItem({ school }) {
         />
       </div>
       <div className="card-content">
-        <p className="title">{school.name}</p>
+        <p className="title">{schoolInfo.name}</p>
         <p className="subtitle is-italic is-6">
           <time dateTime="2016-1-1">{school.startDate}</time> -
           <time>{school.endDate}</time>
         </p>
         <div className="content">
-          {school.description}
+          {schoolInfo.description}
           <br />
         </div>
       </div>
