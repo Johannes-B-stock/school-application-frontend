@@ -4,16 +4,23 @@ import {
   faAngleDown,
   faAngleUp,
   faCheck,
+  faTrash,
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getApplicationDetails } from "lib/application";
+import { getApplicationDetails, updateState } from "lib/application";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import GoogleSpinner from "@/components/GoogleSpinner";
 import { getReferenceAnswers } from "lib/references";
+import { getUser } from "lib/user";
+import Image from "next/image";
+import countries from "i18n-iso-countries";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import { addStudentToSchool } from "lib/school";
 
-export default function ApplicationAdminView({ application, token }) {
+export default function ApplicationAdminView({ application, token, user }) {
   const [showReference1, setShowReference1] = useState(false);
   const [showReference2, setShowReference2] = useState(false);
   const [loadReference1Answers, setLoadReference1Answers] = useState(false);
@@ -29,6 +36,9 @@ export default function ApplicationAdminView({ application, token }) {
     setShowReference2(!showReference2);
   };
 
+  console.log(user);
+
+  const router = useRouter();
   const reference1 = application.attributes.reference1.data;
   const reference2 = application.attributes.reference2.data;
 
@@ -47,6 +57,64 @@ export default function ApplicationAdminView({ application, token }) {
     }
   };
 
+  const deleteApplication = async (id) => {
+    if (
+      !confirm(
+        "Do you really want to delete this application? There is no going back..."
+      )
+    )
+      return;
+    const deleteFetch = await fetch(
+      `${API_URL}/api/school-applications/${id}`,
+      {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    if (deleteFetch.ok) {
+      toast.success("Application was successful deleted");
+      router.push("admin/dashboard");
+    } else {
+      const result = await deleteFetch.json();
+      toast.error("Error while deleting application: " + result.error.message);
+    }
+  };
+
+  const revokeApplication = async (application) => {
+    if (application.attributes.state === "revoked") {
+      return;
+    }
+    await changeState(application, "revoked");
+  };
+
+  const approveApplication = async (application) => {
+    try {
+      if (application.attributes.state === "approved") {
+        return;
+      }
+      await changeState(application, "approved");
+      await addStudentToSchool(application, token);
+    } catch (error) {
+      toast.error(error.message ?? error);
+    }
+  };
+
+  async function changeState(application, desiredState) {
+    try {
+      await updateState(application.id, token, desiredState);
+      toast.success(`Application was successful ${desiredState}`);
+      router.reload();
+    } catch (err) {
+      toast.error(
+        "Error while changing state of application: " + err?.message ?? err
+      );
+    }
+  }
+
   return (
     <section className="section has-background-light">
       <h3 className="title is-3">
@@ -57,49 +125,125 @@ export default function ApplicationAdminView({ application, token }) {
         <div className="column is-7">
           <div className="card my-5">
             <header className="card-header">
+              <p className="card-header-title has-background-danger-light">
+                General
+              </p>
+            </header>
+            <div className="card-content">
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-bold">
+                  Applied For:
+                </div>
+                <div className="column">
+                  <Link
+                    href={`/admin/schools/${application.attributes.school.data.id}`}
+                  >
+                    {application.attributes.school.data.attributes.name}
+                  </Link>
+                </div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-bold">Status:</div>
+                <div className="column">{application.attributes.state}</div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-bold">
+                  Progress:
+                </div>
+                <div className="column is-7 has-text-weight-bold">
+                  <progress
+                    className="progress is-primary my-2"
+                    value={application.attributes.step}
+                    max="3"
+                  >
+                    {application.attributes.step} / 3
+                  </progress>
+                </div>
+              </div>
+              <div className="columns-is-mobile">
+                <div className="column">
+                  <div
+                    className={`button mx-1 is-success`}
+                    title="Approve"
+                    disabled={application.attributes.state === "approved"}
+                    onClick={() => approveApplication(application)}
+                  >
+                    <span className="icon">
+                      <FontAwesomeIcon icon={faCheck} />
+                    </span>
+                  </div>
+                  <div
+                    className="button mx-1 is-warning"
+                    title="Revoke"
+                    disabled={application.attributes.state === "revoked"}
+                    onClick={() => revokeApplication(application)}
+                  >
+                    <FontAwesomeIcon icon={faXmark} />
+                  </div>
+
+                  <div
+                    className="button mx-1 is-danger"
+                    title="Delete"
+                    onClick={() => deleteApplication(application.id)}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card my-5">
+            <header className="card-header">
               <p className="card-header-title has-background-primary-light">
                 User
               </p>
             </header>
             <div className="card-content">
               <div className="columns is-mobile">
+                <div className="column is-6 has-text-centered is-centered">
+                  <figure className="image is-128x128 is-rounded">
+                    <Image
+                      className="image is-128x128 is-rounded"
+                      alt="Profile"
+                      src={
+                        user.picture?.formats.small.url ??
+                        "/images/defaultAvatar.png"
+                      }
+                      layout="fill"
+                      objectFit="cover"
+                    />
+                  </figure>
+                </div>
+              </div>
+              <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   User name:
                 </div>
-                <div className="column">
-                  {application.attributes.user.data.attributes.username}
-                </div>
+                <div className="column">{user.username}</div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   First name:
                 </div>
-                <div className="column">
-                  {application.attributes.user.data.attributes.firstname}
-                </div>
+                <div className="column">{user.firstname}</div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   Last name:
                 </div>
-                <div className="column">
-                  {application.attributes.user.data.attributes.lastname}
-                </div>
+                <div className="column">{user.lastname}</div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">Gender:</div>
-                <div className="column">
-                  {application.attributes.user.data.attributes.gender}
-                </div>
+                <div className="column">{user.gender}</div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   Birthday:
                 </div>
                 <div className="column">
-                  {new Date(
-                    application.attributes.user.data.attributes.birthday
-                  ).toLocaleDateString()}
+                  {new Date(user.birthday).toLocaleDateString()}
                 </div>
               </div>
             </div>
@@ -111,7 +255,39 @@ export default function ApplicationAdminView({ application, token }) {
                 Address
               </p>
             </header>
-            <div className="card-content"></div>
+            <div className="card-content">
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-semibold">
+                  Street:
+                </div>
+                <div className="column is-5">{user.address?.street}</div>
+                <div className="column is-2">{user.address?.number}</div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-semibold">
+                  City:
+                </div>
+                <div className="column">{user.address?.city}</div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-semibold">
+                  Postal Code:
+                </div>
+                <div className="column">{user.address?.postalCode}</div>
+              </div>
+
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-semibold">
+                  Country:
+                </div>
+                <div className="column">
+                  {countries.getName(
+                    user.address?.country,
+                    router.locale.split("-")[0]
+                  )}
+                </div>
+              </div>
+            </div>
           </div>
         </div>
         <div className="column">
@@ -380,9 +556,17 @@ export async function getServerSideProps({ req, params: { id } }) {
     "user",
   ]);
 
+  const user = await getUser(application.data.attributes.user.data.id, token, [
+    "address",
+    "picture",
+    "emergency_address",
+    "schools",
+  ]);
+  console.log(user);
   return {
     props: {
       application: application.data,
+      user: user,
       token,
     },
   };

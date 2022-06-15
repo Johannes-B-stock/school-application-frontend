@@ -21,8 +21,8 @@ import Image from "next/image";
 import Pagination from "@/components/Pagination";
 import Link from "next/link";
 import _ from "lodash";
-import { addUserToSchool, updateState } from "lib/application";
-import { getPaginatedApplications } from "lib/school";
+import { updateState } from "lib/application";
+import { addStudentToSchool, getPaginatedApplications } from "lib/school";
 import { getUser } from "lib/user";
 
 export default function AdminDashboard({ schools, error, token }) {
@@ -66,12 +66,11 @@ export default function AdminDashboard({ schools, error, token }) {
       const users = [];
       await Promise.all(
         condensedUserIds.map(async (userId) => {
-          const userFetch = await getUser(userId, token, ["picture"]);
-          const userResult = await userFetch.json();
-          if (userFetch.ok) {
-            users.push(userResult);
-          } else {
-            console.log(userResult.error.message);
+          try {
+            const user = await getUser(userId, token, ["picture"]);
+            users.push(user);
+          } catch (error) {
+            console.log(error.message ?? error);
           }
         })
       );
@@ -125,7 +124,7 @@ export default function AdminDashboard({ schools, error, token }) {
   const approveApplication = async (application) => {
     try {
       await changeState(application, "approved");
-      await addUserToSchool(application, token);
+      await addStudentToSchool(application, token);
     } catch (error) {
       toast.error(error.message ?? error);
     }

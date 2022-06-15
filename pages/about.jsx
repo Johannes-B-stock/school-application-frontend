@@ -34,5 +34,6 @@ export async function getStaticProps({ locale }) {
       about: aboutResult.data?.attributes ?? null,
       error: error,
     },
+    revalidate: 1,
   };
 }

@@ -16,6 +16,8 @@ export default function RouteGuard({ children }) {
       "/about",
       "/contact",
       "/references/",
+      "/impressum",
+      "/privacy",
       "/404",
     ];
     const path = router.asPath.split("?")[0];

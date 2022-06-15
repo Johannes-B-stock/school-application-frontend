@@ -8,8 +8,8 @@ export default function NotAuthorized() {
     router.back();
   };
   return (
-    <Layout title="Not Authorized">
-      <section className="hero is-danger">
+    <section className="section is-medium">
+      <div className="hero is-danger">
         <div className="hero-body">
           <p className="title">403 Not authorized</p>
           <p className="subtitle">
@@ -21,7 +21,7 @@ export default function NotAuthorized() {
             </a>
           </p>
         </div>
-      </section>
-    </Layout>
+      </div>
+    </section>
   );
 }

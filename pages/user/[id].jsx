@@ -78,21 +78,10 @@ UserView.getLayout = function getLayout(page) {
 export async function getServerSideProps({ req, params: { id } }) {
   const { token } = parseCookie(req);
 
-  const userFetch = await getUser(id, token, ["picture", "role"]);
-
-  const userResult = await userFetch.json();
-  let user = null;
-  let error = null;
-  if (userFetch.ok) {
-    user = userResult;
-  } else {
-    error = userResult.error;
+  try {
+    const user = await getUser(id, token, ["picture", "role"]);
+    return { props: { user, error: null } };
+  } catch (error) {
+    return { props: { user: null, error } };
   }
-
-  return {
-    props: {
-      user,
-      error,
-    },
-  };
 }
