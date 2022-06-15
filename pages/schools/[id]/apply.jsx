@@ -2,10 +2,11 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import qs from "qs";
 import { API_URL } from "@/config/index";
-import cookie from "cookie";
 import { toast } from "react-toastify";
 import ReactMarkdown from "react-markdown";
 import { useState } from "react";
+import { parseCookie } from "@/helpers/index";
+import NotAuthorized from "@/components/NotAuthorized";
 
 export default function ApplyPage({ school, questions, token }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -73,7 +74,7 @@ export default function ApplyPage({ school, questions, token }) {
     }
   };
 
-  return (
+  return token ? (
     <div className="content">
       <ReactMarkdown>{school?.preApplicationText}</ReactMarkdown>
       <div className="field is-grouped">
@@ -95,10 +96,12 @@ export default function ApplyPage({ school, questions, token }) {
         </div>
       </div>
     </div>
+  ) : (
+    <NotAuthorized />
   );
 }
 
-export async function getServerSideProps({ params: { id }, req }) {
+export async function getServerSideProps({ params: { id }, req, res }) {
   if (!req.headers.cookie) {
     res.status(403).json({ message: "Not authorized" });
     return;
@@ -107,14 +110,26 @@ export async function getServerSideProps({ params: { id }, req }) {
     populate: "applicationQuestions",
   });
 
-  const { token } = cookie.parse(req.headers.cookie);
-  const res = await fetch(`${API_URL}/api/schools/${id}?${query}`, {
+  const { token } = parseCookie(req);
+  const resultFetch = await fetch(`${API_URL}/api/schools/${id}?${query}`, {
     method: "GET",
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
-  const result = await res.json();
+
+  const result = await resultFetch.json();
+
+  if (!resultFetch.ok) {
+    return {
+      props: {
+        school: null,
+        question: null,
+        token: token ?? null,
+        error: result.error?.message,
+      },
+    };
+  }
   const school = {
     id: result.data.id,
     ...result.data.attributes,
