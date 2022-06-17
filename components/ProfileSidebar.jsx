@@ -4,8 +4,6 @@ import { useRouter } from "next/router";
 export default function ProfileSidebar() {
   const router = useRouter();
 
-  console.log(router.pathname);
-
   return (
     <aside className="menu">
       <ul className="menu-list">

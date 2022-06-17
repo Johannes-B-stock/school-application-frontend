@@ -10,6 +10,7 @@ export default function RouteGuard({ children }) {
   useEffect(() => {
     const publicPaths = [
       "/account/login",
+      "/account/notConfirmed",
       "/",
       "/account/register",
       "/account/googleCallback",

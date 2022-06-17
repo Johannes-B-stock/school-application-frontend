@@ -26,7 +26,7 @@ export default function Register() {
 
   useEffect(() => {
     error && toast.error(error);
-  });
+  }, [error]);
 
   const onChange = (e) => {
     setFormData((prevState) => ({

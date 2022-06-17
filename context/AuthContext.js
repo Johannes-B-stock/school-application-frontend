@@ -15,7 +15,7 @@ export const AuthProvider = ({ children }) => {
       setError(null);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [router.pathname]);
+  }, [error, router.pathname]);
 
   useEffect(() => {
     checkUserLoggedIn();
@@ -25,7 +25,6 @@ export const AuthProvider = ({ children }) => {
 
   const register = async (user) => {
     try {
-      console.log("I'm here!!!");
       const res = await fetch(`${NEXT_URL}/api/register`, {
         method: "POST",
         headers: {
@@ -37,14 +36,19 @@ export const AuthProvider = ({ children }) => {
       const data = await res.json();
 
       if (res.ok) {
-        setUser(data.user);
-        console.log(router.query);
-        router.push(router.query?.returnUrl ?? "/");
+        const user = data.user;
+        if (user?.confirmed) {
+          setUser(user);
+          router.push(router.query?.returnUrl ?? "/");
+        } else {
+          router.push("/account/notConfirmed");
+        }
       } else {
+        console.log(data);
         setError(data.message);
       }
     } catch (error) {
-      setError(error?.message ?? error);
+      setError(error.message ?? error);
     }
   };
 

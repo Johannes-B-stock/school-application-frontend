@@ -95,8 +95,8 @@ export default function SchoolAdmin({ school, token }) {
 
   if (
     !user ||
-    (user.role.name.toLowerCase() !== "schooladmin" &&
-      user.role.name.toLowerCase() !== "admin")
+    (user.role?.name.toLowerCase() !== "schooladmin" &&
+      user.role?.name.toLowerCase() !== "admin")
   ) {
     return <NotAuthorized />;
   }

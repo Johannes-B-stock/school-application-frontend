@@ -37,7 +37,7 @@ export default function UserView({ user, error }) {
               />
             </div>
             <h1 className="title is-3">{user.username}</h1>
-            <h3 className="is-6 has-text-grey mb-5">{user.role.name}</h3>
+            <h3 className="is-6 has-text-grey mb-5">{user.role?.name}</h3>
             <div className="has-text-left">
               <div className="columns">
                 <div className="column is-2 has-text-right has-text-weight-bold">

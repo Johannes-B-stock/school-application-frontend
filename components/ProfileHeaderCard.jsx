@@ -17,7 +17,8 @@ export default function ProfileHeaderCard({ user }) {
                 className="image is-128x128 is-rounded"
                 alt="Profile"
                 src={
-                  user?.picture?.formats.small.url ??
+                  user?.picture?.formats.small?.url ??
+                  user?.picture?.formats.thumbnail?.url ??
                   "/images/defaultAvatar.png"
                 }
                 layout="fill"

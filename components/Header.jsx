@@ -72,8 +72,8 @@ export default function Header() {
         >
           <div className="navbar-end">
             {user &&
-              (user.role.name.toLowerCase() === "schooladmin" ||
-                user.role.name.toLowerCase() === "admin") && (
+              (user.role?.name.toLowerCase() === "schooladmin" ||
+                user.role?.name.toLowerCase() === "admin") && (
                 <Link href="/admin/dashboard">
                   <a className="navbar-item mx-2">Admin</a>
                 </Link>

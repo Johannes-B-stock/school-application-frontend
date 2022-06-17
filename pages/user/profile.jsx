@@ -78,6 +78,8 @@ export default function ProfilePage({ token }) {
         body: formData,
       });
 
+      console.log(res);
+
       if (res.ok) {
         const res = await fetch(`${API_URL}/users/me`);
         if (res.ok) {

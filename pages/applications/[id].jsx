@@ -42,6 +42,8 @@ export default function ApplicationPage({
   const [isLoadingBack, setIsLoadingBack] = useState(false);
   const [userEdit, setUserEdit] = useState(user);
   const [submitLoading, setSubmitLoading] = useState(false);
+  const [sendingReference1, setSendingReference1] = useState(false);
+  const [sendingReference2, setSendingReference2] = useState(false);
 
   const [reference1, setReference1] = useState(
     application?.reference1?.data
@@ -164,6 +166,10 @@ export default function ApplicationPage({
   }
 
   const sendReference1 = async () => {
+    if (sendingReference1) {
+      return;
+    }
+
     const allInfoSet =
       reference1.email && reference1.relation && reference1.name;
 
@@ -173,15 +179,22 @@ export default function ApplicationPage({
     }
 
     try {
+      setSendingReference1(true);
       await sendReference("reference1", application, reference1, user, token);
       setReference1({ ...reference1, emailSend: true });
       toast.success("email send successfully");
     } catch (error) {
       toast.error(`Failed to send reference because ${error.message}`);
+    } finally {
+      setSendingReference1(false);
     }
   };
 
   const sendReference2 = async () => {
+    if (sendingReference2) {
+      return;
+    }
+
     const allInfoSet =
       reference2.email && reference2.relation && reference2.name;
 
@@ -191,11 +204,14 @@ export default function ApplicationPage({
     }
 
     try {
+      setSendingReference2(true);
       await sendReference("reference2", application, reference2, user, token);
       setReference2({ ...reference2, emailSend: true });
       toast.success("email send successfully");
     } catch (error) {
       toast.error(`Failed to send reference because ${error.message}`);
+    } finally {
+      setSendingReference2(false);
     }
   };
 
@@ -463,7 +479,7 @@ export default function ApplicationPage({
 
             <form className="form">
               <div className="columns has-text-left">
-                <div className="column is-half">
+                <div className="column">
                   <h4>Reference Person 1</h4>
 
                   {reference1?.emailSend ? (
@@ -538,13 +554,18 @@ export default function ApplicationPage({
                         </div>
                       </div>
 
-                      <div className="button is-link" onClick={sendReference1}>
+                      <div
+                        className={`button is-link ${
+                          sendingReference1 ? "is-loading" : ""
+                        }`}
+                        onClick={sendReference1}
+                      >
                         Send Email
                       </div>
                     </>
                   )}
                 </div>
-                <div className="column is-half">
+                <div className="column">
                   <h4>Reference Person 2</h4>
 
                   {reference2?.emailSend ? (
@@ -613,7 +634,12 @@ export default function ApplicationPage({
                         </div>
                       </div>
 
-                      <div className="button is-link" onClick={sendReference2}>
+                      <div
+                        className={`button is-link ${
+                          sendingReference2 ? "is-loading" : ""
+                        }`}
+                        onClick={sendReference2}
+                      >
                         Send Email
                       </div>
                     </>

@@ -16,12 +16,14 @@ export default function Login() {
   });
   const { login, error } = useContext(AuthContext);
   useEffect(() => {
+    console.log("test");
     error && toast.error(error);
   }, [error]);
 
   const router = useRouter();
 
   const onChange = (e) => {
+    console.log("test3");
     setFormData((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value,
@@ -29,6 +31,7 @@ export default function Login() {
   };
 
   const onSubmit = async (e) => {
+    console.log("test2");
     e.preventDefault();
     setIsLoading(true);
     await login(formData);

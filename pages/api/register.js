@@ -31,7 +31,6 @@ export default async function register(req, res) {
         res.status(strapiRes.status).json({ message: data.error.message });
       }
     } catch (error) {
-      console.log(error);
       res.status(strapiRes.status).json({ message: strapiRes.statusText });
     }
   } else {
