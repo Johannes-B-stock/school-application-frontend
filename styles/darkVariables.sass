@@ -1,0 +1,53 @@
+
+.has-background-primary
+    background-color: darken($primary, 15%) !important
+.has-background-warning
+    background-color: darken($warning, 15%) !important
+.has-background-info
+    background-color: darken($info, 15%) !important
+.has-background-link
+    background-color: darken($link, 15%) !important
+.has-background-danger
+    background-color: darken($danger, 15%) !important
+.has-background-light
+    background-color: $dark !important
+.has-background-warning-light
+    background-color: darken($warning, 60%) !important
+    color: $light !important
+.has-background-primary-light
+    background-color: darken($primary, 35%) !important
+    color: $light !important
+.has-background-info-light
+    background-color: darken($info, 40%) !important
+    color: $light !important
+.has-background-link-light
+    background-color: darken($link, 45%) !important
+    color: $light !important
+.has-background-danger-light
+    background-color: darken($danger, 45%) !important
+    color: $light !important
+.modal-card-body
+    +overflow-touch
+    background-color: $dark !important
+.panel
+    background-color: $black !important
+
+.switch + label::before
+    background-color: $grey-darker !important
+.switch + label::after
+    background-color: $grey-light !important
+
+.backgroundGradient
+    background-image: linear-gradient(to bottom, $info-dark 0%, rgba(0, 0, 0, 0) 35%)
+
+.background-gradient-light-left
+    background-image: linear-gradient(to right, $primary-dark, $info-dark)
+
+.background-gradient-primary-right
+    background-image: linear-gradient(to right, darken($primary, 25%), $primary-dark)
+
+.background-gradient-link-right
+    background-image: linear-gradient(to right, darken($link-dark, 25%), $link-dark)
+
+.background-gradient-info-right
+    background-image: linear-gradient(to right, darken($info, 25%), $info-dark)

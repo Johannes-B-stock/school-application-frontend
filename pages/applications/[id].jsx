@@ -66,8 +66,6 @@ export default function ApplicationPage({
     router.push("/404");
     return;
   }
-  console.log(application);
-  console.log(user);
   if (application.user.data.id !== user?.id) {
     return <NotAuthorized />;
   }
@@ -267,7 +265,7 @@ export default function ApplicationPage({
       </p>
       <p>
         Further details about the school can be found
-        <Link href={`/schools/${application?.school.data.attributes.id}`}>
+        <Link href={`/schools/${application?.school.data.id}`}>
           <a> here</a>
         </Link>
       </p>

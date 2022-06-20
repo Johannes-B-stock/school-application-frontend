@@ -9,7 +9,7 @@ export default function Layout({ title, keywords, description, children }) {
   const router = useRouter();
 
   return (
-    <div>
+    <div className="content-wrapper">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -19,11 +19,13 @@ export default function Layout({ title, keywords, description, children }) {
           content="width=device-width, initial-scale=1"
         ></meta>
       </Head>
-      <Header />
-      {router.pathname === "/" && <Showcase />}
-      <section className="section">
-        <div className="container is-max-widescreen">{children}</div>
-      </section>
+      <div className="page-content">
+        <Header />
+        {router.pathname === "/" && <Showcase />}
+        <section className="section">
+          <div className="container is-max-widescreen">{children}</div>
+        </section>
+      </div>
       <Footer />
     </div>
   );

@@ -44,7 +44,6 @@ export const AuthProvider = ({ children }) => {
           router.push("/account/notConfirmed");
         }
       } else {
-        console.log(data);
         setError(data.message);
       }
     } catch (error) {
@@ -55,7 +54,6 @@ export const AuthProvider = ({ children }) => {
   // Callback for google login
   const googleCallback = async (values) => {
     try {
-      console.log("or here ???");
       const res = await fetch(`${NEXT_URL}/api/google-callback`, {
         method: "POST",
         body: JSON.stringify(values),
@@ -77,7 +75,6 @@ export const AuthProvider = ({ children }) => {
 
   const login = async ({ email, password }) => {
     try {
-      console.log("WHAAAAT??");
       const res = await fetch(`${NEXT_URL}/api/login`, {
         method: "POST",
         headers: {
@@ -90,7 +87,6 @@ export const AuthProvider = ({ children }) => {
 
       if (res.ok) {
         setUser(data.user);
-        console.log(router.query);
         router.push(router.query?.returnUrl ?? "/");
       } else {
         setError(data.message);

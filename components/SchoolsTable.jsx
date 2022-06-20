@@ -6,6 +6,7 @@ import {
   faEdit,
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/router";
+import Link from "next/link";
 
 export default function SchoolsTable({ schools }) {
   const router = useRouter();
@@ -23,13 +24,14 @@ export default function SchoolsTable({ schools }) {
                   />
                 </span>
               </td>
-              <td>{school.attributes.name}</td>
+              <td>
+                <Link href={`/admin/schools/${school.id}`}>
+                  {school.attributes.name}
+                </Link>
+              </td>
               <td>
                 <span className="is-italic has-text-grey is-size-6">
-                  {" "}
-                  {new Date(
-                    school.attributes.startDate
-                  ).toLocaleDateString()} -{" "}
+                  {new Date(school.attributes.startDate).toLocaleDateString()} -{" "}
                   {new Date(school.attributes.endDate).toLocaleDateString()}
                 </span>
               </td>

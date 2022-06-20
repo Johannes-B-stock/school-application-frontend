@@ -9,7 +9,10 @@ export default function ProfileHeaderCard({ user }) {
           <div className="media-content">
             <p className="title is-3">{user?.username}</p>
             <p className="subtitle is-6">{user?.email}</p>
-            <p className="subtitle is-6 is-italic">{user?.role?.name}</p>
+            <p className="is-6">Current role is {user?.role?.name}</p>
+            <p className="is-6">
+              Joined on {new Date(user?.createdAt).toDateString()}
+            </p>
           </div>
           <div className="media-right">
             <figure className="image is-128x128 is-rounded">

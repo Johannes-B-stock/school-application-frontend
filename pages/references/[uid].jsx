@@ -21,6 +21,9 @@ export default function ReferencePage({ reference }) {
 
   const handleSave = async (e) => {
     e.preventDefault();
+    if (isLoading) {
+      return;
+    }
     setIsLoading(true);
     await Promise.all(
       answers.map(async (answer) => {
@@ -55,8 +58,37 @@ export default function ReferencePage({ reference }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (isLoading) {
+      return;
+    }
     try {
       setIsLoading(true);
+      await Promise.all(
+        answers.map(async (answer) => {
+          const updateAnswerFetch = await fetch(
+            `${API_URL}/api/answers/${answer.id}`,
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                data: {
+                  answer: answer.attributes.answer,
+                },
+              }),
+            }
+          );
+
+          const updateResult = await updateAnswerFetch.json();
+
+          if (!updateAnswerFetch.ok) {
+            throw new Error(
+              updateResult.error?.message ?? updateAnswerFetch.statusText
+            );
+          }
+        })
+      );
       const updateAnswerFetch = await fetch(
         `${API_URL}/api/references/${reference.id}`,
         {
@@ -79,6 +111,11 @@ export default function ReferencePage({ reference }) {
             updateAnswerFetch.statusText
         );
       }
+    } catch (err) {
+      toast.error(
+        "There was an error when trying to submit reference: " + err.message ??
+          err
+      );
     } finally {
       setIsLoading(false);
     }

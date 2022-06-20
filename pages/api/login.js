@@ -1,20 +1,13 @@
 import { API_URL } from "@/config/index";
 import { parseCookie } from "@/helpers/index";
 import cookie from "cookie";
+import { getMyDetails } from "lib/user";
 import qs from "qs";
 
 export default async function login(req, res) {
   if (req.method === "POST") {
     const { identifier, password } = req.body;
-    const query = qs.stringify({
-      populate: [
-        "role",
-        "schools",
-        "school_applications",
-        "picture",
-        "address",
-      ],
-    });
+
     const strapiRes = await fetch(`${API_URL}/api/auth/local`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -39,14 +32,7 @@ export default async function login(req, res) {
             path: "/",
           })
         );
-        const strapiRes = await fetch(`${API_URL}/api/users/me?${query}`, {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${data.jwt}`,
-          },
-        });
-
-        const user = await strapiRes.json();
+        const user = await getMyDetails(data.jwt);
         res.status(200).json({ user });
       } else {
         res.status(strapiRes.status).json({ message: data.error.message });

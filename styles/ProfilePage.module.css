@@ -7,6 +7,12 @@
   max-width: 650px;
 }
 
+.profileBox {
+  max-width: 500px;
+  min-width: 370px;
+  margin-bottom: 50px;
+}
+
 .avatar {
   width: 130px;
   height: 130px;

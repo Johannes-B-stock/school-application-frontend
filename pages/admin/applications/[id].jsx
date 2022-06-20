@@ -19,6 +19,7 @@ import countries from "i18n-iso-countries";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { addStudentToSchool } from "lib/school";
+import { getSchoolApplicationAnswerDetails } from "lib/answers";
 
 export default function ApplicationAdminView({ application, token, user }) {
   const [showReference1, setShowReference1] = useState(false);
@@ -27,6 +28,15 @@ export default function ApplicationAdminView({ application, token, user }) {
   const [loadReference2Answers, setLoadReference2Answers] = useState(false);
   const [answers1, setAnswers1] = useState(null);
   const [answers2, setAnswers2] = useState(null);
+  const [showQuestionary, setShowQuestionary] = useState(false);
+  const [applicationAnswers, setApplicationAnswers] = useState([]);
+
+  const toggleShowQuestionary = async () => {
+    if (!showQuestionary && applicationAnswers.length === 0) {
+      await loadApplicationAnswers();
+    }
+    setShowQuestionary(!showQuestionary);
+  };
 
   const toggleShowReference1 = () => {
     setShowReference1(!showReference1);
@@ -36,11 +46,17 @@ export default function ApplicationAdminView({ application, token, user }) {
     setShowReference2(!showReference2);
   };
 
-  console.log(user);
-
   const router = useRouter();
   const reference1 = application.attributes.reference1.data;
   const reference2 = application.attributes.reference2.data;
+
+  const loadApplicationAnswers = async () => {
+    const answerDetails = await getSchoolApplicationAnswerDetails(
+      application.attributes.answers.data,
+      token
+    );
+    setApplicationAnswers(answerDetails);
+  };
 
   const loadAnswers = async (referenceId, token) => {
     try {
@@ -207,7 +223,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                       className="image is-128x128 is-rounded"
                       alt="Profile"
                       src={
-                        user.picture?.formats.small.url ??
+                        user.picture?.formats.small?.url ??
                         "/images/defaultAvatar.png"
                       }
                       layout="fill"
@@ -233,6 +249,12 @@ export default function ApplicationAdminView({ application, token, user }) {
                   Last name:
                 </div>
                 <div className="column">{user.lastname}</div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-bold">Email:</div>
+                <div className="column">
+                  <a href={`mailto:${user.email}`}> {user.email}</a>
+                </div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">Gender:</div>
@@ -291,6 +313,48 @@ export default function ApplicationAdminView({ application, token, user }) {
           </div>
         </div>
         <div className="column">
+          <div className="card my-5">
+            <header className="card-header has-background-warning-light">
+              <p className="card-header-title">Questionary</p>
+              <button
+                className="card-header-icon"
+                aria-label="show"
+                onClick={toggleShowQuestionary}
+              >
+                <span className="icon">
+                  {showQuestionary ? (
+                    <FontAwesomeIcon icon={faAngleUp} />
+                  ) : (
+                    <FontAwesomeIcon icon={faAngleDown} />
+                  )}
+                </span>
+              </button>
+            </header>
+            <div
+              className={`card-content has-text-centered is-collapsible ${
+                showQuestionary ? "" : "is-collapsed"
+              }`}
+              aria-expanded={showQuestionary ? "true" : "false"}
+            >
+              {applicationAnswers?.map((answer) => (
+                <>
+                  <div className="has-text-weight-bold">
+                    {answer.data.attributes.question.data.attributes.question}
+                  </div>
+                  <div>
+                    {answer.data.attributes.question.data.attributes
+                      .inputType === "bool"
+                      ? answer.data.attributes.question.data.attributes
+                          .answer === "true"
+                        ? "Yes"
+                        : "No"
+                      : answer.data.attributes.answer}
+                  </div>
+                  <hr />
+                </>
+              ))}
+            </div>
+          </div>
           <div className="card my-5">
             <header className="card-header has-background-info-light">
               <p className="card-header-title">Reference 1</p>
@@ -562,7 +626,7 @@ export async function getServerSideProps({ req, params: { id } }) {
     "emergency_address",
     "schools",
   ]);
-  console.log(user);
+
   return {
     props: {
       application: application.data,

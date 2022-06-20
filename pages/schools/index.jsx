@@ -27,7 +27,6 @@ export default function SchoolsPage({ schools }) {
 }
 
 export async function getServerSideProps({ locale }) {
-  console.log(locale);
   const query = qs.stringify(
     {
       filters: {

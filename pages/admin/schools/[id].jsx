@@ -53,7 +53,6 @@ export default function SchoolAdmin({ school, token }) {
           ["picture"]
         );
         setStudents(students);
-        console.log(students);
 
         setIsLoadingStudentDetails(false);
       } catch (error) {
@@ -73,7 +72,6 @@ export default function SchoolAdmin({ school, token }) {
     if (isSavingStaff) {
       return;
     }
-    console.log(addedStaff);
     try {
       setIsSavingStaff(true);
       await addMultipleStaffToSchool(addedStaff, school.id, token);
@@ -111,6 +109,55 @@ export default function SchoolAdmin({ school, token }) {
               </p>
             </div>
             <div className="card-content">
+              <div className="columns">
+                <div className="column is-3 has-text-weight-bold">Name:</div>
+                <div className="column">{school.attributes.name}</div>
+              </div>
+              <div className="columns">
+                <div className="column is-3 has-text-weight-bold">
+                  Description:
+                </div>
+                <div className="column">{school.attributes.description}</div>
+              </div>
+              {school.attributes.contactEmail && (
+                <div className="columns is-mobile">
+                  <div className="column is-3 has-text-weight-bold">
+                    Contact:
+                  </div>
+                  <div className="column">
+                    <a href={`mailto:${school.attributes.contactEmail}`}>
+                      {school.attributes.contactEmail}
+                    </a>
+                  </div>
+                </div>
+              )}
+
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-bold">
+                  Starts at:
+                </div>
+                <div className="column">
+                  {new Date(school.attributes.startDate).toLocaleDateString()}
+                </div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-bold">Ends at:</div>
+                <div className="column">
+                  {new Date(school.attributes.endDate).toLocaleDateString()}
+                </div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-bold">
+                  Application Fee:
+                </div>
+                <div className="column">{school.attributes.applicationFee}</div>
+              </div>
+              <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-bold">
+                  School Fee:
+                </div>
+                <div className="column">{school.attributes.schoolFee}</div>
+              </div>
               <div
                 className="button is-primary"
                 onClick={() => router.push(`/schools/${school.id}/edit`)}
@@ -142,7 +189,7 @@ export default function SchoolAdmin({ school, token }) {
                           className="image is-50x50 is-rounded"
                           alt={student.username}
                           src={
-                            student.picture?.formats.small.url ??
+                            student.picture?.formats.thumbnail?.url ??
                             "/images/defaultAvatar.png"
                           }
                           objectFit="cover"
@@ -191,7 +238,7 @@ export default function SchoolAdmin({ school, token }) {
                             className="image is-50x50 is-rounded"
                             alt={user.username}
                             src={
-                              user.picture?.formats.small.url ??
+                              user.picture?.formats.thumbnail?.url ??
                               "/images/defaultAvatar.png"
                             }
                             objectFit="cover"

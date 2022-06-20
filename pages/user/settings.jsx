@@ -7,12 +7,20 @@ import { API_URL } from "@/config/index";
 import { parseCookie } from "@/helpers/index";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
+import { useTheme } from "next-themes";
 
 export default function Settings({ req }) {
   const { user, logout } = useContext(AuthContext);
   const { token } = parseCookie(req);
+  const { theme, setTheme } = useTheme();
 
   const router = useRouter();
+
+  const toggleTheme = () => {
+    if (theme === "light") {
+      setTheme("dark");
+    } else setTheme("light");
+  };
 
   const deleteAccount = async () => {
     const confirmed = confirm(
@@ -51,12 +59,25 @@ export default function Settings({ req }) {
           <ProfileSidebar />
         </div>
 
-        <div className="column">
+        <div className="column is-7">
           <h1 className="title is-3">Settings</h1>
-          <div
-            className="box has-background-warning-light"
-            style={{ maxWidth: "350px" }}
-          >
+          <div className="box">
+            <h2 className="title is-5">Appearance</h2>
+            <div className="mb-3"></div>
+            <div className="field">
+              <label htmlFor="switchRoundedDefault">Dark mode </label>
+              <input
+                id="switchRoundedDefault"
+                type="checkbox"
+                name="switchRoundedDefault"
+                className="switch is-rounded"
+                checked={theme === "light" ? true : false}
+                onClick={toggleTheme}
+              />
+              <label htmlFor="switchRoundedDefault">Light mode</label>
+            </div>
+          </div>
+          <div className="box has-background-warning-light">
             <h2 className="title is-5">Delete Account</h2>
             <div className="mb-3">
               Caution! By Clicking on this button your account will be

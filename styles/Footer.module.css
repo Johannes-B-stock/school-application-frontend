@@ -1,0 +1,7 @@
+.dropdownMenu {
+  min-width: 5rem;
+}
+
+.dropdownItem {
+  padding-right: 1rem !important;
+}

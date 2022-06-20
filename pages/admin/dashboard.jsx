@@ -168,7 +168,7 @@ export default function AdminDashboard({ schools, error, token }) {
                     <SchoolsTable schools={schools} />
                   </div>
                 </div>
-                <nav className="tile is-child panel has-background-white">
+                <nav className="tile is-child panel">
                   <p className="panel-heading has-background-primary">
                     Applications
                   </p>

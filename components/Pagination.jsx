@@ -1,6 +1,4 @@
 export default function Pagination({ pagination, changePage }) {
-  console.log(pagination);
-
   const arrayOfNumbers = (num) => {
     let index = 1;
     const allNumbers = [];

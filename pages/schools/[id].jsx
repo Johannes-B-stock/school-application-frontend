@@ -11,7 +11,6 @@ export default function SchoolDetails({ school }) {
   const { user } = useContext(AuthContext);
   const router = useRouter();
 
-  console.log(school);
   let schoolInfo = school;
 
   if (router.locale !== router.defaultLocale) {
@@ -66,7 +65,7 @@ export default function SchoolDetails({ school }) {
       {user && user.role?.name === "SchoolAdmin" && (
         <>
           {" "}
-          <Link href={`/schools/edit/${school.id}`}>
+          <Link href={`/schools/${school.id}/edit`}>
             <a className="button m-1 is-secondary">Edit</a>
           </Link>
           <a onClick={handleDelete} className="button m-1 is-danger">

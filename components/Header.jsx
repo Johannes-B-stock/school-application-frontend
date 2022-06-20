@@ -12,8 +12,6 @@ export default function Header() {
   const [brandHeight, setBrandHeight] = useState("112");
 
   useEffect(() => {
-    console.log(pageContent.navbar_brand);
-
     setBrandImage(
       pageContent.navbar_brand?.data?.attributes?.formats.thumbnail.url ??
         pageContent.brandImage
@@ -80,6 +78,9 @@ export default function Header() {
               )}
             <Link href="/">
               <a className="navbar-item mx-2">Home</a>
+            </Link>
+            <Link href="/user/schools">
+              <a className="navbar-item mx-2">Schools</a>
             </Link>
             {user && (
               <div className="navbar-item mx-4 has-dropdown is-hoverable">

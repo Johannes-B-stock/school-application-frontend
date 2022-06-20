@@ -19,8 +19,6 @@ export default function AddUserTable({
   const [userSearch, setUserSearch] = useState("");
   const [usersToAdd, setUsersToAdd] = useState([]);
 
-  console.log(excludedUsers);
-
   const throttleUserSearch = throttle(
     500,
     (search) => {
@@ -45,8 +43,6 @@ export default function AddUserTable({
               },
             }
           );
-          console.log("HEre it should be filtered!");
-          console.log(users);
           setUsers(users);
         } catch (error) {
         } finally {

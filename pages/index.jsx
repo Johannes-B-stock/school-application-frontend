@@ -38,7 +38,7 @@ export async function getServerSideProps() {
   const schools = result.data.map((data) => ({
     id: data.id,
     ...data.attributes,
-    image: data.attributes.image?.data?.attributes.formats.small.url ?? null,
+    image: data.attributes.image?.data?.attributes.formats.small ?? null,
   }));
   return {
     props: { schools },

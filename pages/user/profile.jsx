@@ -12,6 +12,7 @@ import AddressEdit from "@/components/AddressEdit";
 import ProfileHeaderCard from "@/components/ProfileHeaderCard";
 import ProfileSidebar from "@/components/ProfileSidebar";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
+import { getMyDetails } from "lib/user";
 
 export default function ProfilePage({ token }) {
   const router = useRouter();
@@ -70,7 +71,7 @@ export default function ProfilePage({ token }) {
       formData.append("refId", user.id);
       formData.append("field", "picture");
 
-      const res = await fetch(`${API_URL}/api/upload`, {
+      const uploadFetch = await fetch(`${API_URL}/api/upload`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -78,19 +79,12 @@ export default function ProfilePage({ token }) {
         body: formData,
       });
 
-      console.log(res);
-
-      if (res.ok) {
-        const res = await fetch(`${API_URL}/users/me`);
-        if (res.ok) {
-          const updatedUser = await res.json();
-          setUser(updatedUser);
-        } else {
-          router.reload();
-        }
+      const uploadResult = await uploadFetch.json();
+      if (uploadFetch.ok) {
+        const updatedUser = await getMyDetails(token);
+        setUser(updatedUser);
       } else {
-        const result = res.json();
-        toast.error(result.message ?? res.statusText);
+        toast.error(uploadResult.message ?? uploadFetch.statusText);
       }
     } catch (error) {
       toast.error(res.statusText);
@@ -399,7 +393,7 @@ export default function ProfilePage({ token }) {
           </div>
           <br />
           <div className={`card ${styles.profileCard}`}>
-            <div className="card-header">
+            <div className="card-header background-gradient-light-left">
               <div className="card-header-title">My Address</div>
             </div>
             <div className="card-content">

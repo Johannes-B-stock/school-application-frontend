@@ -13,6 +13,7 @@ import NProgress from "nprogress";
 import "../styles/NProgress.scss";
 import { useEffect } from "react";
 import Layout from "@/components/Layout";
+import { ThemeProvider } from "next-themes";
 
 config.autoAddCss = false;
 
@@ -49,7 +50,9 @@ export default function MyApp({ Component, pageProps }) {
   return (
     <PageContentProvider>
       <AuthProvider>
-        <RouteGuard>{getLayout(<Component {...pageProps} />)}</RouteGuard>
+        <ThemeProvider>
+          <RouteGuard>{getLayout(<Component {...pageProps} />)}</RouteGuard>
+        </ThemeProvider>
       </AuthProvider>
 
       <ToastContainer />

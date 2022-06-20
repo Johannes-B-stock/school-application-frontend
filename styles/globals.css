@@ -29,3 +29,12 @@ body {
 .is-half {
   width: 50%;
 }
+
+.content-wrapper {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
+.page-content {
+  flex: 1;
+}

@@ -2,6 +2,7 @@ import PageContentContext from "@/context/PageContentContext";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useContext, useState } from "react";
+import styles from "@/styles/Footer.module.css";
 
 export default function Footer() {
   const router = useRouter();
@@ -29,7 +30,7 @@ export default function Footer() {
       <div className="container is-max-widescreen">
         <div className="content has-text-centered">
           <nav className="level">
-            <div className="level-left is-size-7">
+            <div className="level-left is-size-6">
               <div className="level-item has-text-centered mx-3">
                 <Link href="/impressum">Impressum</Link>
               </div>
@@ -56,19 +57,20 @@ export default function Footer() {
                       aria-controls="dropdown-menu"
                     >
                       <span>{router.locale}</span>
-                      <span className="icon is-small">
-                        <i className="fas fa-angle-down" aria-hidden="true"></i>
-                      </span>
                     </button>
                   </div>
-                  <div className="dropdown-menu" id="dropdown-menu" role="menu">
+                  <div
+                    className={`dropdown-menu ${styles.dropdownMenu}`}
+                    id="dropdown-menu"
+                    role="menu"
+                  >
                     <div className="dropdown-content">
                       {router.locales.map((locale, index) => (
                         <a
                           value={locale}
                           key={index}
                           onClick={changeLocale}
-                          className="dropdown-item"
+                          className={`dropdown-item ${styles.dropdownItem}`}
                         >
                           {locale}
                         </a>

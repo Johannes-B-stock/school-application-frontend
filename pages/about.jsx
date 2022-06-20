@@ -25,7 +25,6 @@ export async function getStaticProps({ locale }) {
   const aboutResult = await aboutFetch.json();
 
   if (!aboutFetch.ok) {
-    console.log(aboutResult);
     error = aboutResult.error;
   }
 

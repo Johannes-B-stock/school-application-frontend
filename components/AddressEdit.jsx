@@ -73,7 +73,6 @@ export default function AddressEdit({
 
     if (!address) {
       // Create new address
-      console.log("Create new Address");
       const res = await fetch(`${API_URL}/api/addresses`, {
         method: "POST",
         headers: {

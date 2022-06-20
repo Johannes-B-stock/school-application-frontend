@@ -11,8 +11,6 @@ import NotAuthorized from "@/components/NotAuthorized";
 export default function ApplyPage({ school, questions, token }) {
   const [isLoading, setIsLoading] = useState(false);
 
-  const answers = questions.map((q) => ({ ...q, answer: "" }));
-
   const router = useRouter();
 
   const handleSubmit = async (e) => {
@@ -43,8 +41,9 @@ export default function ApplyPage({ school, questions, token }) {
             "Something went wrong."
         );
       } else {
+        const answers = questions?.map((q) => ({ ...q, answer: "" }));
         await Promise.all(
-          answers.map(async (answer) => {
+          answers?.map(async (answer) => {
             const answerRes = await fetch(`${API_URL}/api/answers`, {
               method: "POST",
               headers: {

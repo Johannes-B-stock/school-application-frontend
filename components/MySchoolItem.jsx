@@ -3,7 +3,7 @@ import Image from "next/image";
 import styles from "@/styles/SchoolItem.module.css";
 import { useRouter } from "next/router";
 
-export default function SchoolItem({ school }) {
+export default function MySchoolItem({ school }) {
   const router = useRouter();
   const locale = router.locale.split("-")[0];
   const useLocale = router.locale !== router.defaultLocale;
@@ -18,7 +18,10 @@ export default function SchoolItem({ school }) {
   }
 
   return (
-    <div className={`card ${styles.schoolItem}`}>
+    <div
+      className={`card is-clickable ${styles.isHoverable} ${styles.schoolItem}`}
+      onClick={() => router.push(`/user/school/${school.id}`)}
+    >
       <div className="card-image">
         <Image
           src={
@@ -41,18 +44,6 @@ export default function SchoolItem({ school }) {
           <br />
         </div>
       </div>
-      <footer className="card-footer">
-        <Link href={`/schools/${school.id}`}>
-          <a className="card-footer-item">Details</a>
-        </Link>
-        {school.acceptingStudents ? (
-          <Link href={`/schools/${school.id}/apply`}>
-            <a className="card-footer-item">Apply</a>
-          </Link>
-        ) : (
-          <span className="card-footer-item">Apply</span>
-        )}
-      </footer>
     </div>
   );
 }
