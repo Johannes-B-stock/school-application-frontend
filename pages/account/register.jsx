@@ -1,4 +1,4 @@
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layout/Layout";
 import Link from "next/link";
 import { useEffect, useState, useContext } from "react";
 import { toast } from "react-toastify";
@@ -36,8 +36,11 @@ export default function Register() {
   };
 
   const onSubmit = async (e) => {
-    setIsLoading(true);
     e.preventDefault();
+    if (isLoading) {
+      return;
+    }
+    setIsLoading(true);
     if (formData.password !== formData.confirmPassword) {
       toast.error("Passwords do not match");
     } else {

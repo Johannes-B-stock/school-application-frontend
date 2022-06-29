@@ -1,11 +1,13 @@
-import ApplicationItem from "@/components/ApplicationItem";
+import ApplicationItem from "@/components/application/ApplicationItem";
 import { API_URL } from "@/config/index";
 import qs from "qs";
 import { parseCookie } from "@/helpers/index";
-import ProfileHeaderCard from "@/components/ProfileHeaderCard";
+import ProfileHeaderCard from "@/components/user/ProfileHeaderCard";
 import { useContext } from "react";
 import AuthContext from "@/context/AuthContext";
-import ProfileSidebar from "@/components/ProfileSidebar";
+import ProfileSidebar from "@/components/user/ProfileSidebar";
+import axios from "axios";
+import StaffApplicationItem from "@/components/application/StaffApplicationItem";
 
 export default function ApplicationsPage({ applications, token }) {
   const { user } = useContext(AuthContext);
@@ -32,11 +34,19 @@ export default function ApplicationsPage({ applications, token }) {
                     applications.length > 3 && "is-5-tablet is-4-desktop"
                   }`}
                 >
-                  <ApplicationItem
-                    key={application.id}
-                    application={application}
-                    token={token}
-                  />
+                  {application.school != null ? (
+                    <ApplicationItem
+                      key={application.id}
+                      application={application}
+                      token={token}
+                    />
+                  ) : (
+                    <StaffApplicationItem
+                      key={application.id}
+                      application={application}
+                      token={token}
+                    />
+                  )}
                 </div>
               ))}
           </div>
@@ -53,7 +63,7 @@ export async function getServerSideProps({ req }) {
     return { props: {} };
   }
 
-  const query = qs.stringify(
+  let query = qs.stringify(
     {
       sort: ["createdAt"],
       populate: "school",
@@ -74,6 +84,32 @@ export async function getServerSideProps({ req }) {
     id: data.id,
     ...data.attributes,
   }));
+
+  query = qs.stringify(
+    {
+      sort: ["createdAt"],
+    },
+    {
+      encodeValuesOnly: true,
+    }
+  );
+
+  const staffApplicationsFetch = await axios.get(
+    `${API_URL}/api/staff-applications/me?${query}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  applications.push(
+    ...staffApplicationsFetch.data.data.map((application) => ({
+      id: application.id,
+      ...application.attributes,
+    }))
+  );
 
   return {
     props: { applications: applications ?? null, token: token ?? null },

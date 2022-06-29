@@ -1,4 +1,3 @@
-import Link from "next/link";
 import { useRouter } from "next/router";
 import qs from "qs";
 import { API_URL } from "@/config/index";
@@ -17,13 +16,13 @@ import GoogleSpinner from "@/components/common/GoogleSpinner";
 import AddressEdit from "@/components/user/AddressEdit";
 import AuthContext from "@/context/AuthContext";
 import NotAuthorized from "@/components/auth/NotAuthorized";
-import { updateState, updateStep } from "lib/schoolApplication";
+import { updateState, updateStep } from "lib/staffApplication";
 import { updateMe } from "lib/user";
 import ApplicationQuestions from "@/components/application/ApplicationQuestions";
 import ReferenceForm from "@/components/application/ReferenceForm";
 import ConfirmStep from "@/components/application/ConfirmStep";
 
-export default function ApplicationPage({
+export default function StaffApplicationPage({
   application,
   answerDetails,
   error,
@@ -43,16 +42,17 @@ export default function ApplicationPage({
   const [userEdit, setUserEdit] = useState(user);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [reference1Send, setReference1Send] = useState(
-    application?.reference1?.data?.attributes.emailSend ?? false
+    application.reference1?.data?.attributes.emailSend ?? false
   );
   const [reference2Send, setReference2Send] = useState(
-    application?.reference2?.data?.attributes.emailSend ?? false
+    application.reference2?.data?.attributes.emailSend ?? false
   );
 
   if (!application) {
     router.push("/404");
     return;
   }
+  console.log(application.user);
   if (application.user.data.id !== user?.id) {
     return <NotAuthorized />;
   }
@@ -84,7 +84,7 @@ export default function ApplicationPage({
 
     try {
       setIsLoadingNext(true);
-      if (applicationEdit.step === application.step) {
+      if (applicationEdit.state === "created") {
         if (applicationEdit.step === 0) {
           await saveUserEdit();
           if (!addressSaveFunction) {
@@ -160,6 +160,7 @@ export default function ApplicationPage({
       throw new Error("Please fill in your birthday");
     }
     await updateMe(userEdit, token);
+    toast.success("User data successfully updated");
   }
 
   const handleSubmitApplication = async () => {
@@ -179,66 +180,14 @@ export default function ApplicationPage({
     }
   };
 
-  const handlePayment = async () => {
-    const productId = application?.school.data.attributes.stripeAppFeeId;
-    const getProductApi = API_URL + "/strapi-stripe/getProduct/" + productId;
-    const checkoutSessionUrl =
-      API_URL + "/strapi-stripe/createCheckoutSession/";
-
-    await fetch(getProductApi, {
-      method: "get",
-      mode: "cors",
-      headers: new Headers({
-        "Content-Type": "application/json",
-      }),
-    })
-      .then((response) => response.json())
-      .then(async (response) => {
-        await fetch(checkoutSessionUrl, {
-          method: "post",
-          body: JSON.stringify({
-            stripePriceId: response.stripePriceId,
-            stripePlanId: response.stripePlanId,
-            isSubscription: response.isSubscription,
-            productId: response.id,
-            productName: response.title,
-          }),
-          mode: "cors",
-          headers: new Headers({
-            "Content-Type": "application/json",
-          }),
-        })
-          .then((response) => response.json())
-          .then((response) => {
-            router.push(response.url);
-          });
-      })
-      .catch((err) => toast.error(err.message ?? err));
-  };
-
   return (
     <div className="content has-text-centered">
-      <h1>Application for School {application?.school.data.attributes.name}</h1>
+      <h1>Staff Application</h1>
       <p>
-        This is your application for the school{" "}
-        {application?.school.data.attributes.name}
+        This is your staff application, if you have any questions, please
+        contact us.
       </p>
-      <p>
-        You have to pay an application fee of{" "}
-        {application?.school.data.attributes.applicationFee} for the application
-        to be processed.
-      </p>
-      {application?.school.data.attributes.stripeAppFeeId && (
-        <div className="button is-link mb-2" onClick={handlePayment}>
-          Pay Application Fee
-        </div>
-      )}
-      <div>
-        Further details about the school can be found
-        <Link href={`/schools/${application?.school.data.id}`}>
-          <a> here</a>
-        </Link>
-      </div>
+
       <br />
       <br />
 
@@ -431,7 +380,7 @@ export default function ApplicationPage({
             <ApplicationQuestions
               answerDetails={answerDetails}
               bindSave={bindQuestionSave}
-              disabled={application.step > applicationEdit.step}
+              disabled={applicationEdit.state !== "created"}
               token={token}
             />
           </div>
@@ -493,16 +442,17 @@ export default function ApplicationPage({
   );
 }
 
-export async function getServerSideProps({ params: { id }, req }) {
+export async function getServerSideProps({ req, params: { id } }) {
   let query = qs.stringify({
-    populate: ["answers", "school", "user", "reference1", "reference2"],
+    populate: ["answers", "user", "reference1", "reference2"],
   });
 
   const { token } = parseCookie(req);
 
-  const res = await fetch(`${API_URL}/api/school-applications/${id}?${query}`, {
+  const res = await fetch(`${API_URL}/api/staff-applications/${id}?${query}`, {
     method: "GET",
     headers: {
+      "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
   });
@@ -522,7 +472,7 @@ export async function getServerSideProps({ params: { id }, req }) {
   query = qs.stringify({
     populate: ["question"],
     filters: {
-      school_application: {
+      staff_application: {
         id: {
           $eq: application.id,
         },

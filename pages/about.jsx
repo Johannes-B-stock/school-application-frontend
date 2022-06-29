@@ -1,8 +1,8 @@
 import ReactMarkdown from "react-markdown";
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layout/Layout";
 import { API_URL } from "../config";
 import { toast } from "react-toastify";
-import NotAuthorized from "@/components/NotAuthorized";
+import NotAuthorized from "@/components/auth/NotAuthorized";
 
 export default function About({ about, error }) {
   if (error) {

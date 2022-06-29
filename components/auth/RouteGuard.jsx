@@ -11,6 +11,8 @@ export default function RouteGuard({ children }) {
     const publicPaths = [
       "/account/login",
       "/account/notConfirmed",
+      "/account/forgotPassword",
+      "/account/resetPassword",
       "/",
       "/account/register",
       "/account/googleCallback",
@@ -26,7 +28,7 @@ export default function RouteGuard({ children }) {
       !user &&
       !publicPaths.some(
         (publicPath) =>
-          publicPath === path ||
+          publicPath.toLowerCase() === path.toLowerCase() ||
           (publicPath.length > 1 &&
             publicPath.endsWith("/") &&
             path.includes(publicPath))

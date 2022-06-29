@@ -1,4 +1,4 @@
-import GoogleSpinner from "@/components/GoogleSpinner";
+import GoogleSpinner from "@/components/common/GoogleSpinner";
 import { API_URL } from "@/config/index";
 import * as qs from "qs";
 import { useState } from "react";

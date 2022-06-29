@@ -2,8 +2,8 @@ import { parseCookie } from "@/helpers/index";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { getUser } from "lib/user";
-import DashboardLayout from "@/components/DashboardLayout";
-import ProfileCard from "@/components/ProfileCard";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import ProfileCard from "@/components/user/ProfileCard";
 
 export default function UserView({ user, error }) {
   if (error) {

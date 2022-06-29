@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import Layout from "./Layout";
+import Layout from "../Layout/Layout";
 
 export default function NotAuthorized() {
   const router = useRouter();

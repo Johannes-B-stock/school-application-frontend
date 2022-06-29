@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { API_URL } from "@/config/index";
 import { parseCookie } from "@/helpers/index";
 import AuthContext from "@/context/AuthContext";
-import NotAuthorized from "@/components/NotAuthorized";
+import NotAuthorized from "@/components/auth/NotAuthorized";
 
 export default function CreateSchoolPage({ token }) {
   const { user } = useContext(AuthContext);

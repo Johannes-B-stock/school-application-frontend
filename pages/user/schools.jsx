@@ -1,5 +1,5 @@
-import MySchoolItem from "@/components/MySchoolItem";
-import NotAuthorized from "@/components/NotAuthorized";
+import MySchoolItem from "@/components/school/MySchoolItem";
+import NotAuthorized from "@/components/auth/NotAuthorized";
 import AuthContext from "@/context/AuthContext";
 import { useContext } from "react";
 

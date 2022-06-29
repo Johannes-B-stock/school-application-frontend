@@ -1,6 +1,6 @@
 import Link from "next/link";
 import styles from "@/styles/ApplicationItem.module.css";
-import { API_URL } from "../config";
+import { API_URL } from "../../config";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 

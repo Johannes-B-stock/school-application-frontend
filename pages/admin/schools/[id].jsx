@@ -1,22 +1,23 @@
-import AddUserTable from "@/components/AddUserTable";
-import DashboardLayout from "@/components/DashboardLayout";
-import GoogleSpinner from "@/components/GoogleSpinner";
-import NotAuthorized from "@/components/NotAuthorized";
+import AddUserTable from "@/components/user/AddUserTable";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
+import GoogleSpinner from "@/components/common/GoogleSpinner";
+import NotAuthorized from "@/components/auth/NotAuthorized";
 import AuthContext from "@/context/AuthContext";
 import { parseCookie } from "@/helpers/index";
-import { faAdd, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { faAdd, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   addMultipleStaffToSchool,
+  getPaginatedApplications,
   getSchoolDetails,
   removeStaffFromSchool,
 } from "lib/school";
 import { getAllUsers } from "lib/user";
-import Image from "next/image";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
-import styles from "@/styles/AdminOverview.module.css";
 import { useRouter } from "next/router";
+import ApplicationsTable from "@/components/admin/ApplicationsTable";
+import UserAvatar from "@/components/user/UserAvatar";
 
 export default function SchoolAdmin({ school, token }) {
   const { user } = useContext(AuthContext);
@@ -27,6 +28,13 @@ export default function SchoolAdmin({ school, token }) {
   const [showStaffModal, setShowStaffModal] = useState(false);
   const [addedStaff, setAddedStaff] = useState([]);
   const [isSavingStaff, setIsSavingStaff] = useState(false);
+  const [filter, setFilter] = useState("");
+
+  const [isLoadingApplications, setIsLoadingApplications] = useState(true);
+  const [applications, setApplications] = useState([]);
+  const [userPictures, setUserPictures] = useState([]);
+  const [applicationPagination, setApplicationPagination] = useState(null);
+  const [page, setPage] = useState(1);
 
   const router = useRouter();
 
@@ -64,6 +72,54 @@ export default function SchoolAdmin({ school, token }) {
     fetchData();
   }, [school, token]);
 
+  useEffect(() => {
+    async function loadApplicationDetails() {
+      setIsLoadingApplications(true);
+
+      const appFetch = await getPaginatedApplications(
+        page,
+        filter,
+        token,
+        school.id
+      );
+      const applicationsResult = await appFetch.json();
+
+      if (appFetch.ok) {
+        setIsLoadingApplications(false);
+        setApplications(applicationsResult.data);
+        setApplicationPagination(applicationsResult.meta.pagination);
+      } else {
+        setApplicationLoadingError(applicationsResult.error.message);
+        toast.error(
+          "Cannot load applications because " + applicationsResult.error.message
+        );
+      }
+      const condensedUserIds = [];
+      applicationsResult.data.forEach(
+        (app) =>
+          !condensedUserIds.includes(app.attributes.user.data.id) &&
+          app.attributes.user.data.id &&
+          condensedUserIds.push(app.attributes.user.data.id)
+      );
+      const users = [];
+      await Promise.all(
+        condensedUserIds.map(async (userId) => {
+          try {
+            const user = await getUser(userId, token, ["picture"]);
+            users.push(user);
+          } catch (error) {
+            console.log(error.message ?? error);
+          }
+        })
+      );
+      const pictures = users.map((user) => {
+        return { id: user.id, picture: user.picture?.formats.thumbnail.url };
+      });
+      setUserPictures(pictures);
+    }
+    loadApplicationDetails();
+  }, [school, token, filter, page]);
+
   const toggleStaffModal = () => {
     setShowStaffModal(!showStaffModal);
   };
@@ -100,11 +156,12 @@ export default function SchoolAdmin({ school, token }) {
   }
   return (
     <section className="section has-background-light">
+      <h2 className="title is-3">School {school.attributes.name}</h2>
       <div className="columns">
         <div className="column">
           <div className="card my-5">
             <div className="card-header">
-              <p className="card-header-title has-background-warning-light">
+              <p className="card-header-title background-gradient-primary-info">
                 General
               </p>
             </div>
@@ -170,7 +227,7 @@ export default function SchoolAdmin({ school, token }) {
         <div className="column">
           <div className="card my-5">
             <header className="card-header">
-              <p className="card-header-title has-background-danger-light">
+              <p className="card-header-title background-gradient-primary-right">
                 Students
               </p>
             </header>
@@ -184,20 +241,7 @@ export default function SchoolAdmin({ school, token }) {
                       className="column is-narrow has-text-centered"
                       key={student.id}
                     >
-                      <figure className="image is-50x50 is-rounded">
-                        <Image
-                          className="image is-50x50 is-rounded"
-                          alt={student.username}
-                          src={
-                            student.picture?.formats.thumbnail?.url ??
-                            "/images/defaultAvatar.png"
-                          }
-                          objectFit="cover"
-                          width="50"
-                          height="50"
-                        />
-                      </figure>
-                      {student.username}
+                      <UserAvatar user={student} />
                     </div>
                   ))}
                 </div>
@@ -207,7 +251,7 @@ export default function SchoolAdmin({ school, token }) {
           </div>
           <div className="card my-5">
             <header className="card-header">
-              <p className="card-header-title has-background-danger-light">
+              <p className="card-header-title background-gradient-primary-right">
                 Staff
               </p>
             </header>
@@ -221,33 +265,10 @@ export default function SchoolAdmin({ school, token }) {
                       className="column is-narrow has-text-centered m-1"
                       key={user.id}
                     >
-                      <div className={styles.user}>
-                        <a
-                          style={{
-                            display: "block",
-                            marginLeft: "auto",
-                            marginBottom: "-10px",
-                          }}
-                          className="icon has-text-danger"
-                          onClick={() => clickRemoveStaff(user.id)}
-                        >
-                          <FontAwesomeIcon icon={faXmark} />
-                        </a>
-                        <figure className="image is-50x50 is-rounded">
-                          <Image
-                            className="image is-50x50 is-rounded"
-                            alt={user.username}
-                            src={
-                              user.picture?.formats.thumbnail?.url ??
-                              "/images/defaultAvatar.png"
-                            }
-                            objectFit="cover"
-                            width="50"
-                            height="50"
-                          />
-                        </figure>
-                        {user.username}
-                      </div>
+                      <UserAvatar
+                        user={user}
+                        clickRemoveStaff={clickRemoveStaff}
+                      />
                     </div>
                   ))}
                 </div>
@@ -261,6 +282,71 @@ export default function SchoolAdmin({ school, token }) {
                   <FontAwesomeIcon icon={faAdd} />
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="columns">
+        <div className="column">
+          <div className="card my-5">
+            <div className="card-header">
+              <p className="card-header-title background-gradient-primary-info">
+                Applications
+              </p>
+            </div>
+            <div className="card-content">
+              <p className="panel-tabs">
+                <a
+                  className={filter === "" ? `is-active` : ""}
+                  onClick={() => setFilter("")}
+                >
+                  All
+                </a>
+                <a
+                  className={filter === "open" ? `is-active` : ""}
+                  onClick={() => setFilter("open")}
+                >
+                  Open
+                </a>
+                <a
+                  className={filter === "submitted" ? `is-active` : ""}
+                  onClick={() => setFilter("submitted")}
+                >
+                  Submitted
+                </a>
+                <a
+                  className={filter === "reviewed" ? `is-active` : ""}
+                  onClick={() => setFilter("reviewed")}
+                >
+                  Reviewed
+                </a>
+                <a
+                  className={filter === "approved" ? `is-active` : ""}
+                  onClick={() => setFilter("approved")}
+                >
+                  Approved
+                </a>
+                <a
+                  className={filter === "revoked" ? `is-active` : ""}
+                  onClick={() => setFilter("revoked")}
+                >
+                  Revoked
+                </a>
+              </p>
+              {isLoadingApplications && (
+                <span className="panel-icon">
+                  <FontAwesomeIcon icon={faSpinner} spin={true} />
+                </span>
+              )}
+              {applications && (
+                <ApplicationsTable
+                  applications={applications}
+                  applicationPagination={applicationPagination}
+                  setPage={setPage}
+                  userPictures={userPictures}
+                  setApplications={setApplications}
+                />
+              )}
             </div>
           </div>
         </div>

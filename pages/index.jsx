@@ -1,8 +1,9 @@
-import SchoolItem from "@/components/SchoolItem";
+import SchoolItem from "@/components/school/SchoolItem";
+import ApplyForStaffCard from "@/components/application/ApplyForStaffCard";
 import { API_URL } from "@/config/index";
 import qs from "qs";
 
-export default function HomePage({ schools }) {
+export default function HomePage({ schools, staffApplicationDetails }) {
   return (
     <div className="content">
       <h1>Upcoming Schools</h1>
@@ -19,6 +20,20 @@ export default function HomePage({ schools }) {
           </div>
         ))}
       </div>
+      {staffApplicationDetails &&
+        staffApplicationDetails.attributes.allowApplications && (
+          <div>
+            <hr />
+            <h2>Others</h2>
+            <div className="columns is-multiline is-variable">
+              <div className={`column`}>
+                <ApplyForStaffCard
+                  staffApplicationDetails={staffApplicationDetails}
+                />
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 }
@@ -40,7 +55,21 @@ export async function getServerSideProps() {
     ...data.attributes,
     image: data.attributes.image?.data?.attributes.formats.small ?? null,
   }));
+
+  const staffQuery = qs.stringify({
+    populate: ["cardImage", "localizations"],
+  });
+
+  const fetchRes = await fetch(
+    `${API_URL}/api/staff-application-setting?${staffQuery}`
+  );
+  const staffResult = await fetchRes.json();
+
+  console.log(staffResult);
+
+  const staffApplicationDetails = staffResult.data ?? null;
+
   return {
-    props: { schools },
+    props: { schools, staffApplicationDetails },
   };
 }

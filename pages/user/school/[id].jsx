@@ -1,4 +1,4 @@
-import GoogleSpinner from "@/components/GoogleSpinner";
+import GoogleSpinner from "@/components/common/GoogleSpinner";
 import { parseCookie } from "@/helpers/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getSchoolDetails } from "lib/school";
@@ -64,7 +64,7 @@ export default function MySchoolPage({ school, token }) {
         /> */}
         <div className="card my-5">
           <div className="card-header">
-            <p className="card-header-title background-gradient-light-left">
+            <p className="card-header-title background-gradient-primary-info">
               General
             </p>
           </div>

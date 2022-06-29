@@ -1,6 +1,7 @@
 import { useRouter } from "next/router";
 import { createContext, useState, useEffect } from "react";
-import { NEXT_URL } from "../config";
+import { API_URL, NEXT_URL } from "../config";
+import axios from "axios";
 
 const AuthContext = createContext();
 
@@ -71,8 +72,33 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Login user
+  const forgotPassword = async ({ email }) => {
+    try {
+      await axios.post(`${API_URL}/api/auth/forgot-password`, {
+        email: email,
+      });
+      return true;
+    } catch (error) {
+      setError(error.message ?? error);
+      return false;
+    }
+  };
 
+  const resetPassword = async ({ code, password }) => {
+    try {
+      await axios.post(`${API_URL}/api/auth/reset-password`, {
+        code: code,
+        password: password,
+        passwordConfirmation: password,
+      });
+      return true;
+    } catch (error) {
+      setError(error.message ?? error);
+      return false;
+    }
+  };
+
+  // Login user
   const login = async ({ email, password }) => {
     try {
       const res = await fetch(`${NEXT_URL}/api/login`, {
@@ -122,7 +148,17 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, setUser, error, googleCallback, register, login, logout }}
+      value={{
+        user,
+        setUser,
+        error,
+        googleCallback,
+        register,
+        login,
+        logout,
+        resetPassword,
+        forgotPassword,
+      }}
     >
       {!loadingInitial && children}
     </AuthContext.Provider>

@@ -10,7 +10,7 @@ export default function DashboardLayout({
   children,
 }) {
   return (
-    <div>
+    <div className="content-wrapper">
       <Head>
         <title>{title}</title>
         <meta name="description" content={description} />
@@ -20,8 +20,11 @@ export default function DashboardLayout({
           content="width=device-width, initial-scale=1"
         ></meta>
       </Head>
-      <Header />
-      {children}
+
+      <div className="page-content">
+        <Header />
+        {children}
+      </div>
       <Footer />
     </div>
   );

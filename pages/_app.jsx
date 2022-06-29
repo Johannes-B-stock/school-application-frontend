@@ -5,14 +5,14 @@ import { AuthProvider } from "@/context/AuthContext";
 import { config } from "@fortawesome/fontawesome-svg-core";
 import "@fortawesome/fontawesome-svg-core/styles.css";
 import { PageContentProvider } from "@/context/PageContentContext";
-import RouteGuard from "@/components/RouteGuard";
+import RouteGuard from "@/components/auth/RouteGuard";
 import CookieConsent from "react-cookie-consent";
 import { ToastContainer } from "react-toastify";
 import { useRouter } from "next/router";
 import NProgress from "nprogress";
 import "../styles/NProgress.scss";
 import { useEffect } from "react";
-import Layout from "@/components/Layout";
+import Layout from "@/components/Layout/Layout";
 import { ThemeProvider } from "next-themes";
 
 config.autoAddCss = false;
@@ -50,7 +50,7 @@ export default function MyApp({ Component, pageProps }) {
   return (
     <PageContentProvider>
       <AuthProvider>
-        <ThemeProvider>
+        <ThemeProvider en>
           <RouteGuard>{getLayout(<Component {...pageProps} />)}</RouteGuard>
         </ThemeProvider>
       </AuthProvider>

@@ -41,8 +41,16 @@ $switch-background-active: $grey-lighter;
   background-image: linear-gradient(to bottom, $info 0%, rgba(0, 0, 0, 0) 35%);
 }
 
-.background-gradient-light-left {
+.background-gradient-primary-info {
   background-image: linear-gradient(to right, $primary-light, $info-light);
+}
+
+.background-gradient-success-link {
+  background-image: linear-gradient(to right, $success-light, $link-light);
+}
+
+.background-gradient-warning-danger {
+  background-image: linear-gradient(to right, $warning-light, $danger-light);
 }
 
 .background-gradient-primary-right {
@@ -55,6 +63,10 @@ $switch-background-active: $grey-lighter;
 
 .background-gradient-info-right {
   background-image: linear-gradient(to right, $info, $info-light);
+}
+
+.background-gradient-warning-right {
+  background-image: linear-gradient(to right, $warning, $warning-light);
 }
 
 $collapse-transition-speed: 0.4s !default;

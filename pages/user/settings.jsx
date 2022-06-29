@@ -1,7 +1,7 @@
-import ProfileHeaderCard from "@/components/ProfileHeaderCard";
+import ProfileHeaderCard from "@/components/user/ProfileHeaderCard";
 import { useContext } from "react";
 import AuthContext from "@/context/AuthContext";
-import ProfileSidebar from "@/components/ProfileSidebar";
+import ProfileSidebar from "@/components/user/ProfileSidebar";
 import axios from "axios";
 import { API_URL } from "@/config/index";
 import { parseCookie } from "@/helpers/index";

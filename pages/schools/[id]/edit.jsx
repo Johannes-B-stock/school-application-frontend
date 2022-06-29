@@ -6,7 +6,7 @@ import { API_URL } from "@/config/index";
 import qs from "qs";
 import Image from "next/image";
 import AuthContext from "@/context/AuthContext";
-import NotAuthorized from "@/components/NotAuthorized";
+import NotAuthorized from "@/components/auth/NotAuthorized";
 
 export default function EditSchoolPage({ school }) {
   const { user } = useContext(AuthContext);

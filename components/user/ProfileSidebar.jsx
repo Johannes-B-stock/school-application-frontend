@@ -19,6 +19,17 @@ export default function ProfileSidebar() {
             </a>
           </Link>
         </li>
+        <li>
+          <Link href="/user/settings">
+            <a
+              className={`${
+                router.pathname === "/user/settings" ? "is-active" : ""
+              }`}
+            >
+              Settings
+            </a>
+          </Link>
+        </li>
         <p className="menu-label">Schools</p>
         <li>
           <Link href="/user/applications">
@@ -28,17 +39,6 @@ export default function ProfileSidebar() {
               }`}
             >
               Applications
-            </a>
-          </Link>
-        </li>
-        <li>
-          <Link href="/user/settings">
-            <a
-              className={`${
-                router.pathname === "/user/settings" ? "is-active" : ""
-              }`}
-            >
-              Settings
             </a>
           </Link>
         </li>

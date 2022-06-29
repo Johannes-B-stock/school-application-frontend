@@ -6,7 +6,7 @@ import { toast } from "react-toastify";
 import ReactMarkdown from "react-markdown";
 import { useState } from "react";
 import { parseCookie } from "@/helpers/index";
-import NotAuthorized from "@/components/NotAuthorized";
+import NotAuthorized from "@/components/auth/NotAuthorized";
 
 export default function ApplyPage({ school, questions, token }) {
   const [isLoading, setIsLoading] = useState(false);

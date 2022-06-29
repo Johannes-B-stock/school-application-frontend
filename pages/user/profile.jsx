@@ -8,11 +8,13 @@ import { faEnvelope, faUser } from "@fortawesome/free-regular-svg-icons";
 import { parseCookie } from "@/helpers/index";
 import { API_URL } from "@/config/index";
 import { toast } from "react-toastify";
-import AddressEdit from "@/components/AddressEdit";
-import ProfileHeaderCard from "@/components/ProfileHeaderCard";
-import ProfileSidebar from "@/components/ProfileSidebar";
+import AddressEdit from "@/components/user/AddressEdit";
+import ProfileHeaderCard from "@/components/user/ProfileHeaderCard";
+import ProfileSidebar from "@/components/user/ProfileSidebar";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { getMyDetails } from "lib/user";
+import PasswordResetModal from "@/components/auth/PasswordResetModal";
+import GoogleSpinner from "@/components/common/GoogleSpinner";
 
 export default function ProfilePage({ token }) {
   const router = useRouter();
@@ -21,6 +23,7 @@ export default function ProfilePage({ token }) {
 
   const [userEdit, setUserEdit] = useState(user);
   const [allowPersonalEdit, setAllowPersonalEdit] = useState(false);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
     setUserEdit(user);
@@ -93,10 +96,18 @@ export default function ProfilePage({ token }) {
     }
   };
 
+  const togglePasswordModal = () => {
+    setShowPasswordModal(!showPasswordModal);
+  };
+
   const handlePersonalEditCancel = () => {
     setAllowPersonalEdit(false);
     setUserEdit(user);
   };
+
+  if (!user) {
+    return <GoogleSpinner />;
+  }
 
   return (
     <>
@@ -108,7 +119,7 @@ export default function ProfilePage({ token }) {
         <div className="column">
           <h1 className="title">Profile Page</h1>
           <div className={`card ${styles.profileCard}`}>
-            <div className="card-header background-gradient-light-left">
+            <div className="card-header background-gradient-primary-info">
               <div className="card-header-title">Personal Information</div>
             </div>
             <div className="card-content">
@@ -248,6 +259,23 @@ export default function ProfilePage({ token }) {
                             <FontAwesomeIcon icon={faEnvelope} />
                           </span>
                         </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="field is-grouped">
+                    <div className="field-label is-normal">
+                      <label className="label"></label>
+                    </div>
+                    <div className="field-body">
+                      <div className="field">
+                        <div className="control">
+                          <div
+                            className="button is-light is-link"
+                            onClick={togglePasswordModal}
+                          >
+                            Change Password
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -393,7 +421,7 @@ export default function ProfilePage({ token }) {
           </div>
           <br />
           <div className={`card ${styles.profileCard}`}>
-            <div className="card-header background-gradient-light-left">
+            <div className="card-header background-gradient-primary-info">
               <div className="card-header-title">My Address</div>
             </div>
             <div className="card-content">
@@ -404,6 +432,11 @@ export default function ProfilePage({ token }) {
           </div>
         </div>
       </div>
+      <PasswordResetModal
+        show={showPasswordModal}
+        setShow={setShowPasswordModal}
+        token={token}
+      />
     </>
   );
 }

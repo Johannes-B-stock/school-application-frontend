@@ -1,4 +1,4 @@
-import DashboardLayout from "@/components/DashboardLayout";
+import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { parseCookie } from "@/helpers/index";
 import {
   faAngleDown,
@@ -8,10 +8,10 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { getApplicationDetails, updateState } from "lib/application";
+import { getApplicationDetails, updateState } from "lib/schoolApplication";
 import { useState } from "react";
 import { toast } from "react-toastify";
-import GoogleSpinner from "@/components/GoogleSpinner";
+import GoogleSpinner from "@/components/common/GoogleSpinner";
 import { getReferenceAnswers } from "lib/references";
 import { getUser } from "lib/user";
 import Image from "next/image";
@@ -26,16 +26,28 @@ export default function ApplicationAdminView({ application, token, user }) {
   const [showReference2, setShowReference2] = useState(false);
   const [loadReference1Answers, setLoadReference1Answers] = useState(false);
   const [loadReference2Answers, setLoadReference2Answers] = useState(false);
+  const [isLoadingAppAnswers, setIsLoadingAppAnswers] = useState(false);
   const [answers1, setAnswers1] = useState(null);
   const [answers2, setAnswers2] = useState(null);
   const [showQuestionary, setShowQuestionary] = useState(false);
   const [applicationAnswers, setApplicationAnswers] = useState([]);
 
   const toggleShowQuestionary = async () => {
-    if (!showQuestionary && applicationAnswers.length === 0) {
-      await loadApplicationAnswers();
-    }
     setShowQuestionary(!showQuestionary);
+    if (!showQuestionary && applicationAnswers.length === 0) {
+      try {
+        setIsLoadingAppAnswers(true);
+        const answerDetails = await getSchoolApplicationAnswerDetails(
+          application.attributes.answers.data,
+          token
+        );
+        setApplicationAnswers(answerDetails);
+      } catch (error) {
+        toast.error(error.message ?? error);
+      } finally {
+        setIsLoadingAppAnswers(false);
+      }
+    }
   };
 
   const toggleShowReference1 = () => {
@@ -49,14 +61,6 @@ export default function ApplicationAdminView({ application, token, user }) {
   const router = useRouter();
   const reference1 = application.attributes.reference1.data;
   const reference2 = application.attributes.reference2.data;
-
-  const loadApplicationAnswers = async () => {
-    const answerDetails = await getSchoolApplicationAnswerDetails(
-      application.attributes.answers.data,
-      token
-    );
-    setApplicationAnswers(answerDetails);
-  };
 
   const loadAnswers = async (referenceId, token) => {
     try {
@@ -118,7 +122,7 @@ export default function ApplicationAdminView({ application, token, user }) {
       toast.error(error.message ?? error);
     }
   };
-
+  console.log(user.picture);
   async function changeState(application, desiredState) {
     try {
       await updateState(application.id, token, desiredState);
@@ -141,7 +145,7 @@ export default function ApplicationAdminView({ application, token, user }) {
         <div className="column is-7">
           <div className="card my-5">
             <header className="card-header">
-              <p className="card-header-title has-background-danger-light">
+              <p className="card-header-title background-gradient-primary-info">
                 General
               </p>
             </header>
@@ -211,7 +215,7 @@ export default function ApplicationAdminView({ application, token, user }) {
 
           <div className="card my-5">
             <header className="card-header">
-              <p className="card-header-title has-background-primary-light">
+              <p className="card-header-title background-gradient-primary-right">
                 User
               </p>
             </header>
@@ -223,7 +227,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                       className="image is-128x128 is-rounded"
                       alt="Profile"
                       src={
-                        user.picture?.formats.small?.url ??
+                        user.picture?.formats.thumbnail?.url ??
                         "/images/defaultAvatar.png"
                       }
                       layout="fill"
@@ -273,7 +277,7 @@ export default function ApplicationAdminView({ application, token, user }) {
 
           <div className="card my-5">
             <header className="card-header">
-              <p className="card-header-title has-background-primary-light">
+              <p className="card-header-title background-gradient-primary-right">
                 Address
               </p>
             </header>
@@ -314,7 +318,7 @@ export default function ApplicationAdminView({ application, token, user }) {
         </div>
         <div className="column">
           <div className="card my-5">
-            <header className="card-header has-background-warning-light">
+            <header className="card-header background-gradient-success-link">
               <p className="card-header-title">Questionary</p>
               <button
                 className="card-header-icon"
@@ -336,8 +340,9 @@ export default function ApplicationAdminView({ application, token, user }) {
               }`}
               aria-expanded={showQuestionary ? "true" : "false"}
             >
+              {isLoadingAppAnswers && <GoogleSpinner />}
               {applicationAnswers?.map((answer) => (
-                <>
+                <div key={answer.data.id}>
                   <div className="has-text-weight-bold">
                     {answer.data.attributes.question.data.attributes.question}
                   </div>
@@ -351,12 +356,12 @@ export default function ApplicationAdminView({ application, token, user }) {
                       : answer.data.attributes.answer}
                   </div>
                   <hr />
-                </>
+                </div>
               ))}
             </div>
           </div>
           <div className="card my-5">
-            <header className="card-header has-background-info-light">
+            <header className="card-header background-gradient-info-right">
               <p className="card-header-title">Reference 1</p>
               <button
                 className="card-header-icon"
@@ -479,7 +484,7 @@ export default function ApplicationAdminView({ application, token, user }) {
           </div>
           <div className="card my-5">
             <header
-              className="card-header has-background-info-light"
+              className="card-header background-gradient-info-right"
               onClick={toggleShowReference2}
             >
               <p className="card-header-title">Reference 2</p>

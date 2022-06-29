@@ -1,4 +1,4 @@
-import GoogleSpinner from "@/components/GoogleSpinner";
+import GoogleSpinner from "@/components/common/GoogleSpinner";
 import AuthContext from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import { useEffect, useContext, useMemo } from "react";

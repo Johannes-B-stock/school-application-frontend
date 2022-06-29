@@ -1,6 +1,6 @@
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import GoogleSpinner from "./GoogleSpinner";
+import GoogleSpinner from "../common/GoogleSpinner";
 import { throttle } from "throttle-debounce";
 import { findUsersWithName } from "lib/user";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

@@ -1,4 +1,4 @@
-import SchoolItem from "@/components/SchoolItem";
+import SchoolItem from "@/components/school/SchoolItem";
 import { API_URL } from "@/config/index";
 import qs from "qs";
 

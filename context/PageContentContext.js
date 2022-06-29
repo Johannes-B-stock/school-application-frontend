@@ -1,4 +1,4 @@
-import { createContext, useState, useEffect } from "react";
+import { createContext, useState, useEffect, useMemo } from "react";
 import { NEXT_URL } from "../config";
 
 const PageContentContext = createContext();
@@ -6,10 +6,6 @@ const PageContentContext = createContext();
 export const PageContentProvider = ({ children, locale }) => {
   const [pageContent, setPageContent] = useState(null);
   const [loadingInitial, setLoadingInitial] = useState(true);
-
-  useEffect(() => {
-    triggerSetPageContent(locale);
-  }, [locale]);
 
   const triggerSetPageContent = async (locale) => {
     try {
@@ -24,6 +20,10 @@ export const PageContentProvider = ({ children, locale }) => {
       setLoadingInitial(false);
     }
   };
+
+  useMemo(() => {
+    triggerSetPageContent(locale);
+  }, [locale]);
 
   return (
     <PageContentContext.Provider value={{ pageContent, triggerSetPageContent }}>
