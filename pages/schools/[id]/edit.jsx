@@ -7,8 +7,9 @@ import qs from "qs";
 import Image from "next/image";
 import AuthContext from "@/context/AuthContext";
 import NotAuthorized from "@/components/auth/NotAuthorized";
+import { parseCookie } from "@/helpers/index";
 
-export default function EditSchoolPage({ school }) {
+export default function EditSchoolPage({ school, token }) {
   const { user } = useContext(AuthContext);
 
   const [values, setValues] = useState({
@@ -40,13 +41,17 @@ export default function EditSchoolPage({ school }) {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ data: values }),
     });
+
+    const resultObj = await res.json();
     if (!res.ok) {
-      toast.error(res.statusText ?? "Something went wrong.");
+      toast.error(
+        resultObj.error?.message ?? res.statusText ?? "Something went wrong."
+      );
     } else {
-      const school = await res.json();
       toast.success("Update successful");
     }
   };
@@ -289,6 +294,7 @@ export default function EditSchoolPage({ school }) {
 }
 
 export async function getServerSideProps({ params: { id }, req }) {
+  const { token } = parseCookie(req);
   const query = qs.stringify({
     populate: "image",
   });
@@ -297,6 +303,7 @@ export async function getServerSideProps({ params: { id }, req }) {
   const response = await res.json();
   return {
     props: {
+      token,
       school: {
         id: response.data.id,
         ...response.data.attributes,

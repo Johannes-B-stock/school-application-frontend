@@ -32,9 +32,14 @@ export default function SchoolItem({ school }) {
       </div>
       <div className="card-content">
         <p className="title">{schoolInfo.name}</p>
-        <p className="subtitle is-italic is-6">
-          <time dateTime="2016-1-1">{school.startDate}</time> -
-          <time>{school.endDate}</time>
+        <p className="subtitle is-7">
+          <span className="is-italic">
+            {new Date(school.startDate).toLocaleDateString(router.locale)}
+          </span>{" "}
+          to{" "}
+          <span className="is-italic">
+            {new Date(school.endDate).toLocaleDateString(router.locale)}
+          </span>
         </p>
         <div className="content">
           {schoolInfo.description}

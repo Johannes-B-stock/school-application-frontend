@@ -1,13 +1,21 @@
 import NotAuthorized from "@/components/auth/NotAuthorized";
 import NotFound from "@/components/common/NotFound";
+import Pagination from "@/components/common/Pagination";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import UserAvatar from "@/components/user/UserAvatar";
 import { API_URL } from "@/config/index";
 import { parseCookie } from "@/helpers/index";
 import axios from "axios";
 import qs from "qs";
+import { useState } from "react";
 
-export default function StaffDashboardPage({ staff, error }) {
+export default function StaffDashboardPage({ staff, error, pagination }) {
+  const [staffPagination, setStaffPagination] = useState(pagination);
+  const [page, setPage] = useState(null);
+
+  console.log(pagination);
+  console.log(staff);
+
   if (!staff) {
     return (
       <div className="section">
@@ -19,9 +27,9 @@ export default function StaffDashboardPage({ staff, error }) {
   }
 
   return (
-    <div className="section is-large">
-      <div className="container">
-        <div className="title is-2">Staff Overview</div>
+    <div className="section is-medium">
+      <div className="container has-text-centered">
+        <div className="title is-2">Staff</div>
 
         <div className="box">
           <div className="columns is-multiline my-3">
@@ -32,6 +40,9 @@ export default function StaffDashboardPage({ staff, error }) {
                 </a>
               </div>
             ))}
+          </div>
+          <div className="p-3">
+            <Pagination pagination={staffPagination} changePage={setPage} />
           </div>
         </div>
       </div>
@@ -54,17 +65,27 @@ export async function getServerSideProps({ req }) {
     };
   }
 
-  const query = qs.stringify({
-    populate: ["school_applications", "picture", "staff_applications"],
-  });
-  try {
-    const staffReq = await axios.get(`${API_URL}/api/users/staff?${query}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
+  const query = qs.stringify(
+    {
+      populate: ["school_applications", "picture", "staff_applications"],
+      sort: ["username:desc"],
+      pagination: {
+        page: 1,
+        pageSize: 40,
       },
-    });
-  } catch (error) {
+    },
+    { encodeValuesOnly: true }
+  );
+  const staffReq = await fetch(`${API_URL}/api/users/staff?${query}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  const staffRes = await staffReq.json();
+  console.log(staffRes);
+  if (!staffReq.ok) {
     return {
       props: {
         error: error.message ?? error,
@@ -73,7 +94,9 @@ export async function getServerSideProps({ req }) {
   }
   return {
     props: {
-      staff: staffReq.data,
+      staff: staffRes.users,
+      pagination: staffRes?.pagination,
+      error: staffRes.error?.message ?? staffReq.statusText,
     },
   };
 }
