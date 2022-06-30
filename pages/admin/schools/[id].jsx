@@ -18,6 +18,7 @@ import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import ApplicationsTable from "@/components/admin/ApplicationsTable";
 import UserAvatar from "@/components/user/UserAvatar";
+import Link from "next/link";
 
 export default function SchoolAdmin({ school, token }) {
   const { user } = useContext(AuthContext);
@@ -241,7 +242,13 @@ export default function SchoolAdmin({ school, token }) {
                       className="column is-narrow has-text-centered"
                       key={student.id}
                     >
-                      <UserAvatar user={student} />
+                      <a
+                        target="_blank"
+                        rel="noreferrer"
+                        href={`/user/${student.id}`}
+                      >
+                        <UserAvatar user={student} />
+                      </a>
                     </div>
                   ))}
                 </div>
@@ -265,10 +272,16 @@ export default function SchoolAdmin({ school, token }) {
                       className="column is-narrow has-text-centered m-1"
                       key={user.id}
                     >
-                      <UserAvatar
-                        user={user}
-                        clickRemoveStaff={clickRemoveStaff}
-                      />
+                      <a
+                        href={`/user/${user.id}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        <UserAvatar
+                          user={user}
+                          clickRemoveStaff={clickRemoveStaff}
+                        />
+                      </a>
                     </div>
                   ))}
                 </div>
@@ -288,7 +301,7 @@ export default function SchoolAdmin({ school, token }) {
       </div>
       <div className="columns">
         <div className="column">
-          <div className="card my-5">
+          <div className="card ">
             <div className="card-header">
               <p className="card-header-title background-gradient-primary-info">
                 Applications
@@ -345,6 +358,7 @@ export default function SchoolAdmin({ school, token }) {
                   setPage={setPage}
                   userPictures={userPictures}
                   setApplications={setApplications}
+                  token={token}
                 />
               )}
             </div>

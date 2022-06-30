@@ -1,4 +1,3 @@
-import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/SchoolItem.module.css";
 import { useRouter } from "next/router";
@@ -24,9 +23,7 @@ export default function MySchoolItem({ school }) {
     >
       <div className="card-image">
         <Image
-          src={
-            school.image?.url ? school.image?.url : "/images/school-default.png"
-          }
+          src={school.image?.formats.small?.url ?? "/images/school-default.png"}
           alt="school image"
           objectFit="cover"
           width={school.image?.width ?? "800"}

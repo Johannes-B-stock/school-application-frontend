@@ -23,13 +23,7 @@ import ApplicationQuestions from "@/components/application/ApplicationQuestions"
 import ReferenceForm from "@/components/application/ReferenceForm";
 import ConfirmStep from "@/components/application/ConfirmStep";
 
-export default function ApplicationPage({
-  application,
-  answerDetails,
-  error,
-  token,
-  address,
-}) {
+export default function ApplicationPage({ application, error, token }) {
   const router = useRouter();
   useEffect(() => {
     if (error) {
@@ -91,6 +85,7 @@ export default function ApplicationPage({
             throw new Error("can not save address!");
           }
           await addressSaveFunction();
+          toast.success("User data successfully updated");
         }
         if (applicationEdit.step === 1) {
           if (!questionSaveFunction) {
@@ -415,7 +410,7 @@ export default function ApplicationPage({
             <AddressEdit
               token={token}
               user={userEdit}
-              address={address}
+              address={application.user.data.attributes.address.data}
               alwaysEdit={true}
               noButtons={true}
               bindSave={bindAddressSave}
@@ -429,9 +424,9 @@ export default function ApplicationPage({
             }`}
           >
             <ApplicationQuestions
-              answerDetails={answerDetails}
+              answerDetails={application.answers.data}
               bindSave={bindQuestionSave}
-              disabled={application.step > applicationEdit.step}
+              disabled={applicationEdit.state !== "created"}
               token={token}
             />
           </div>
@@ -495,7 +490,21 @@ export default function ApplicationPage({
 
 export async function getServerSideProps({ params: { id }, req }) {
   let query = qs.stringify({
-    populate: ["answers", "school", "user", "reference1", "reference2"],
+    populate: {
+      answers: {
+        populate: {
+          question: {
+            populate: ["type"],
+          },
+        },
+      },
+      user: {
+        populate: ["address"],
+      },
+      school: { populate: "*" },
+      reference1: { populate: "*" },
+      reference2: { populate: "*" },
+    },
   });
 
   const { token } = parseCookie(req);
@@ -519,100 +528,10 @@ export async function getServerSideProps({ params: { id }, req }) {
     ...result.data.attributes,
   };
 
-  query = qs.stringify({
-    populate: ["question"],
-    filters: {
-      school_application: {
-        id: {
-          $eq: application.id,
-        },
-      },
-    },
-  });
-  const answerDetails = [];
-  const answerFetch = await fetch(`${API_URL}/api/answers?${query}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  const allAnswers = await answerFetch.json();
-  if (!answerFetch.ok) {
-    throw allAnswers.error;
-  }
-  await Promise.all(
-    allAnswers.data.map(async (answer) => {
-      query = qs.stringify({
-        populate: "type",
-      });
-
-      const questionFetch = await fetch(
-        `${API_URL}/api/questions/${answer.attributes.question.data.id}?${query}`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      const questionDetail = await questionFetch.json();
-      if (!questionFetch.ok) {
-        throw questionDetail.error;
-      }
-      answer.attributes.question = questionDetail;
-      answerDetails.push({
-        id: answer.id,
-        question: {
-          id: answer.attributes.question.data.id,
-          ...answer.attributes.question.data.attributes,
-          type: {
-            id:
-              answer.attributes.question.data.attributes.type?.data?.id ?? null,
-            ...(answer.attributes.question.data.attributes.type?.data
-              ?.attributes ?? null),
-          },
-        },
-        answer: answer.attributes.answer,
-      });
-    })
-  ).catch((error) => {
-    return {
-      props: {
-        error,
-      },
-    };
-  });
-  // get Address
-  query = qs.stringify(
-    {
-      filters: {
-        user: {
-          id: {
-            $eq: application.user.data.id,
-          },
-        },
-      },
-    },
-    {
-      encodeValuesOnly: true,
-    }
-  );
-  const addressFetch = await fetch(`${API_URL}/api/addresses?${query}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const addressResult = await addressFetch.json();
-  const address = addressFetch.ok ? addressResult.data.pop() : null;
-
   return {
     props: {
       application,
-      answerDetails,
       token,
-      address: address ? { id: address.id, ...address.attributes } : null,
     },
   };
 }

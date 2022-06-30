@@ -3,5 +3,7 @@
 }
 
 .user {
-  width: 100px;
+  min-width: 90px;
+  max-width: 110px;
+  overflow: hidden;
 }

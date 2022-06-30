@@ -152,6 +152,7 @@ export default function AdminDashboard({ schools, error, token }) {
                       setPage={setPage}
                       userPictures={userPictures}
                       setApplications={setApplications}
+                      token={token}
                     />
                   )}
                 </nav>

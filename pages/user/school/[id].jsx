@@ -1,4 +1,5 @@
 import GoogleSpinner from "@/components/common/GoogleSpinner";
+import UserAvatar from "@/components/user/UserAvatar";
 import { parseCookie } from "@/helpers/index";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getSchoolDetails } from "lib/school";
@@ -134,20 +135,7 @@ export default function MySchoolPage({ school, token }) {
                     className="column is-narrow has-text-centered"
                     key={student.id}
                   >
-                    <figure className="image is-50x50 is-rounded">
-                      <Image
-                        className="image is-50x50 is-rounded"
-                        alt={student.username}
-                        src={
-                          student.picture?.formats.thumbnail?.url ??
-                          "/images/defaultAvatar.png"
-                        }
-                        objectFit="cover"
-                        width="50"
-                        height="50"
-                      />
-                    </figure>
-                    {student.username}
+                    <UserAvatar user={student} />
                   </div>
                 ))}
               </div>
@@ -171,22 +159,7 @@ export default function MySchoolPage({ school, token }) {
                     className="column is-narrow has-text-centered m-1"
                     key={user.id}
                   >
-                    <div className={styles.user}>
-                      <figure className="image is-50x50 is-rounded">
-                        <Image
-                          className="image is-50x50 is-rounded"
-                          alt={user.username}
-                          src={
-                            user.picture?.formats.thumbnail?.url ??
-                            "/images/defaultAvatar.png"
-                          }
-                          objectFit="cover"
-                          width="50"
-                          height="50"
-                        />
-                      </figure>
-                      {user.username}
-                    </div>
+                    <UserAvatar user={user} />
                   </div>
                 ))}
               </div>

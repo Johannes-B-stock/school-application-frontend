@@ -1,36 +1,37 @@
 export default function QuestionItem({ answer, disabled = false, onAnswered }) {
+  const question = answer.attributes.question?.data?.attributes;
+
   return (
     <div className="field">
       <label htmlFor={answer.id} className="label">
-        {answer.question?.question} {answer.question.required ? "*" : ""}
+        {question.question} {question.required ? "*" : ""}
       </label>
       <div className="control">
-        {(answer.question.inputType === "text" ||
-          answer.question.inputType == undefined) && (
+        {(question.inputType === "text" || question.inputType == undefined) && (
           <input
             type="text"
             name={answer.id}
             className={`input ${
-              answer.question.required && answer.answer == "" && "is-danger"
+              question.required && answer.attributes.answer == "" && "is-danger"
             }`}
-            value={answer.answer}
+            value={answer.attributes.answer}
             onChange={onAnswered}
             disabled={disabled}
           />
         )}
-        {answer.question.inputType === "longtext" && (
+        {question.inputType === "longtext" && (
           <textarea
             type="text"
             name={answer.id}
             className={`textarea ${
-              answer.question.required && answer.answer == "" && "is-danger"
+              question.required && answer.attributes.answer == "" && "is-danger"
             }`}
-            value={answer.answer}
+            value={answer.attributes.answer}
             disabled={disabled}
             onChange={onAnswered}
           />
         )}
-        {answer.question.inputType === "bool" && (
+        {question.inputType === "bool" && (
           <>
             <label className="radio">
               <input
@@ -38,7 +39,7 @@ export default function QuestionItem({ answer, disabled = false, onAnswered }) {
                 name={answer.id}
                 value={true}
                 onChange={onAnswered}
-                checked={answer.answer === "true"}
+                checked={answer.attributes.answer === "true"}
                 disabled={disabled}
               />
               Yes
@@ -49,7 +50,7 @@ export default function QuestionItem({ answer, disabled = false, onAnswered }) {
                 name={answer.id}
                 value={false}
                 onChange={onAnswered}
-                checked={answer.answer === "false"}
+                checked={answer.attributes.answer === "false"}
                 disabled={disabled}
               />
               No

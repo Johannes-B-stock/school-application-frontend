@@ -9,6 +9,11 @@ import Image from "next/image";
 import Pagination from "@/components/common/Pagination";
 import Link from "next/link";
 import _ from "lodash";
+import { toast } from "react-toastify";
+import { updateState } from "lib/schoolApplication";
+import { addStudentToSchool } from "lib/school";
+import { API_URL } from "@/config/index";
+import { useRouter } from "next/router";
 
 export default function ApplicationsTable({
   applications,
@@ -16,7 +21,9 @@ export default function ApplicationsTable({
   setPage,
   setApplications,
   userPictures,
+  token,
 }) {
+  const router = useRouter();
   const deleteApplication = async (id) => {
     if (
       !confirm(
@@ -69,7 +76,7 @@ export default function ApplicationsTable({
       setApplications([...applications]);
     } catch (err) {
       toast.error(
-        "Error while changing state of application: " + error?.message ?? error
+        "Error while changing state of application: " + err?.message ?? err
       );
     }
   }

@@ -20,6 +20,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { addStudentToSchool } from "lib/school";
 import { getSchoolApplicationAnswerDetails } from "lib/answers";
+import { API_URL } from "@/config/index";
 
 export default function ApplicationAdminView({ application, token, user }) {
   const [showReference1, setShowReference1] = useState(false);
@@ -97,7 +98,7 @@ export default function ApplicationAdminView({ application, token, user }) {
 
     if (deleteFetch.ok) {
       toast.success("Application was successful deleted");
-      router.push("admin/dashboard");
+      router.push("/admin/dashboard");
     } else {
       const result = await deleteFetch.json();
       toast.error("Error while deleting application: " + result.error.message);
@@ -457,7 +458,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                       className="button is-primary mb-5"
                       onClick={() => loadAnswers(reference1.id, token)}
                     >
-                      Load questions and answers
+                      Show Questionary
                     </div>
                   )}
                   {loadReference1Answers && <GoogleSpinner />}
@@ -581,7 +582,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                       className="button is-primary mb-5"
                       onClick={() => loadAnswers(reference2.id, token)}
                     >
-                      Load questions and answers
+                      Show Questionary
                     </div>
                   )}
                   {loadReference2Answers && <GoogleSpinner />}

@@ -2,8 +2,12 @@ import MySchoolItem from "@/components/school/MySchoolItem";
 import NotAuthorized from "@/components/auth/NotAuthorized";
 import AuthContext from "@/context/AuthContext";
 import { useContext } from "react";
+import axios from "axios";
+import { parseCookie } from "@/helpers/index";
+import { API_URL } from "@/config/index";
+import qs from "qs";
 
-export default function MySchools() {
+export default function MySchools({ schools }) {
   const { user } = useContext(AuthContext);
 
   if (!user) {
@@ -16,14 +20,47 @@ export default function MySchools() {
           <p className="title">My Schools</p>
         </div>
       </div>
-      {user.schools.length === 0 ? (
+      {schools.length === 0 ? (
         <p className="subtitle">You are not part of any school yet</p>
       ) : (
-        user.schools.map((school) => (
+        schools.map((school) => (
           <MySchoolItem key={school.id} school={school} />
         ))
       )}
       <br />
     </section>
   );
+}
+
+export async function getServerSideProps({ req }) {
+  try {
+    const { token } = parseCookie(req);
+    const query = qs.stringify(
+      {
+        populate: {
+          schools: {
+            populate: ["image"],
+          },
+        },
+      },
+      { encodeValuesOnly: true }
+    );
+    const me = await axios.get(`${API_URL}/api/users/me?${query}`, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    return {
+      props: {
+        schools: me.data.schools ?? null,
+      },
+    };
+  } catch (error) {
+    return {
+      props: {
+        error: error.message ?? error,
+      },
+    };
+  }
 }

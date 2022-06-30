@@ -21,7 +21,7 @@ export default function AddressEdit({
   const router = useRouter();
 
   const { setUser } = useContext(AuthContext);
-  const [addressEdit, setAddressEdit] = useState(address);
+  const [addressEdit, setAddressEdit] = useState(address.attributes ?? address);
 
   const [countryEdit, setCountryEdit] = useState({
     value: addressEdit?.country,
@@ -95,13 +95,12 @@ export default function AddressEdit({
           throw new Error(addressResult.error?.message ?? res.statusText);
         }
       } else {
-        toast.success("Saved successfully");
         !alwaysEdit && setAllowAddressEdit(false);
         setUser({ ...user, address: addressResult.data.attributes });
       }
     } else {
       // Update existing address
-      const res = await fetch(`${API_URL}/api/addresses/${addressEdit.id}`, {
+      const res = await fetch(`${API_URL}/api/addresses/${address.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -124,8 +123,6 @@ export default function AddressEdit({
       } else {
         !alwaysEdit && setAllowAddressEdit(false);
         setUser({ ...user, address: addressResult.data.attributes });
-
-        toast.success("Saved successfully");
       }
     }
   };

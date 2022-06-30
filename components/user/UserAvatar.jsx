@@ -4,7 +4,6 @@ import styles from "@/styles/AdminOverview.module.css";
 import Image from "next/image";
 
 export default function UserAvatar({ user, clickRemoveStaff }) {
-  console.log(user.picture);
   return (
     <div className={styles.user}>
       {clickRemoveStaff && (
@@ -32,7 +31,7 @@ export default function UserAvatar({ user, clickRemoveStaff }) {
           height="50"
         />
       </figure>
-      {user.username}
+      <span className="is-size-7">{user.username}</span>
     </div>
   );
 }

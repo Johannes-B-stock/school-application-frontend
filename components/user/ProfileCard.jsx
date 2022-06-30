@@ -14,7 +14,11 @@ export default function ProfileCard({ user }) {
         <Image
           className="image is-130x130 is-rounded"
           alt="Profile"
-          src={user?.picture?.formats.small.url ?? "/images/defaultAvatar.png"}
+          src={
+            user?.picture?.formats.small?.url ??
+            user?.picture?.formats.thumbnail?.url ??
+            "/images/defaultAvatar.png"
+          }
           width="130px"
           height="130px"
           objectFit="cover"

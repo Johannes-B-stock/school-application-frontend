@@ -1,11 +1,13 @@
+import QuestionItem from "@/components/application/QuestionItem";
 import GoogleSpinner from "@/components/common/GoogleSpinner";
+import NotFound from "@/components/common/NotFound";
 import { API_URL } from "@/config/index";
 import * as qs from "qs";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
-export default function ReferencePage({ reference }) {
-  const [answers, setAnswers] = useState(reference.attributes.answers);
+export default function ReferencePage({ reference, errorCode }) {
+  const [answers, setAnswers] = useState(reference?.attributes.answers);
   const [isLoading, setIsLoading] = useState(false);
 
   const onAnswered = (e) => {
@@ -121,6 +123,10 @@ export default function ReferencePage({ reference }) {
     }
   };
 
+  if (!reference && errorCode === 404) {
+    return <NotFound />;
+  }
+
   return (
     <>
       <div className="title is-4">Reference</div>
@@ -133,22 +139,12 @@ export default function ReferencePage({ reference }) {
       <br />
       <form className="form">
         {reference.attributes.answers.map((answer) => (
-          <div key={answer.id} className="field">
-            <label htmlFor={answer.id} className="label">
-              {answer.attributes.question?.data.attributes.question}{" "}
-              {answer.attributes.question?.data.attributes.required ? "*" : ""}
-            </label>
-            <div className="control">
-              <input
-                type="text"
-                name={answer.id}
-                className="input"
-                value={answer.attributes.answer}
-                onChange={onAnswered}
-                disabled={reference.attributes.submitted}
-              />
-            </div>
-          </div>
+          <QuestionItem
+            key={answer.id}
+            answer={answer}
+            disabled={reference.attributes.submitted}
+            onAnswered={onAnswered}
+          />
         ))}
         <br />
         <div className="field is-grouped">
@@ -199,12 +195,25 @@ export async function getServerSideProps({ params: { uid }, req }) {
 
   const reference = referenceJson.data?.[0] ?? null;
 
+  if (!reference) {
+    return {
+      props: {
+        errorCode: 404,
+      },
+    };
+  }
+
   const answers = [];
 
   await Promise.all(
     reference.attributes.answers.data.map(async (answer) => {
       const answerQuery = qs.stringify({
-        populate: ["question"],
+        populate: {
+          question: {
+            sort: ["order:asc"],
+            populate: "type",
+          },
+        },
       });
       const answerFetch = await fetch(
         `${API_URL}/api/answers/${answer.id}?${answerQuery}`

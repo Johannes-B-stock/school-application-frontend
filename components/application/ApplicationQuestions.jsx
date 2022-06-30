@@ -16,7 +16,7 @@ export default function ApplicationQuestions({
       (answer) => answer.id.toString() === e.target.name
     );
     const index = answers.indexOf(updatedAnswer);
-    updatedAnswer.answer = e.target.value;
+    updatedAnswer.attributes.answer = e.target.value;
     const newAnswers = [...answers];
     newAnswers[index] = updatedAnswer;
     setAnswers(newAnswers);
@@ -31,7 +31,9 @@ export default function ApplicationQuestions({
 
   function groupByQuestionType(answers) {
     return answers.reduce((prev, curr) => {
-      const key = curr.question.type.name ?? "";
+      const key =
+        curr.attributes.question.data.attributes.type?.data?.attributes?.name ??
+        "";
       if (!prev[key]) {
         prev[key] = [];
       }
@@ -46,13 +48,18 @@ export default function ApplicationQuestions({
         .sort()
         .map(([type, questions]) => [
           type,
-          questions.sort((q1, q2) => q1.question.order - q2.question.order),
+          questions.sort(
+            (q1, q2) =>
+              q1.attributes.question.data.attributes.order -
+              q2.attributes.question.data.attributes.order
+          ),
         ])
         .map(([type, questions]) => (
           <div key={type}>
             <h3 className="title">{type}</h3>
             <h6 className="subtitle is-6">
-              {questions[0].question.type?.description ?? ""}
+              {questions[0].attributes.question.data.attributes.type?.data
+                ?.attributes.description ?? ""}
             </h6>
             {questions.map((answer) => (
               <QuestionItem

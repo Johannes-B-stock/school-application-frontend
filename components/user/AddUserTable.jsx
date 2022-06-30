@@ -102,7 +102,7 @@ export default function AddUserTable({
                       <Image
                         alt={user.username}
                         src={
-                          user.picture?.formats.small.url ??
+                          user.picture?.formats.thumbnail.url ??
                           "/images/defaultAvatar.png"
                         }
                         className="image is-32x32 is-rounded"
