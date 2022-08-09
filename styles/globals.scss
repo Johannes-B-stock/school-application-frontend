@@ -86,3 +86,9 @@ $message-body-padding: 1.25em 1.5em !default;
   transition: height $collapse-transition-speed $collapse-transition-style;
   transition: padding 0.3s $collapse-transition-style;
 }
+
+// react-select variables
+
+.select__input-container {
+  padding-left: 25px;
+}
