@@ -237,7 +237,7 @@ async function getQuestionCollectionIdFromStaffApplication(
   token: string
 ): Promise<string> {
   const query = qs.stringify({
-    populate: ["questions"],
+    populate: ["referenceQuestions"],
   });
   const staffApplicationSetting = await axios.get<
     SingleDataResponse<StaffApplicationSetting>
