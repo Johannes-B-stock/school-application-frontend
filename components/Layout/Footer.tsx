@@ -3,6 +3,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { MouseEvent, useContext, useState } from "react";
 import styles from "@/styles/Footer.module.css";
+import { footer } from "@/i18n";
 
 export default function Footer() {
   const router = useRouter();
@@ -31,18 +32,18 @@ export default function Footer() {
           <nav className="level">
             <div className="level-left is-size-6">
               <div className="level-item has-text-centered mx-3">
-                <Link href="/impressum">Impressum</Link>
+                <Link href="/impressum">{footer[router.locale].impressum}</Link>
               </div>
               <div className="level-item has-text-centered mx-3">
-                <Link href="/privacy">Datenschutz</Link>
+                <Link href="/privacy">{footer[router.locale].privacy}</Link>
               </div>
             </div>
             <div className="level-right">
               <div className="level-item has-text-centered mx-3">
-                <Link href="/about">About</Link>
+                <Link href="/about">{footer[router.locale].about}</Link>
               </div>
               <div className="level-item has-text-centered mx-3">
-                <Link href="/contact">Contact</Link>
+                <Link href="/contact">{footer[router.locale].contact}</Link>
               </div>
               <div className="level-item">
                 <div

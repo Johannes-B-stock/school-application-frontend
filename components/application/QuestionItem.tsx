@@ -1,10 +1,33 @@
-export default function QuestionItem({ answer, disabled = false, onAnswered }) {
+import { general } from "@/i18n";
+import { Answer, Data } from "definitions/backend";
+import { useRouter } from "next/router";
+import { ChangeEventHandler } from "react";
+
+export default function QuestionItem({
+  answer,
+  disabled = false,
+  onAnswered,
+}: {
+  answer: Data<Answer>;
+  disabled: boolean;
+  onAnswered: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
+}) {
+  const { locale } = useRouter();
   const question = answer.attributes.question?.data?.attributes;
+  let questionText = question.question;
+  if (question.locale !== locale && question.localizations) {
+    const localeQuestion = question.localizations.data.find(
+      (localizedQuestion) => localizedQuestion.attributes.locale === locale
+    );
+    if (localeQuestion) {
+      questionText = localeQuestion.attributes.question;
+    }
+  }
 
   return (
     <div className="field">
       <label htmlFor={answer.id} className="label">
-        {question.question} {question.required ? "*" : ""}
+        {questionText} {question.required ? "*" : ""}
       </label>
       <div className="control">
         {(question.inputType === "text" || question.inputType == undefined) && (
@@ -41,7 +64,7 @@ export default function QuestionItem({ answer, disabled = false, onAnswered }) {
                 checked={answer.attributes.answer === "true"}
                 disabled={disabled}
               />
-              Yes
+              {general.buttons[locale].yes}
             </label>
             <label className="radio">
               <input
@@ -52,7 +75,7 @@ export default function QuestionItem({ answer, disabled = false, onAnswered }) {
                 checked={answer.attributes.answer === "false"}
                 disabled={disabled}
               />
-              No
+              {general.buttons[locale].no}
             </label>
           </>
         )}

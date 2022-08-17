@@ -5,9 +5,11 @@ import { useContext } from "react";
 import axios from "axios";
 import { parseCookie } from "@/helpers/index";
 import { API_URL } from "@/config/index";
+import { user as useri18n } from "@/i18n";
 import qs from "qs";
+import { GetServerSideProps } from "next";
 
-export default function MySchools({ schools }) {
+export default function MySchools({ schools, locale }) {
   const { user } = useContext(AuthContext);
 
   if (!user) {
@@ -17,11 +19,11 @@ export default function MySchools({ schools }) {
     <section className="section">
       <div className="level has-text-centered">
         <div className="level-item">
-          <p className="title">My Schools</p>
+          <p className="title">{useri18n[locale].mySchools}</p>
         </div>
       </div>
       {schools.length === 0 ? (
-        <p className="subtitle">You are not part of any school yet</p>
+        <p className="subtitle">{useri18n[locale].noSchools}</p>
       ) : (
         schools.map((school) => (
           <MySchoolItem key={school.id} school={school} />
@@ -32,7 +34,10 @@ export default function MySchools({ schools }) {
   );
 }
 
-export async function getServerSideProps({ req }) {
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  locale,
+}) => {
   try {
     const { token } = parseCookie(req);
     const query = qs.stringify(
@@ -54,13 +59,15 @@ export async function getServerSideProps({ req }) {
     return {
       props: {
         schools: me.data.schools ?? null,
+        locale,
       },
     };
   } catch (error) {
     return {
       props: {
         error: error.message ?? error,
+        locale,
       },
     };
   }
-}
+};

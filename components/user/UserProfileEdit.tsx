@@ -6,14 +6,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faUser } from "@fortawesome/free-regular-svg-icons";
 import { API_URL } from "@/config/index";
 import { toast } from "react-toastify";
-import {
-  faMars,
-  faMarsAndVenus,
-  faUpload,
-  faVenus,
-} from "@fortawesome/free-solid-svg-icons";
+import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { getMyDetails } from "lib/user";
 import GenderSelect from "../common/GenderSelect";
+import { general, profile } from "@/i18n";
 
 export default function UserProfileEdit({ allowEdit = false, token, user }) {
   const router = useRouter();
@@ -107,10 +103,10 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
   };
 
   return allowPersonalEdit ? (
-    <form>
+    <form className="longer-form-labels">
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Avatar:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[router.locale].avatar}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -146,8 +142,8 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
                   </span>
                   <span className="file-label">
                     {loadingPicture
-                      ? "Loading picture"
-                      : "Upload a new picture"}
+                      ? profile[router.locale].loadingPicture
+                      : profile[router.locale].upload}
                   </span>
                 </span>
               </label>
@@ -156,8 +152,8 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">User Name:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[router.locale].userName}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -179,8 +175,8 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">First Name:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[router.locale].firstName}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -202,8 +198,8 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Middle Name(s):</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[router.locale].middleNames}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -225,8 +221,8 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Last Name:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[router.locale].lastName}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -248,8 +244,8 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Email:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[router.locale].email}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -269,7 +265,7 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
         </div>
       </div>
       <div className="field is-grouped">
-        <div className="field-label">
+        <div className="field-label is-normal">
           <label className="label"></label>
         </div>
         <div className="field-body">
@@ -279,28 +275,29 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
                 className="button is-light is-link"
                 onClick={togglePasswordModal}
               >
-                Change Password
+                {profile[router.locale].changePassword}
               </div>
             </div>
           </div>
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Gender:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[router.locale].gender}:</label>
         </div>
         <div className="field-body">
           <div className="field">
             <GenderSelect
               value={userEdit?.gender}
               onInputChange={handleInputChange}
+              locale={router.locale}
             />
           </div>
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Birthday:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[router.locale].birthdate}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -319,13 +316,13 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
       <div className="field is-grouped">
         <div className="control">
           <div className="button is-primary" onClick={onSavePersonal}>
-            Save
+            {general.buttons[router.locale].save}
           </div>
         </div>
         <div className="control">
           {" "}
           <div className="button" onClick={handlePersonalEditCancel}>
-            Cancel
+            {general.buttons[router.locale].cancel}
           </div>
         </div>
       </div>
@@ -333,7 +330,9 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
   ) : (
     <>
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Avatar:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {profile[router.locale].avatar}:
+        </div>
         <div className="column">
           <div className="image is-32x32 is-rounded">
             <Image
@@ -352,36 +351,50 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
       </div>
 
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">User Name:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {profile[router.locale].userName}:
+        </div>
         <div className="column">{user?.username}</div>
       </div>
 
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">First Name:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {profile[router.locale].firstName}:
+        </div>
         <div className="column">{user?.firstname}</div>
       </div>
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          Middle Name(s):
+          {profile[router.locale].middleNames}:
         </div>
         <div className="column">{user?.middle_names}</div>
       </div>
 
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Last Name:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {profile[router.locale].lastName}:
+        </div>
         <div className="column">{user?.lastname}</div>
       </div>
 
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Email:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {profile[router.locale].email}:
+        </div>
         <div className="column">{user?.email}</div>
       </div>
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Gender:</div>
-        <div className="column">{user?.gender ?? "-"}</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {profile[router.locale].gender}:
+        </div>
+        <div className="column">
+          {user?.gender ? profile[router.locale][user.gender] : "-"}
+        </div>
       </div>
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Birthdate:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {profile[router.locale].birthdate}:
+        </div>
         <div className="column">
           {user?.birthday
             ? new Date(user.birthday).toLocaleDateString(router.locale)
@@ -392,7 +405,7 @@ export default function UserProfileEdit({ allowEdit = false, token, user }) {
         className="button is-primary"
         onClick={() => setAllowPersonalEdit(true)}
       >
-        Edit
+        {general.buttons[router.locale].edit}
       </div>
     </>
   );

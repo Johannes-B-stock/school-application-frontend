@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/SchoolItem.module.css";
 import { useRouter } from "next/router";
+import { general, home } from "@/i18n";
 
 export default function ApplyForStaffCard({ staffApplicationDetails }) {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function ApplyForStaffCard({ staffApplicationDetails }) {
         </div>
       )}
       <div className="card-content">
-        <p className="title">Apply for Staff</p>
+        <p className="title">{home[locale].applyForStaff}</p>
 
         <div className="content">
           {staffApplicationDetails.attributes.shortDescription}
@@ -43,10 +44,10 @@ export default function ApplyForStaffCard({ staffApplicationDetails }) {
       </div>
       <footer className="card-footer">
         <Link href={`/staff-application/details`}>
-          <a className="card-footer-item">Details</a>
+          <a className="card-footer-item">{general.buttons[locale].details}</a>
         </Link>
         <Link href={`/staff-application/create`}>
-          <a className="card-footer-item">Apply</a>
+          <a className="card-footer-item">{general.buttons[locale].apply}</a>
         </Link>
       </footer>
     </div>

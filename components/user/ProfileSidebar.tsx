@@ -1,3 +1,4 @@
+import { profileSidebar } from "@/i18n";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
@@ -7,7 +8,7 @@ export default function ProfileSidebar() {
   return (
     <aside className="menu">
       <ul className="menu-list">
-        <p className="menu-label">General</p>
+        <p className="menu-label">{profileSidebar[router.locale].general}</p>
         <li>
           <Link href="/user/profile">
             <a
@@ -15,7 +16,7 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/profile" ? "is-active" : ""
               }`}
             >
-              Profile
+              {profileSidebar[router.locale].profile}
             </a>
           </Link>
         </li>
@@ -26,7 +27,7 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/address" ? "is-active" : ""
               }`}
             >
-              Addresses
+              {profileSidebar[router.locale].addresses}
             </a>
           </Link>
         </li>
@@ -37,11 +38,11 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/settings" ? "is-active" : ""
               }`}
             >
-              Settings
+              {profileSidebar[router.locale].settings}
             </a>
           </Link>
         </li>
-        <p className="menu-label">Schools</p>
+        <p className="menu-label">{profileSidebar[router.locale].schools}</p>
         <li>
           <Link href="/user/applications">
             <a
@@ -49,7 +50,7 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/applications" ? "is-active" : ""
               }`}
             >
-              My Applications
+              {profileSidebar[router.locale].applications}
             </a>
           </Link>
         </li>
@@ -60,7 +61,7 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/schools" ? "is-active" : ""
               }`}
             >
-              My Schools
+              {profileSidebar[router.locale].mySchools}
             </a>
           </Link>
         </li>

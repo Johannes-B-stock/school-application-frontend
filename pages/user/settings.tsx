@@ -8,6 +8,7 @@ import { parseCookie } from "@/helpers/index";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { useTheme } from "next-themes";
+import { general, user as useri18n } from "@/i18n";
 
 export default function Settings({ req }) {
   const { user, logout } = useContext(AuthContext);
@@ -60,12 +61,14 @@ export default function Settings({ req }) {
         </div>
 
         <div className="column is-7">
-          <h1 className="title is-3">Settings</h1>
+          <h1 className="title is-3">{useri18n[router.locale].settings}</h1>
           <div className="box">
-            <h2 className="title is-5">Appearance</h2>
+            <h2 className="title is-5">{useri18n[router.locale].appearance}</h2>
             <div className="mb-3"></div>
             <div className="field">
-              <label htmlFor="switchRoundedDefault">Dark mode </label>
+              <label htmlFor="switchRoundedDefault">
+                {useri18n[router.locale].darkMode}{" "}
+              </label>
               <input
                 id="switchRoundedDefault"
                 type="checkbox"
@@ -74,18 +77,19 @@ export default function Settings({ req }) {
                 checked={theme === "light" ? true : false}
                 onClick={toggleTheme}
               />
-              <label htmlFor="switchRoundedDefault">Light mode</label>
+              <label htmlFor="switchRoundedDefault">
+                {useri18n[router.locale].lightMode}
+              </label>
             </div>
           </div>
           <div className="box has-background-warning-light">
-            <h2 className="title is-5">Delete Account</h2>
-            <div className="mb-3">
-              Caution! By Clicking on this button your account will be
-              completely deleted!
-            </div>
+            <h2 className="title is-5">
+              {useri18n[router.locale].deleteAccount}{" "}
+            </h2>
+            <div className="mb-3">{useri18n[router.locale].deleteCaution}</div>
 
             <div className="button is-danger" onClick={deleteAccount}>
-              Delete
+              {general.buttons[router.locale].delete}
             </div>
           </div>
         </div>

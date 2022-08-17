@@ -1,52 +1,44 @@
+import { applicationDetails, general } from "@/i18n";
+import { useRouter } from "next/router";
+
 export default function ConfirmStep({
   applicationState,
   submitApplication,
   submitLoading,
 }) {
+  const { locale } = useRouter();
   return (
     <>
       {applicationState === "created" && (
         <>
-          <p className="my-5">
-            I hereby confirm that I answered all questions to my best knowledge
-            and that I want to apply.
-          </p>
+          <p className="my-5">{applicationDetails[locale].confirmText}</p>
 
           <div
             className={`button is-primary ${submitLoading && "is-loading"}`}
             onClick={submitApplication}
           >
-            Submit
+            {general.buttons[locale].submit}
           </div>
         </>
       )}
       {applicationState === "submitted" && (
         <>
-          <p className="my-5">
-            Your application has been submitted already and is now in review.
-          </p>
+          <p className="my-5">{applicationDetails[locale].submittedText}</p>
         </>
       )}
       {applicationState === "reviewed" && (
         <>
-          <p className="my-5">
-            Your application has been reviewed. You will soon know if it has
-            been approved or revoked.
-          </p>
+          <p className="my-5">{applicationDetails[locale].reviewedText}</p>
         </>
       )}
       {applicationState === "approved" && (
         <>
-          <p className="my-5">
-            Congratulations, your application has been approved!
-          </p>
+          <p className="my-5">{applicationDetails[locale].approvedText}</p>
         </>
       )}
       {applicationState === "revoked" && (
         <>
-          <p className="my-5">
-            Unfortunately, your application has been revoked!
-          </p>
+          <p className="my-5">{applicationDetails[locale].revokedText}</p>
         </>
       )}
     </>

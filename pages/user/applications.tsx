@@ -7,10 +7,13 @@ import { useContext } from "react";
 import AuthContext from "@/context/AuthContext";
 import ProfileSidebar from "@/components/user/ProfileSidebar";
 import axios from "axios";
+import { applications as appli18n } from "@/i18n";
 import StaffApplicationItem from "@/components/application/StaffApplicationItem";
+import { GetServerSideProps } from "next";
 
-export default function ApplicationsPage({ applications, token }) {
+export default function ApplicationsPage({ applications, token, locale }) {
   const { user } = useContext(AuthContext);
+
   return (
     <>
       <ProfileHeaderCard user={user} />
@@ -19,11 +22,9 @@ export default function ApplicationsPage({ applications, token }) {
           <ProfileSidebar />
         </div>
         <div className="column">
-          <h1 className="title is-3">My Applications</h1>
+          <h1 className="title is-3">{appli18n[locale].applications}</h1>
           {applications.length === 0 && (
-            <h3 className="subtitle is-4">
-              you don&apos;t have any open applications yet
-            </h3>
+            <h3 className="subtitle is-4">{appli18n[locale].noApplications}</h3>
           )}
           <div className="columns is-multiline is-variable">
             {applications &&
@@ -56,7 +57,10 @@ export default function ApplicationsPage({ applications, token }) {
   );
 }
 
-export async function getServerSideProps({ req }) {
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  locale,
+}) => {
   const { token } = parseCookie(req);
 
   if (!token) {
@@ -122,6 +126,6 @@ export async function getServerSideProps({ req }) {
   });
 
   return {
-    props: { applications: applications ?? null, token: token ?? null },
+    props: { applications: applications ?? null, token: token ?? null, locale },
   };
-}
+};

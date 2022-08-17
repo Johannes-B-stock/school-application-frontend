@@ -4,12 +4,13 @@ import { API_URL } from "@/config/index";
 import qs from "qs";
 import { GetServerSideProps } from "next";
 import { SchoolsResponse } from "definitions/backend";
+import { home } from "@/i18n";
 
-export default function HomePage({ schools, staffApplicationDetails }) {
+export default function HomePage({ schools, staffApplicationDetails, locale }) {
   return (
     <div className="content">
-      <h1>Upcoming Schools</h1>
-      {schools.length === 0 && <h3>No schools to apply at the moment</h3>}
+      <h1>{home[locale].upcomingSchools}</h1>
+      {schools.length === 0 && <h3>{home[locale].noSchools}</h3>}
       <div className="columns is-multiline is-variable">
         {schools.map((school) => (
           <div
@@ -26,7 +27,7 @@ export default function HomePage({ schools, staffApplicationDetails }) {
         staffApplicationDetails.attributes.allowApplications && (
           <div>
             <hr />
-            <h2>Others</h2>
+            <h2>{home[locale].others}</h2>
             <div className="columns is-multiline is-variable">
               <div className={`column`}>
                 <ApplyForStaffCard
@@ -40,7 +41,7 @@ export default function HomePage({ schools, staffApplicationDetails }) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async () => {
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   const query = qs.stringify({
     filters: {
       isPublic: {
@@ -51,7 +52,7 @@ export const getServerSideProps: GetServerSideProps = async () => {
     sort: ["startDate", "name"],
   });
   const res = await fetch(`${API_URL}/api/schools?${query}`);
-  const result = await res.json() as SchoolsResponse;
+  const result = (await res.json()) as SchoolsResponse;
   const schools = result.data.map((data) => ({
     id: data.id,
     ...data.attributes,
@@ -70,6 +71,6 @@ export const getServerSideProps: GetServerSideProps = async () => {
   const staffApplicationDetails = staffResult.data ?? null;
 
   return {
-    props: { schools, staffApplicationDetails },
+    props: { schools, staffApplicationDetails, locale },
   };
-}
+};

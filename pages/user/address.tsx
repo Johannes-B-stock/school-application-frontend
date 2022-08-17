@@ -4,10 +4,12 @@ import ProfileHeaderCard from "@/components/user/ProfileHeaderCard";
 import ProfileSidebar from "@/components/user/ProfileSidebar";
 import AuthContext from "@/context/AuthContext";
 import { parseCookie } from "@/helpers/index";
+import { address } from "@/i18n";
 import styles from "@/styles/ProfilePage.module.css";
+import { GetServerSideProps } from "next";
 import { useContext } from "react";
 
-export default function AddressPage({ token }) {
+export default function AddressPage({ token, locale }) {
   const { user } = useContext(AuthContext);
 
   if (!user) {
@@ -22,10 +24,12 @@ export default function AddressPage({ token }) {
           <ProfileSidebar />
         </div>
         <div className="column">
-          <h1 className="title">Addresses</h1>
+          <h1 className="title">{address[locale].addresses}</h1>
           <div className={`card ${styles.profileCard}`}>
             <div className="card-header background-gradient-primary-info">
-              <div className="card-header-title">My Address</div>
+              <div className="card-header-title">
+                {address[locale].myAddress}
+              </div>
             </div>
             <div className="card-content">
               {user && (
@@ -36,7 +40,9 @@ export default function AddressPage({ token }) {
           <br />
           <div className={`card ${styles.profileCard}`}>
             <div className="card-header background-gradient-primary-info">
-              <div className="card-header-title">Emergency Contact</div>
+              <div className="card-header-title">
+                {address[locale].emergencyContact}
+              </div>
             </div>
             <div className="card-content">
               {user && (
@@ -55,10 +61,13 @@ export default function AddressPage({ token }) {
   );
 }
 
-export async function getServerSideProps({ req }) {
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  locale,
+}) => {
   const { token } = parseCookie(req);
 
   return {
-    props: { token: token ?? null },
+    props: { token: token ?? null, locale },
   };
-}
+};

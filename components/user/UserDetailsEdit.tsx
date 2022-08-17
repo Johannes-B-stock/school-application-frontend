@@ -8,6 +8,8 @@ import {
   faMobilePhone,
   faPhone,
 } from "@fortawesome/free-solid-svg-icons";
+import { general, profile } from "@/i18n";
+import { useRouter } from "next/router";
 
 export default function UserDetailsEdit({
   allowEdit = false,
@@ -17,6 +19,7 @@ export default function UserDetailsEdit({
   setSaveFunction = null,
 }) {
   const [userEdit, setUserEdit] = useState(userDetails);
+  const { locale } = useRouter();
   const [allowPersonalEdit, setAllowDetailEdit] = useState(allowEdit ?? false);
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -73,10 +76,10 @@ export default function UserDetailsEdit({
   };
 
   return allowPersonalEdit ? (
-    <form>
+    <form className="longer-form-labels">
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Phone:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[locale].phone}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -98,8 +101,8 @@ export default function UserDetailsEdit({
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Mobile Phone:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[locale].mobilePhone}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -121,8 +124,8 @@ export default function UserDetailsEdit({
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Nationality*:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[locale].nationality}*:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -145,8 +148,8 @@ export default function UserDetailsEdit({
       </div>
       <hr />
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Native Language:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[locale].nativeLanguage}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -156,7 +159,7 @@ export default function UserDetailsEdit({
                 type="text"
                 id="native_language"
                 name="native_language"
-                placeholder="German"
+                placeholder={profile[locale].nativeLanguagePlaceholder}
                 value={userEdit?.native_language ?? ""}
                 onChange={handleInputChange}
               />
@@ -168,8 +171,8 @@ export default function UserDetailsEdit({
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Second Language:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[locale].secondLanguage}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -179,7 +182,7 @@ export default function UserDetailsEdit({
                 type="text"
                 id="language2"
                 name="language2"
-                placeholder="German"
+                placeholder={profile[locale].secondLanguagePlaceholder}
                 value={userEdit?.language2 ?? ""}
                 onChange={handleInputChange}
               />
@@ -191,8 +194,8 @@ export default function UserDetailsEdit({
         </div>
       </div>
       <div className="field is-horizontal">
-        <div className="field-label">
-          <label className="label">Third Language:</label>
+        <div className="field-label is-normal">
+          <label className="label">{profile[locale].thirdLanguage}:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -202,7 +205,7 @@ export default function UserDetailsEdit({
                 type="text"
                 id="language3"
                 name="language3"
-                placeholder="German"
+                placeholder={profile[locale].thirdLanguagePlaceholder}
                 value={userEdit?.language3 ?? ""}
                 onChange={handleInputChange}
               />
@@ -217,13 +220,13 @@ export default function UserDetailsEdit({
         <div className="field is-grouped">
           <div className="control">
             <div className="button is-primary" onClick={onSaveDetails}>
-              Save
+              {general.buttons[locale].save}
             </div>
           </div>
           <div className="control">
             {" "}
             <div className="button" onClick={handleDetailsEditCancel}>
-              Cancel
+              {general.buttons[locale].cancel}
             </div>
           </div>
         </div>
@@ -232,37 +235,41 @@ export default function UserDetailsEdit({
   ) : (
     <>
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Phone:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {profile[locale].phone}:
+        </div>
         <div className="column">{userDetails?.phone}</div>
       </div>
 
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          Mobile Phone:
+          {profile[locale].mobilePhone}:
         </div>
         <div className="column">{userDetails?.mobile_phone}</div>
       </div>
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Nationality:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {profile[locale].nationality}:
+        </div>
         <div className="column">{userDetails?.nationality}</div>
       </div>
       <hr />
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          Native language:
+          {profile[locale].nativeLanguage}:
         </div>
         <div className="column">{userDetails?.native_language}</div>
       </div>
 
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          Second language:
+          {profile[locale].secondLanguage}:
         </div>
         <div className="column">{userDetails?.language2}</div>
       </div>
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          Third language:
+          {profile[locale].thirdLanguage}:
         </div>
         <div className="column">{userDetails?.language3}</div>
       </div>
@@ -270,7 +277,7 @@ export default function UserDetailsEdit({
         className="button is-primary"
         onClick={() => setAllowDetailEdit(true)}
       >
-        Edit
+        {general.buttons[locale].edit}
       </div>
     </>
   );

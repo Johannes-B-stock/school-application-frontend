@@ -2,15 +2,30 @@ import QuestionItem from "@/components/application/QuestionItem";
 import GoogleSpinner from "@/components/common/GoogleSpinner";
 import NotFound from "@/components/common/NotFound";
 import { API_URL } from "@/config/index";
-import * as qs from "qs";
-import { useState } from "react";
+import { general, references } from "@/i18n";
+import { Data, Reference } from "definitions/backend";
+import { GetServerSideProps } from "next";
+import qs from "qs";
+import { ChangeEvent, useState } from "react";
 import { toast } from "react-toastify";
 
-export default function ReferencePage({ reference, errorCode }) {
-  const [answers, setAnswers] = useState(reference?.attributes.answers);
+export default function ReferencePage({
+  reference,
+  errorCode,
+  locale,
+}: {
+  reference: Data<Reference>;
+  errorCode: number;
+  locale: string;
+}) {
+  const [answers, setAnswers] = useState(reference?.attributes.answers.data);
   const [isLoading, setIsLoading] = useState(false);
 
-  const onAnswered = (e) => {
+  console.log(reference);
+
+  const onAnswered = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const updatedAnswer = answers.find(
       (answer) => answer.id.toString() === e.target.name
     );
@@ -129,16 +144,19 @@ export default function ReferencePage({ reference, errorCode }) {
 
   return (
     <>
-      <div className="title is-4">Reference</div>
+      <div className="title is-4">{references[locale].reference}</div>
       <br />
-      <div className="subtitle is-5">Hello {reference.attributes.name}</div>
+      <div className="subtitle is-5">
+        {references[locale].hello} {reference.attributes.name}
+      </div>
       <p>
-        You have been selected to be a reference. Please answer all questions
-        honestly.
+        {(references[locale].referenceDescription as string)
+          .replaceAll("{0}", reference.attributes.relation)
+          .replaceAll("{1}", reference.attributes.applicant)}
       </p>
       <br />
       <form className="form">
-        {reference.attributes.answers.map((answer) => (
+        {reference.attributes.answers?.data?.map((answer) => (
           <QuestionItem
             key={answer.id}
             answer={answer}
@@ -158,7 +176,7 @@ export default function ReferencePage({ reference, errorCode }) {
                   onClick={handleSave}
                   disabled={reference.attributes.submitted}
                 >
-                  Save
+                  {general.buttons[locale].save}
                 </button>
               </div>
               <div className="control">
@@ -167,7 +185,7 @@ export default function ReferencePage({ reference, errorCode }) {
                   onClick={handleSubmit}
                   disabled={reference.attributes.submitted}
                 >
-                  Submit
+                  {general.buttons[locale].submit}
                 </button>
               </div>
             </>
@@ -178,9 +196,21 @@ export default function ReferencePage({ reference, errorCode }) {
   );
 }
 
-export async function getServerSideProps({ params: { uid }, req }) {
+export const getServerSideProps: GetServerSideProps = async ({
+  params: { uid },
+  locale,
+}) => {
   const query = qs.stringify({
-    populate: ["answers"],
+    populate: {
+      answers: {
+        populate: {
+          question: {
+            sort: ["order:asc"],
+            populate: ["type.localizations", "localizations"],
+          },
+        },
+      },
+    },
     filters: {
       uid: {
         $eq: uid,
@@ -190,44 +220,20 @@ export async function getServerSideProps({ params: { uid }, req }) {
   const referenceFetch = await fetch(`${API_URL}/api/references?${query}`, {
     method: "GET",
   });
-
   const referenceJson = await referenceFetch.json();
-
   const reference = referenceJson.data?.[0] ?? null;
-
   if (!reference) {
     return {
       props: {
         errorCode: 404,
+        locale,
       },
     };
   }
-
-  const answers = [];
-
-  await Promise.all(
-    reference.attributes.answers.data.map(async (answer) => {
-      const answerQuery = qs.stringify({
-        populate: {
-          question: {
-            sort: ["order:asc"],
-            populate: "type",
-          },
-        },
-      });
-      const answerFetch = await fetch(
-        `${API_URL}/api/answers/${answer.id}?${answerQuery}`
-      );
-      const answerRes = await answerFetch.json();
-      answers.push(answerRes.data);
-    })
-  );
-
-  reference.attributes.answers = answers;
-
   return {
     props: {
       reference: reference,
+      locale,
     },
   };
-}
+};

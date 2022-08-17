@@ -15,6 +15,7 @@ import {
   faUser,
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
+import { address as addressi18n, general } from "@/i18n";
 
 countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
 countries.registerLocale(require("i18n-iso-countries/langs/fr.json"));
@@ -43,12 +44,10 @@ export default function AddressEdit({
   const [allowAddressEdit, setAllowAddressEdit] = useState(alwaysEdit ?? false);
   const countryList = useMemo(
     () =>
-      Object.keys(countries.getNames(router.locale.split("-")[0] ?? "en")).map(
-        (key) => ({
-          value: key,
-          label: countries.getName(key, router.locale.split("-")[0] ?? "en"),
-        })
-      ),
+      Object.keys(countries.getNames(router.locale ?? "en")).map((key) => ({
+        value: key,
+        label: countries.getName(key, router.locale ?? "en"),
+      })),
     [router.locale]
   );
 
@@ -171,7 +170,7 @@ export default function AddressEdit({
     <form>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Name*:</label>
+          <label className="label">{addressi18n[router.locale].name}*:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -179,7 +178,7 @@ export default function AddressEdit({
               <input
                 className={`input ${addressEdit?.firstname ? "" : "is-danger"}`}
                 type="text"
-                placeholder="First name"
+                placeholder={addressi18n[router.locale].firstName}
                 name="firstname"
                 id="firstname"
                 value={addressEdit?.firstname}
@@ -195,7 +194,7 @@ export default function AddressEdit({
               <input
                 className={`input ${addressEdit?.lastname ? "" : "is-danger"}`}
                 type="text"
-                placeholder="Last name"
+                placeholder={addressi18n[router.locale].lastName}
                 name="lastname"
                 id="lastname"
                 value={addressEdit?.lastname}
@@ -210,7 +209,7 @@ export default function AddressEdit({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Street*:</label>
+          <label className="label">{addressi18n[router.locale].street}*:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -218,7 +217,7 @@ export default function AddressEdit({
               <input
                 className={`input ${addressEdit?.street ? "" : "is-danger"}`}
                 type="text"
-                placeholder="Street"
+                placeholder={addressi18n[router.locale].street}
                 name="street"
                 id="street"
                 value={addressEdit?.street}
@@ -249,7 +248,7 @@ export default function AddressEdit({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">City*:</label>
+          <label className="label">{addressi18n[router.locale].city}*:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -259,7 +258,7 @@ export default function AddressEdit({
                 type="text"
                 id="city"
                 name="city"
-                placeholder="City"
+                placeholder={addressi18n[router.locale].city}
                 value={addressEdit?.city}
                 onChange={handleAddressInputChange}
               />
@@ -277,7 +276,7 @@ export default function AddressEdit({
                 type="text"
                 id="postalCode"
                 name="postalCode"
-                placeholder="Postal Code"
+                placeholder={addressi18n[router.locale].postal}
                 value={addressEdit?.postalCode}
                 onChange={handleAddressInputChange}
               />
@@ -290,7 +289,9 @@ export default function AddressEdit({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">Country*:</label>
+          <label className="label">
+            {addressi18n[router.locale].country}*:
+          </label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -314,13 +315,13 @@ export default function AddressEdit({
         <div className="field is-grouped">
           <div className="control">
             <div className="button is-primary" onClick={onSaveAddress}>
-              Save
+              {general.buttons[router.locale].save}
             </div>
           </div>
           <div className="control">
             {" "}
             <div className="button" onClick={handleAddressEditCancel}>
-              Cancel
+              {general.buttons[router.locale].cancel}
             </div>
           </div>
         </div>
@@ -329,26 +330,36 @@ export default function AddressEdit({
   ) : (
     <>
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Name:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {addressi18n[router.locale].name}:
+        </div>
         <div className="column is-narrow">{addressEdit?.firstname}</div>
         <div className="column">{addressEdit?.lastname}</div>
       </div>
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Street:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {addressi18n[router.locale].street}:
+        </div>
         <div className="column is-narrow">{addressEdit?.street}</div>
         <div className="column">{addressEdit?.number}</div>
       </div>
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">City:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {addressi18n[router.locale].city}:
+        </div>
         <div className="column">{addressEdit?.city}</div>
       </div>
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Postal Code:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {addressi18n[router.locale].postal}:
+        </div>
         <div className="column">{addressEdit?.postalCode}</div>
       </div>
 
       <div className="columns">
-        <div className="column is-3 has-text-weight-semibold">Country:</div>
+        <div className="column is-3 has-text-weight-semibold">
+          {addressi18n[router.locale].country}:
+        </div>
         <div className="column">
           {countries.getName(addressEdit?.country, router.locale.split("-")[0])}
         </div>
@@ -358,7 +369,7 @@ export default function AddressEdit({
           className="button is-primary"
           onClick={() => setAllowAddressEdit(true)}
         >
-          Edit
+          {general.buttons[router.locale].edit}
         </div>
       )}
     </>

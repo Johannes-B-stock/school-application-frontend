@@ -26,6 +26,8 @@ import ReferenceForm from "@/components/application/ReferenceForm";
 import ConfirmStep from "@/components/application/ConfirmStep";
 import GenderSelect from "@/components/common/GenderSelect";
 import UserDetailsEdit from "@/components/user/UserDetailsEdit";
+import { faStripe } from "@fortawesome/free-brands-svg-icons";
+import { general, profile, schoolApplicationDetails } from "@/i18n";
 
 export default function ApplicationPage({ application, error, token }) {
   const router = useRouter();
@@ -60,12 +62,12 @@ export default function ApplicationPage({ application, error, token }) {
   function bindAddressSave(saveFunction) {
     addressSaveFunction = saveFunction;
   }
-  let questionSaveFunction = undefined;
-  function bindQuestionSave(saveFunction) {
+  let questionSaveFunction: () => Promise<void> = undefined;
+  function bindQuestionSave(saveFunction: () => Promise<void>) {
     questionSaveFunction = saveFunction;
   }
-  let userDetailsSaveFunction = undefined;
-  function bindUserDetailsSave(saveFunction) {
+  let userDetailsSaveFunction: () => Promise<void> = undefined;
+  function bindUserDetailsSave(saveFunction: () => Promise<void>) {
     userDetailsSaveFunction = saveFunction;
   }
 
@@ -240,26 +242,37 @@ export default function ApplicationPage({ application, error, token }) {
 
   return (
     <div className="content has-text-centered">
-      <h1>Application for School {application?.school.data.attributes.name}</h1>
+      <h1>
+        {schoolApplicationDetails[router.locale].title.replace(
+          "{0}",
+          application?.school.data.attributes.name
+        )}
+      </h1>
       <p>
-        This is your application for the school{" "}
-        {application?.school.data.attributes.name}
+        {schoolApplicationDetails[router.locale].subtitle1.replace(
+          "{0}",
+          application?.school.data.attributes.name
+        )}
       </p>
       <p>
-        You have to pay an application fee of{" "}
-        {application?.school.data.attributes.applicationFee} for the application
-        to be processed.
+        {schoolApplicationDetails[router.locale].subtitle2.replace(
+          "{0}",
+          application?.school.data.attributes.applicationFee
+        )}
       </p>
       {application?.school.data.attributes.stripeAppFeeId && (
         <div className="button is-link mb-2" onClick={handlePayment}>
-          Pay Application Fee
+          <FontAwesomeIcon icon={faStripe} className="icon mr-3" />
+          {schoolApplicationDetails[router.locale].feeButton}
         </div>
       )}
       <div>
-        Further details about the school can be found
+        {schoolApplicationDetails[router.locale].subtitle3.split("{0}")[0]}
         <Link href={`/schools/${application?.school.data.id}`}>
-          <a> here</a>
+          <a>{schoolApplicationDetails[router.locale].here}</a>
         </Link>
+        {schoolApplicationDetails[router.locale].subtitle3.split("{0}")[1] ??
+          ""}
       </div>
       <br />
       <br />
@@ -279,10 +292,11 @@ export default function ApplicationPage({ application, error, token }) {
             </span>
           </div>
           <div className="step-details">
-            <p className="step-title is-hidden-mobile">User</p>
+            <p className="step-title is-hidden-mobile">
+              {schoolApplicationDetails[router.locale].step1Title}
+            </p>
             <p className="is-hidden-mobile">
-              Please put in your private information like your personal address
-              and name.
+              {schoolApplicationDetails[router.locale].step1Desc}
             </p>
           </div>
         </div>
@@ -298,8 +312,12 @@ export default function ApplicationPage({ application, error, token }) {
             <FontAwesomeIcon icon={faQuestion} />
           </div>
           <div className="step-details">
-            <p className="step-title is-hidden-mobile">Questions</p>
-            <p className="is-hidden-mobile">Answer all questions honestly.</p>
+            <p className="step-title is-hidden-mobile">
+              {schoolApplicationDetails[router.locale].step2Title}
+            </p>
+            <p className="is-hidden-mobile">
+              {schoolApplicationDetails[router.locale].step2Desc}
+            </p>
           </div>
         </div>
         <div
@@ -314,9 +332,13 @@ export default function ApplicationPage({ application, error, token }) {
             <FontAwesomeIcon icon={faMailBulk} />
           </div>
           <div className="step-details">
-            <p className="step-title is-hidden-mobile">References</p>
+            <p className="step-title is-hidden-mobile">
+              {schoolApplicationDetails[router.locale].step3Title}
+            </p>
 
-            <p className="is-hidden-mobile">Send out reference requests.</p>
+            <p className="is-hidden-mobile">
+              {schoolApplicationDetails[router.locale].step3Desc}
+            </p>
           </div>
         </div>
         <div
@@ -335,10 +357,11 @@ export default function ApplicationPage({ application, error, token }) {
             </span>
           </div>
           <div className="step-details">
-            <p className="step-title is-hidden-mobile">Confirm</p>
+            <p className="step-title is-hidden-mobile">
+              {schoolApplicationDetails[router.locale].step4Title}
+            </p>
             <p className="is-hidden-mobile">
-              Final step. You have completed all the previous steps and end the
-              process.
+              {schoolApplicationDetails[router.locale].step4Desc}
             </p>
           </div>
         </div>
@@ -358,11 +381,15 @@ export default function ApplicationPage({ application, error, token }) {
                 : ""
             }`}
           >
-            <h1 className="title is-4 has-text-left">Personal Information</h1>
-            <form className="has-text-left">
+            <h1 className="title is-4 has-text-left">
+              {profile[router.locale].personal}
+            </h1>
+            <form className="has-text-left longer-form-labels">
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">Name*:</label>
+                  <label className="label">
+                    {profile[router.locale].name}*:
+                  </label>
                 </div>
                 <div className="field-body">
                   <div className="field">
@@ -382,7 +409,7 @@ export default function ApplicationPage({ application, error, token }) {
                     </div>
                   </div>
                   <div className="field">
-                    <div className="control has-icons-left">
+                    <div className="control">
                       <input
                         type="text"
                         placeholder="Middle Name(s)"
@@ -395,7 +422,7 @@ export default function ApplicationPage({ application, error, token }) {
                     </div>
                   </div>
                   <div className="field">
-                    <div className="control has-icons-left">
+                    <div className="control">
                       <input
                         type="text"
                         placeholder="Last Name"
@@ -411,20 +438,25 @@ export default function ApplicationPage({ application, error, token }) {
               </div>
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">Gender*:</label>
+                  <label className="label">
+                    {profile[router.locale].gender}*:
+                  </label>
                 </div>
                 <div className="field-body">
                   <div className="field">
                     <GenderSelect
                       value={userEdit?.gender}
                       onInputChange={handleUserInputChange}
+                      locale={router.locale}
                     />
                   </div>
                 </div>
               </div>
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">Birthday*:</label>
+                  <label className="label">
+                    {profile[router.locale].birthdate}*:
+                  </label>
                 </div>
                 <div className="field-body">
                   <div className="field">
@@ -452,7 +484,9 @@ export default function ApplicationPage({ application, error, token }) {
               showSave={false}
               setSaveFunction={bindUserDetailsSave}
             />
-            <h1 className="title is-4 has-text-left my-6">Address</h1>
+            <h1 className="title is-4 has-text-left my-6">
+              {profile[router.locale].address}
+            </h1>
             <AddressEdit
               token={token}
               user={userEdit}
@@ -483,7 +517,9 @@ export default function ApplicationPage({ application, error, token }) {
                 : ""
             }`}
           >
-            <h1 className="title is-4">Pick your References</h1>
+            <h1 className="title is-4">
+              {schoolApplicationDetails[router.locale].pickReferences}
+            </h1>
             <br />
             <ReferenceForm
               application={application}
@@ -514,7 +550,7 @@ export default function ApplicationPage({ application, error, token }) {
               className={`button is-light ${isLoadingBack ? "is-loading" : ""}`}
               disabled={applicationEdit.step === 0 ? true : false}
             >
-              Previous
+              {general.buttons[router.locale].previous}
             </button>
           </div>
           <div className="steps-action">
@@ -526,7 +562,7 @@ export default function ApplicationPage({ application, error, token }) {
               }`}
               disabled={applicationEdit.step > 2 ? true : false}
             >
-              Next
+              {general.buttons[router.locale].next}
             </button>
           </div>
         </div>
@@ -541,7 +577,7 @@ export async function getServerSideProps({ params: { id }, req }) {
       answers: {
         populate: {
           question: {
-            populate: ["type"],
+            populate: ["type.localizations", "localizations"],
           },
         },
       },

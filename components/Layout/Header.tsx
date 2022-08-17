@@ -3,6 +3,8 @@ import Image from "next/image";
 import { useContext, useEffect, useState } from "react";
 import AuthContext from "@/context/AuthContext";
 import PageContentContext from "@/context/PageContentContext";
+import { header } from "@/i18n";
+import { useRouter } from "next/router";
 
 export default function Header() {
   const { user, logout } = useContext(AuthContext);
@@ -10,6 +12,7 @@ export default function Header() {
   const [brandImage, setBrandImage] = useState(null);
   const [brandWidth, setBrandWidth] = useState("112");
   const [brandHeight, setBrandHeight] = useState("112");
+  const { locale } = useRouter();
 
   useEffect(() => {
     setBrandImage(
@@ -82,7 +85,7 @@ export default function Header() {
                     className="navbar-item mx-2"
                     onClick={() => setIsActive(false)}
                   >
-                    Admin
+                    {header[locale].admin}
                   </a>
                 </Link>
               )}
@@ -91,64 +94,66 @@ export default function Header() {
                 className="navbar-item mx-2"
                 onClick={() => setIsActive(false)}
               >
-                Home
-              </a>
-            </Link>
-            <Link href="/user/schools">
-              <a
-                className="navbar-item mx-2"
-                onClick={() => setIsActive(false)}
-              >
-                Schools
+                {header[locale].home}
               </a>
             </Link>
             {user && (
-              <div className="navbar-item mx-4 has-dropdown is-hoverable">
-                <div className="image avatarOuter is-38x38 is-rounded">
-                  <Image
-                    className="image avatarInner is-38x38 is-rounded "
-                    alt="Profile"
-                    src={
-                      user.picture?.formats.thumbnail.url ??
-                      "/images/defaultAvatar.png"
-                    }
-                    width="38"
-                    height="38"
-                    objectFit="cover"
-                  />
-                </div>
-
-                <div className="navbar-dropdown is-right">
-                  <Link href="/user/profile">
-                    <a
-                      className="navbar-item"
-                      onClick={() => setIsActive(false)}
-                    >
-                      Profile
-                    </a>
-                  </Link>
-                  <Link href="/user/applications">
-                    <a
-                      className="navbar-item"
-                      onClick={() => setIsActive(false)}
-                    >
-                      My Applications
-                    </a>
-                  </Link>
-                  <Link href="/user/settings">
-                    <a
-                      className="navbar-item"
-                      onClick={() => setIsActive(false)}
-                    >
-                      Settings
-                    </a>
-                  </Link>
-                  <hr className="navbar-divider"></hr>
-                  <a className="navbar-item" onClick={onLogout}>
-                    Logout
+              <>
+                <Link href="/user/schools">
+                  <a
+                    className="navbar-item mx-2"
+                    onClick={() => setIsActive(false)}
+                  >
+                    {header[locale].schools}
                   </a>
+                </Link>
+                <div className="navbar-item mx-4 has-dropdown is-hoverable">
+                  <div className="image avatarOuter is-38x38 is-rounded">
+                    <Image
+                      className="image avatarInner is-38x38 is-rounded "
+                      alt="Profile"
+                      src={
+                        user.picture?.formats.thumbnail.url ??
+                        "/images/defaultAvatar.png"
+                      }
+                      width="38"
+                      height="38"
+                      objectFit="cover"
+                    />
+                  </div>
+
+                  <div className="navbar-dropdown is-right">
+                    <Link href="/user/profile">
+                      <a
+                        className="navbar-item"
+                        onClick={() => setIsActive(false)}
+                      >
+                        {header[locale].profile}
+                      </a>
+                    </Link>
+                    <Link href="/user/applications">
+                      <a
+                        className="navbar-item"
+                        onClick={() => setIsActive(false)}
+                      >
+                        {header[locale].applications}
+                      </a>
+                    </Link>
+                    <Link href="/user/settings">
+                      <a
+                        className="navbar-item"
+                        onClick={() => setIsActive(false)}
+                      >
+                        {header[locale].settings}
+                      </a>
+                    </Link>
+                    <hr className="navbar-divider"></hr>
+                    <a className="navbar-item" onClick={onLogout}>
+                      {header[locale].logout}
+                    </a>
+                  </div>
                 </div>
-              </div>
+              </>
             )}
             <div className="navbar-item">
               <div className="buttons">
@@ -157,10 +162,12 @@ export default function Header() {
                 ) : (
                   <>
                     <Link href="/account/login">
-                      <a className="button is-light">Login</a>
+                      <a className="button is-light">{header[locale].login}</a>
                     </Link>
                     <Link href="/account/register">
-                      <a className="button is-primary">Register</a>
+                      <a className="button is-primary">
+                        {header[locale].register}
+                      </a>
                     </Link>
                   </>
                 )}

@@ -1,3 +1,4 @@
+import { profile } from "@/i18n";
 import {
   faMars,
   faMarsAndVenus,
@@ -5,7 +6,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export default function GenderSelect({ value, onInputChange }) {
+export default function GenderSelect({ value, onInputChange, locale }) {
   return (
     <div className="control is-expanded has-icons-left">
       <div className="select">
@@ -16,9 +17,8 @@ export default function GenderSelect({ value, onInputChange }) {
           onChange={onInputChange}
         >
           <option value="null"></option>
-          <option value="male">Male</option>
-          <option value="female">Female</option>
-          <option value="other">Other</option>
+          <option value="male">{profile[locale].male}</option>
+          <option value="female">{profile[locale].female}</option>
         </select>
       </div>
       <span className="icon is-small is-left">

@@ -1,15 +1,6 @@
 export interface Answer {
-  id: string;
-  attributes: {
-    question: {
-      data: {
-        attributes: {
-          required: boolean;
-        };
-      };
-    };
-    answer?: string;
-  };
+  question: SingleDataResponse<Question>;
+  answer?: string;
 }
 
 export interface SchoolApplication {
@@ -24,7 +15,11 @@ export interface SchoolApplication {
 export interface Reference {
   name: string;
   relation: string;
+  applicant: string;
   email: string;
+  emailSend: boolean;
+  submitted: boolean;
+  answers?: ArrayDataResponse<Answer>;
 }
 
 export interface ImageDefinition {
@@ -37,6 +32,11 @@ export interface ImageDefinition {
       };
     };
   };
+}
+
+export interface ErrorResponse {
+  status: string;
+  message: string;
 }
 
 export interface Format {
@@ -69,9 +69,29 @@ export interface User {
   middle_names?: string;
   gender?: string;
   birthday?: string;
+  address: SingleDataResponse<Address>;
 }
 
-export interface StaffApplication {
+export interface Address {
+  firstname: string;
+  lastname: string;
+  street: string;
+  number: string;
+  city: string;
+  country: string;
+  postalCode: string;
+}
+
+export interface Application {
+  reference1: SingleDataResponse<Reference>;
+  reference2: SingleDataResponse<Reference>;
+  user: SingleDataResponse<User>;
+  answers: ArrayDataResponse<Answer>;
+  step: number;
+  state: "created" | "submitted" | "reviewed" | "revoked" | "approved";
+}
+
+export interface StaffApplication extends Application {
   id: string;
   arriveAt: string;
   stayUntil?: string;
@@ -82,19 +102,25 @@ export interface BaseData {
   updatedAt: string;
 }
 
-export interface QuestionType {
+export interface QuestionType extends LocaleInfo {
   name: string;
   description: string;
   order: number;
+  localizations?: ArrayDataResponse<QuestionType>;
 }
 
-export interface Question {
-  collection: SingleDataResponse<QuestionCollection>;
+export interface LocaleInfo {
+  locale: string;
+}
+
+export interface Question extends LocaleInfo {
+  collection?: SingleDataResponse<QuestionCollection>;
   required: boolean;
-  type: QuestionType;
+  type?: SingleDataResponse<QuestionType>;
   order: number;
   inputType: "text" | "bool" | "longtext";
   question: string;
+  localizations?: ArrayDataResponse<Question>;
 }
 
 export interface QuestionCollection {
@@ -109,19 +135,19 @@ export interface StaffApplicationSetting extends BaseData {
   locale: string;
   cardImage: ImageDefinition;
   questions: SingleDataResponse<QuestionCollection>;
+  referenceQuestions: SingleDataResponse<QuestionCollection>;
 }
 
 export interface SingleDataResponse<T> {
-  data: {
-    id: string;
-    attributes: T;
-    localizations: {
-      data: any[];
-    };
-  };
+  data?: Data<T>;
   meta: any;
 }
 
 export interface ArrayDataResponse<T> {
-  data: { id: string; attributes: T }[];
+  data: Data<T>[];
+}
+
+export interface Data<T> {
+  id: string;
+  attributes: T;
 }

@@ -20,14 +20,17 @@
       "@/styles/*": ["styles/*"],
       "@/config/*": ["config/*"],
       "@/context/*": ["context/*"],
-      "@/helpers/*": ["helpers/*"]
+      "@/helpers/*": ["helpers/*"],
+      "@/i18n": ["i18n/translations"]
     }
   },
   "include": [
     "next-env.d.ts",
     "**/*.ts",
     "**/*.tsx",
-    "components/admin/ApplicationsTable.jsx"
+    "components/admin/ApplicationsTable.jsx",
+    "config/index.js",
+    "scripts/create-ico.js"
   ],
   "exclude": ["node_modules"]
 }

@@ -1,7 +1,9 @@
+import { references } from "@/i18n";
 import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { SchoolApplication, User } from "definitions/backend";
 import { sendReference } from "lib/references";
+import { useRouter } from "next/router";
 import { Dispatch, SetStateAction, useState } from "react";
 import { toast } from "react-toastify";
 
@@ -38,7 +40,7 @@ export default function ReferenceForm({
         }
       : {}
   );
-
+  const { locale } = useRouter();
   const onReference1ValueChanged = (e) => {
     const { name, value } = e.target;
     setReference1({ ...reference1, [name]: value });
@@ -120,17 +122,17 @@ export default function ReferenceForm({
     <form className="form">
       <div className="columns has-text-left">
         <div className="column">
-          <h4>Reference Person 1</h4>
+          <h4>{references[locale].reference1Title}</h4>
 
           {reference1?.emailSend ? (
             <>
-              <h6 className="subtitle is-6">Name</h6>
+              <h6 className="subtitle is-6">{references[locale].name}</h6>
               <p>{reference1.name}</p>
-              <h6 className="subtitle is-6">Relation</h6>
+              <h6 className="subtitle is-6">{references[locale].relation}</h6>
               <p>{reference1.relation}</p>
-              <h6 className="subtitle is-6">Email</h6>
+              <h6 className="subtitle is-6">{references[locale].email}</h6>
               <p>{reference1.email}</p>
-              <h6 className="subtitle is-6">Status</h6>
+              <h6 className="subtitle is-6">{references[locale].status}</h6>
               <div>
                 {reference1.submitted ? (
                   <div>
@@ -140,7 +142,7 @@ export default function ReferenceForm({
                         className="has-text-success"
                       />
                     </span>
-                    Reference has been submitted
+                    {references[locale].submitted}
                   </div>
                 ) : (
                   <div>
@@ -150,7 +152,7 @@ export default function ReferenceForm({
                         className="has-text-danger"
                       />
                     </span>
-                    Reference has not yet been submitted
+                    {references[locale].notSubmitted}
                   </div>
                 )}
               </div>
@@ -158,7 +160,7 @@ export default function ReferenceForm({
           ) : (
             <>
               <div className="field">
-                <label className="label">Name</label>
+                <label className="label">{references[locale].name}</label>
                 <div className="control">
                   <input
                     type="text"
@@ -170,7 +172,7 @@ export default function ReferenceForm({
                 </div>
               </div>
               <div className="field">
-                <label className="label">Relation</label>
+                <label className="label">{references[locale].relation}</label>
                 <div className="control">
                   <input
                     type="text"
@@ -182,7 +184,7 @@ export default function ReferenceForm({
                 </div>
               </div>
               <div className="field">
-                <label className="label">Email</label>
+                <label className="label">{references[locale].email}</label>
                 <div className="control">
                   <input
                     type="email"
@@ -200,37 +202,37 @@ export default function ReferenceForm({
                 }`}
                 onClick={sendReference1}
               >
-                Send Email
+                {references[locale].sendEmail}
               </div>
             </>
           )}
         </div>
         <div className="column">
-          <h4>Reference Person 2</h4>
+          <h4>{references[locale].reference2Title}</h4>
 
           {reference2?.emailSend ? (
             <>
-              <h5 className="subtitle is-6">Name</h5>
+              <h5 className="subtitle is-6">{references[locale].name}</h5>
               <p>{reference2.name}</p>
-              <h5 className="subtitle is-6">Relation</h5>
+              <h5 className="subtitle is-6">{references[locale].relation}</h5>
               <p>{reference2.relation}</p>
-              <h5 className="subtitle is-6">Email</h5>
+              <h5 className="subtitle is-6">{references[locale].email}</h5>
               <p>{reference2.email}</p>
-              <h6 className="subtitle is-6">Status</h6>
+              <h6 className="subtitle is-6">{references[locale].status}</h6>
               <div>
                 {reference2.submitted ? (
                   <div>
                     <span className="icon has-text-success">
                       <FontAwesomeIcon icon={faCheck} />
                     </span>
-                    Reference has been submitted
+                    {references[locale].submitted}
                   </div>
                 ) : (
                   <div>
                     <span className="icon has-text-danger">
                       <FontAwesomeIcon icon={faXmark} />
                     </span>
-                    Reference has not yet been submitted
+                    {references[locale].notSubmitted}
                   </div>
                 )}
               </div>
@@ -238,7 +240,7 @@ export default function ReferenceForm({
           ) : (
             <>
               <div className="field">
-                <label className="label">Name</label>
+                <label className="label">{references[locale].name}</label>
                 <div className="control">
                   <input
                     type="text"
@@ -250,7 +252,7 @@ export default function ReferenceForm({
                 </div>
               </div>
               <div className="field">
-                <label className="label">Relation</label>
+                <label className="label">{references[locale].relation}</label>
                 <div className="control">
                   <input
                     type="text"
@@ -262,7 +264,7 @@ export default function ReferenceForm({
                 </div>
               </div>
               <div className="field">
-                <label className="label">Email</label>
+                <label className="label">{references[locale].email}</label>
                 <div className="control">
                   <input
                     type="email"
@@ -280,7 +282,7 @@ export default function ReferenceForm({
                 }`}
                 onClick={sendReference2}
               >
-                Send Email
+                {references[locale].sendEmail}
               </div>
             </>
           )}

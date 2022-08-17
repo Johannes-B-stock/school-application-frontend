@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/SchoolItem.module.css";
 import { useRouter } from "next/router";
+import { general, home } from "@/i18n";
 
 export default function SchoolItem({ school }) {
   const router = useRouter();
@@ -34,11 +35,11 @@ export default function SchoolItem({ school }) {
         <p className="title">{schoolInfo.name}</p>
         <p className="subtitle is-7">
           <span className="is-italic">
-            {new Date(school.startDate).toLocaleDateString(router.locale)}
-          </span>{" "}
-          to{" "}
+            {new Date(school.startDate).toLocaleDateString(locale)}
+          </span>
+          {home[locale].dateRange}
           <span className="is-italic">
-            {new Date(school.endDate).toLocaleDateString(router.locale)}
+            {new Date(school.endDate).toLocaleDateString(locale)}
           </span>
         </p>
         <div className="content">
@@ -48,14 +49,16 @@ export default function SchoolItem({ school }) {
       </div>
       <footer className="card-footer">
         <Link href={`/schools/${school.id}`}>
-          <a className="card-footer-item">Details</a>
+          <a className="card-footer-item">{general.buttons[locale].details}</a>
         </Link>
         {school.acceptingStudents ? (
           <Link href={`/schools/${school.id}/apply`}>
-            <a className="card-footer-item">Apply</a>
+            <a className="card-footer-item">{general.buttons[locale].apply}</a>
           </Link>
         ) : (
-          <span className="card-footer-item">Apply</span>
+          <span className="card-footer-item">
+            {general.buttons[locale].apply}
+          </span>
         )}
       </footer>
     </div>

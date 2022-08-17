@@ -30,8 +30,18 @@ import ConfirmStep from "@/components/application/ConfirmStep";
 import UserDetailsEdit from "@/components/user/UserDetailsEdit";
 import GenderSelect from "@/components/common/GenderSelect";
 import { GetServerSideProps } from "next";
+import { general, profile, staffApplicationDetails } from "@/i18n";
+import { ErrorResponse, StaffApplication } from "definitions/backend";
 
-export default function StaffApplicationPage({ application, error, token }) {
+export default function StaffApplicationPage({
+  application,
+  error,
+  token,
+}: {
+  application: StaffApplication;
+  error: ErrorResponse;
+  token: string;
+}) {
   const router = useRouter();
   useEffect(() => {
     if (error) {
@@ -43,7 +53,6 @@ export default function StaffApplicationPage({ application, error, token }) {
   const [isLoadingNext, setIsLoadingNext] = useState(false);
   const [isLoadingBack, setIsLoadingBack] = useState(false);
   const [userEdit, setUserEdit] = useState(user);
-  const [userDetailsEdit, setUserDetailsEdit] = useState(user.details);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [reference1Send, setReference1Send] = useState(
     application.reference1?.data?.attributes.emailSend ?? false
@@ -75,7 +84,7 @@ export default function StaffApplicationPage({ application, error, token }) {
     userDetailsSaveFunction = saveFunction;
   }
 
-  const goToStep = async (step) => {
+  const goToStep = async (step: number) => {
     if (step == null || application.step < step || step < 0) {
       return;
     }
@@ -224,11 +233,10 @@ export default function StaffApplicationPage({ application, error, token }) {
 
   return (
     <div className="content has-text-centered">
-      <h1>Staff Application</h1>
-      <p>
-        This is your staff application, if you have any questions, please
-        contact us.
-      </p>
+      <h1>{staffApplicationDetails[router.locale].title}</h1>
+      <div style={{ maxWidth: "590px", margin: "auto" }}>
+        <p>{staffApplicationDetails[router.locale].subtitle}</p>
+      </div>
 
       <br />
       <br />
@@ -246,10 +254,11 @@ export default function StaffApplicationPage({ application, error, token }) {
             </span>
           </div>
           <div className="step-details">
-            <p className="step-title is-hidden-mobile">User</p>
+            <p className="step-title is-hidden-mobile">
+              {staffApplicationDetails[router.locale].step1Title}
+            </p>
             <p className="is-hidden-mobile">
-              Please put in your private information like your personal address
-              and name.
+              {staffApplicationDetails[router.locale].step1Desc}
             </p>
           </div>
         </div>
@@ -265,8 +274,12 @@ export default function StaffApplicationPage({ application, error, token }) {
             <FontAwesomeIcon icon={faQuestion} />
           </div>
           <div className="step-details">
-            <p className="step-title is-hidden-mobile">Questions</p>
-            <p className="is-hidden-mobile">Answer all questions honestly.</p>
+            <p className="step-title is-hidden-mobile">
+              {staffApplicationDetails[router.locale].step2Title}
+            </p>
+            <p className="is-hidden-mobile">
+              {staffApplicationDetails[router.locale].step2Desc}
+            </p>
           </div>
         </div>
         <div
@@ -281,9 +294,13 @@ export default function StaffApplicationPage({ application, error, token }) {
             <FontAwesomeIcon icon={faMailBulk} />
           </div>
           <div className="step-details">
-            <p className="step-title is-hidden-mobile">References</p>
+            <p className="step-title is-hidden-mobile">
+              {staffApplicationDetails[router.locale].step3Title}
+            </p>
 
-            <p className="is-hidden-mobile">Send out reference requests.</p>
+            <p className="is-hidden-mobile">
+              {staffApplicationDetails[router.locale].step3Desc}
+            </p>
           </div>
         </div>
         <div
@@ -302,10 +319,11 @@ export default function StaffApplicationPage({ application, error, token }) {
             </span>
           </div>
           <div className="step-details">
-            <p className="step-title is-hidden-mobile">Confirm</p>
+            <p className="step-title is-hidden-mobile">
+              {staffApplicationDetails[router.locale].step4Title}
+            </p>
             <p className={`is-hidden-mobile`}>
-              Final step. You have completed all the previous steps and end the
-              process.
+              {staffApplicationDetails[router.locale].step4Desc}
             </p>
           </div>
         </div>
@@ -326,14 +344,18 @@ export default function StaffApplicationPage({ application, error, token }) {
             }`}
           >
             {" "}
-            <h1 className="title is-4 has-text-left my-6">Arrival</h1>
+            <h1 className="title is-4 has-text-left my-6">
+              {staffApplicationDetails[router.locale].arrival}
+            </h1>
             <h5 className="subtitle is-5 has-text-left">
-              When do you want to arrive?
+              {staffApplicationDetails[router.locale].arrivalSubtitle}
             </h5>
-            <form className="has-text-left">
+            <form className="has-text-left longer-form-labels">
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">Arrival date*:</label>
+                  <label className="label">
+                    {staffApplicationDetails[router.locale].arrivalDate}*:
+                  </label>
                 </div>
                 <div className="field-body">
                   <div className="field">
@@ -354,7 +376,9 @@ export default function StaffApplicationPage({ application, error, token }) {
               </div>
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">Stay until:</label>
+                  <label className="label">
+                    {staffApplicationDetails[router.locale].stayUntil}:
+                  </label>
                 </div>
                 <div className="field-body">
                   <div className="field">
@@ -375,12 +399,14 @@ export default function StaffApplicationPage({ application, error, token }) {
               </div>
             </form>
             <h1 className="title is-4 has-text-left my-6">
-              Personal Information
+              {profile[router.locale].personal}
             </h1>
-            <form className="has-text-left">
+            <form className="has-text-left longer-form-labels">
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">Name*:</label>
+                  <label className="label">
+                    {staffApplicationDetails[router.locale].name}*:
+                  </label>
                 </div>
                 <div className="field-body">
                   <div className="field">
@@ -400,7 +426,7 @@ export default function StaffApplicationPage({ application, error, token }) {
                     </div>
                   </div>
                   <div className="field">
-                    <div className="control has-icons-left">
+                    <div className="control">
                       <input
                         type="text"
                         placeholder="Middle Name(s)"
@@ -413,7 +439,7 @@ export default function StaffApplicationPage({ application, error, token }) {
                     </div>
                   </div>
                   <div className="field">
-                    <div className="control has-icons-left">
+                    <div className="control">
                       <input
                         type="text"
                         placeholder="Last Name"
@@ -429,20 +455,25 @@ export default function StaffApplicationPage({ application, error, token }) {
               </div>
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">Gender*:</label>
+                  <label className="label">
+                    {profile[router.locale].gender}*:
+                  </label>
                 </div>
                 <div className="field-body">
                   <div className="field">
                     <GenderSelect
                       value={userEdit?.gender}
                       onInputChange={handleUserInputChange}
+                      locale={router.locale}
                     />
                   </div>
                 </div>
               </div>
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">Birthday*:</label>
+                  <label className="label">
+                    {profile[router.locale].birthdate}*:
+                  </label>
                 </div>
                 <div className="field-body">
                   <div className="field">
@@ -470,7 +501,9 @@ export default function StaffApplicationPage({ application, error, token }) {
               showSave={false}
               setSaveFunction={bindUserDetailsSave}
             />
-            <h1 className="title is-4 has-text-left my-6">Address</h1>
+            <h1 className="title is-4 has-text-left my-6">
+              {profile[router.locale].address}
+            </h1>
             <AddressEdit
               token={token}
               user={userEdit}
@@ -501,7 +534,9 @@ export default function StaffApplicationPage({ application, error, token }) {
                 : ""
             }`}
           >
-            <h1 className="title is-4">Pick your References</h1>
+            <h1 className="title is-4">
+              {staffApplicationDetails[router.locale].pickReferences}
+            </h1>
             <br />
             <ReferenceForm
               application={application}
@@ -532,7 +567,7 @@ export default function StaffApplicationPage({ application, error, token }) {
               className={`button is-light ${isLoadingBack ? "is-loading" : ""}`}
               disabled={applicationEdit.step === 0 ? true : false}
             >
-              Previous
+              {general.buttons[router.locale].previous}
             </button>
           </div>
           <div className="steps-action">
@@ -544,7 +579,7 @@ export default function StaffApplicationPage({ application, error, token }) {
               }`}
               disabled={applicationEdit.step > 2 ? true : false}
             >
-              Next
+              {general.buttons[router.locale].next}
             </button>
           </div>
         </div>
@@ -562,7 +597,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       answers: {
         populate: {
           question: {
-            populate: ["type"],
+            populate: ["type.localizations", "localizations"],
           },
         },
       },

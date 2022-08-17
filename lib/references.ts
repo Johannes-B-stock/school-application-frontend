@@ -50,6 +50,7 @@ export async function sendReference(
   if (!questionsFetch.ok) {
     throw new Error(questionsJson.error?.message ?? questionsFetch.statusText);
   }
+  console.log(questionsJson);
 
   const questions = questionsJson.data;
   const answerIds = [];
@@ -87,7 +88,7 @@ export async function sendReference(
         name: reference.name,
         relation: reference.relation,
         email: reference.email,
-        applicant: user.username,
+        applicant: `${user.firstname} ${user.lastname}`,
         uid: uid,
         url: `${NEXT_URL}/references/${uid}`,
         answers: answerIds,
@@ -193,7 +194,6 @@ async function getQuestionCollectionIdFromSchool(
   if (!schoolFetch.ok) {
     throw new Error(schoolJson.error?.message ?? schoolFetch.statusText);
   }
-  console.log(schoolJson);
 
   const referenceQuestionCollectionId =
     schoolJson.data.attributes.referenceQuestions.data.id;
@@ -236,9 +236,12 @@ export async function getReferenceAnswers(referenceId, token) {
 async function getQuestionCollectionIdFromStaffApplication(
   token: string
 ): Promise<string> {
-  const query = qs.stringify({
-    populate: ["referenceQuestions"],
-  });
+  const query = qs.stringify(
+    {
+      populate: ["referenceQuestions"],
+    },
+    { encodeValuesOnly: true }
+  );
   const staffApplicationSetting = await axios.get<
     SingleDataResponse<StaffApplicationSetting>
   >(`${API_URL}/api/staff-application-setting?${query}`, {
@@ -247,5 +250,7 @@ async function getQuestionCollectionIdFromStaffApplication(
       Authorization: `Bearer ${token}`,
     },
   });
-  return staffApplicationSetting.data.data.attributes.questions.data.id;
+  console.log(staffApplicationSetting);
+  return staffApplicationSetting.data.data.attributes.referenceQuestions.data
+    ?.id;
 }

@@ -1,9 +1,9 @@
 import { API_URL } from "../config";
 import axios from "axios";
 import qs from "qs";
-import { Answer } from "definitions/backend";
+import { Answer, Data } from "definitions/backend";
 
-export async function submitAnswers(answers: Answer[], token: string) {
+export async function submitAnswers(answers: Data<Answer>[], token: string) {
   const requiredNotAnswered = answers.some(
     (answer) =>
       answer.attributes.question.data.attributes.required &&
@@ -39,7 +39,7 @@ export async function submitAnswers(answers: Answer[], token: string) {
 }
 
 export async function getSchoolApplicationAnswerDetails(
-  answers: Answer[],
+  answers: Data<Answer>[],
   token: string
 ) {
   const query = qs.stringify({

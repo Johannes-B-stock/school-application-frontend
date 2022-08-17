@@ -7,9 +7,12 @@ import ProfileSidebar from "@/components/user/ProfileSidebar";
 import GoogleSpinner from "@/components/common/GoogleSpinner";
 import UserProfileEdit from "@/components/user/UserProfileEdit";
 import UserDetailsEdit from "@/components/user/UserDetailsEdit";
+import { profile } from "@/i18n";
+import { useRouter } from "next/router";
 
 export default function ProfilePage({ token }) {
   const { user } = useContext(AuthContext);
+  const { locale } = useRouter();
 
   if (!user) {
     return <GoogleSpinner />;
@@ -23,10 +26,12 @@ export default function ProfilePage({ token }) {
           <ProfileSidebar />
         </div>
         <div className="column">
-          <h1 className="title">Profile Page</h1>
+          <h1 className="title">{profile[locale].header}</h1>
           <div className={`card ${styles.profileCard}`}>
             <div className="card-header background-gradient-primary-info">
-              <div className="card-header-title">Profile Information</div>
+              <div className="card-header-title">
+                {profile[locale].profileInfo}
+              </div>
             </div>
             <div className="card-content">
               <UserProfileEdit token={token} user={user} />
@@ -35,7 +40,9 @@ export default function ProfilePage({ token }) {
           <br />
           <div className={`card ${styles.profileCard}`}>
             <div className="card-header background-gradient-primary-info">
-              <div className="card-header-title">Personal Information</div>
+              <div className="card-header-title">
+                {profile[locale].personal}
+              </div>
             </div>
             <div className="card-content">
               <UserDetailsEdit token={token} userDetails={user.details} />

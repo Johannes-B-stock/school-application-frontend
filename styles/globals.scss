@@ -92,3 +92,9 @@ $message-body-padding: 1.25em 1.5em !default;
 .select__input-container {
   padding-left: 25px;
 }
+
+@media screen and (min-width: 769px), print {
+  .longer-form-labels .field-label {
+    flex-grow: 2; /* overwrites previous value of 1 */
+  }
+}
