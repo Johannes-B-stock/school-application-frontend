@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { general, notFound } from "@/i18n";
 import { useRouter } from "next/router";
 
 export default function NotFound() {
@@ -6,11 +6,11 @@ export default function NotFound() {
   return (
     <section className="hero is-danger">
       <div className="hero-body">
-        <p className="title">404 Page not found</p>
-        <p className="subtitle">Oops, there is nothing here to see...</p>
+        <p className="title">{notFound[router.locale].title}</p>
+        <p className="subtitle">{notFound[router.locale].subtitle}</p>
         <p>
           <a className="is-primary" onClick={() => router.back()}>
-            Back
+            {general.buttons[router.locale].back}
           </a>
         </p>
       </div>

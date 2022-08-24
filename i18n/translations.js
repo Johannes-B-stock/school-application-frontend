@@ -12,6 +12,8 @@ export const general = {
       next: "Next",
       yes: "Yes",
       no: "No",
+      back: "Back",
+      login: "Login",
     },
     de: {
       edit: "Bearbeiten",
@@ -25,6 +27,8 @@ export const general = {
       next: "Nächstes",
       yes: "Ja",
       no: "Nein",
+      back: "Zurück",
+      login: "Einloggen",
     },
   },
 };
@@ -97,7 +101,7 @@ export const profile = {
     thirdLanguagePlaceholder: "Spanish",
     loadingPicture: "Loading picture",
     upload: "Upload a new picture",
-    role: "Current role is {0}",
+    role: "Your current role is {0}",
     joined: "Joined on {0}",
     address: "Address",
   },
@@ -128,7 +132,7 @@ export const profile = {
     thirdLanguagePlaceholder: "Spanisch",
     loadingPicture: "Bild wird geladen...",
     upload: "Lade ein neues Bild hoch",
-    role: "Die derzeitige Rolle ist {0}",
+    role: "Deine derzeitige Rolle ist {0}",
     joined: "Beigetreten am {0}",
     address: "Adresse",
   },
@@ -386,5 +390,157 @@ export const references = {
     notSubmitted: "Referenzanfrage wurde noch nicht beantwortet",
     sendEmail: "Email Abschicken",
     reference2Title: "Referenz Person 2",
+  },
+};
+
+export const notFound = {
+  en: {
+    title: "404 Page not found",
+    subtitle: "Oops, there is nothing here to see...",
+  },
+  de: {
+    title: "404 Seite nicht gefunden",
+    subtitle: "Upsi, da ist wohl was schiefgelaufen...",
+  },
+};
+
+export const notAuthorized = {
+  en: {
+    title: "403 Not authorized",
+    subtitle: "You are not authorized to access this page!",
+  },
+  de: {},
+};
+
+export const forgotPassword = {
+  en: {
+    title: "Forgot Password?",
+    typeEmail: "Please type in the email of your account.",
+    emailSend:
+      "Email to reset password has been send. Please check your mail account",
+  },
+  de: {
+    title: "Passwort vergessen?",
+    typeEmail: "Bitte gib deine Email Adresse ein.",
+    emailSend:
+      "Email zum Zurücksetzen des Passworts wurde abgeschickt. Bitte prüfe deine mails.",
+  },
+};
+
+export const login = {
+  en: {
+    title: "Login",
+    redirectDescription: "You have to login to see this.",
+    description: "Login to have access to your schools and applications.",
+    forgotPasswordLink: "Forgot your password?",
+    noAccount: "Don&apos;t have an account? ",
+    or: "or",
+    loginWithGoogle: "Login with Google",
+    email: "Email",
+    password: "Password",
+  },
+  de: {
+    title: "Login",
+    redirectDescription: "Du musst dich einloggen, um diesen Inhalt zu sehen.",
+    description:
+      "Logge dich ein um Zugriff auf deine Schulen und Anmeldungen zu haben.",
+    forgotPasswordLink: "Passwort vergessen?",
+    noAccount: "Du hast noch keinen Account? ",
+    or: "oder",
+    loginWithGoogle: "Mit Google einloggen",
+    email: "Email",
+    password: "Passwort",
+  },
+};
+
+export const notConfirmed = {
+  en: {
+    title: "Email Not Confirmed",
+    text1:
+      "Your account has not been confirmed yet. Please check your emails and click on the confirmation link.",
+    textBeforeLogin: "After confirmation, please ",
+    login: "login",
+    textAfterLogin: " again.",
+  },
+  de: {
+    title: "Email nicht bestätigt",
+    text1:
+      "Deine email wurde noch nicht bestätigt. Klick auf den Bestätigungs-link in der Email, die du nach der Registrierung bekommen hast.",
+    textBeforeLogin:
+      "Nachdem du auf den Bestätigungslink geklickt hast, musst du dich nochmal ",
+    login: "einloggen",
+    textAfterLogin: ".",
+  },
+};
+
+export const register = {
+  en: {
+    title: "Register",
+    description: "Register now to apply for a school.",
+    name: "Name",
+    email: "Email",
+    or: "or",
+    password: "Password",
+    confirmPassword: "Confirm Password",
+    alreadyAccount: "Already have an account? ",
+    registerWithGoogle: "Register with Google",
+  },
+  de: {
+    title: "Registrieren",
+    description:
+      "Registriere dich jetzt, damit du dich für eine Schule anmelden kannst.",
+    name: "Name",
+    email: "Email",
+    or: "oder",
+    password: "Passwort",
+    confirmPassword: "Passwort bestätigen",
+    alreadyAccount: "Du hast schon einen Account? ",
+    registerWithGoogle: "Mit Google registrieren",
+  },
+};
+
+export const resetPassword = {
+  en: {
+    title: "Reset Password",
+    description: "Please type in a new password",
+    password: "Password",
+    confirmPassword: "Confirm Password",
+  },
+  de: {
+    title: "Passwort zurücksetzen",
+    description: "Bitte gib ein neues Passwort ein",
+    password: "Passwort",
+    confirmPassword: "Passwort bestätigen",
+  },
+};
+
+export const userSchool = {
+  en: {
+    general: "General",
+    name: "Name",
+    description: "Description",
+    contact: "Contact",
+    startsAt: "Starts at",
+    endsAt: "Ends at",
+    applicationFee: "Application Fee",
+    schoolFee: "School Fee",
+    students: "Students",
+    noStudentsAccepted: "No students are accepted yet",
+    staff: "Staff",
+    noStaffYet: "This school does not have any staff yet",
+  },
+  de: {
+    general: "Allgemein",
+    name: "Name",
+    description: "Beschreibung",
+    contact: "Kontakt",
+    startsAt: "beginnt am",
+    endsAt: "endet am",
+    applicationFee: "Anmeldungs-gebühr",
+    schoolFee: "Schulgebühr",
+    students: "Studenten",
+    noStudentsAccepted: "Es wurden noch keine Studenten angenommen",
+    staff: "Mitarbeiter",
+    noStaffYet: "Die Schule hat noch keine Mitarbeiter",
   },
 };

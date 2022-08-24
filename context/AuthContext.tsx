@@ -170,6 +170,8 @@ export const AuthProvider = ({ children }) => {
       } else {
         setUser(null);
       }
+    } catch (err) {
+      setUser(null);
     } finally {
       setLoadingInitial(false);
     }

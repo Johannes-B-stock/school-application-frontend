@@ -4,6 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import { useContext, useState, useEffect } from "react";
+import { general } from "@/i18n";
+import { forgotPassword as t } from "@/i18n";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -45,19 +47,14 @@ export default function ForgotPasswordPage() {
     <div className="columns is-centered has-text-centered ">
       {resetEmailSend ? (
         <div className="column is-5 box p-5">
-          <h1 className="title is-4">Forgot Password</h1>
-          <p className="description mb-5">
-            Email to reset password has been send. Please check your mail
-            provider
-          </p>
+          <h1 className="title is-4">{t[router.locale].title}</h1>
+          <p className="description mb-5">{t[router.locale].emailSend}</p>
         </div>
       ) : (
         <>
           <div className="column is-5 box p-5">
-            <h1 className="title is-4">Forgot Password</h1>
-            <p className="description mb-5">
-              Please type in the email of your account
-            </p>
+            <h1 className="title is-4">{t[router.locale].title}</h1>
+            <p className="description mb-5">{t[router.locale].typeEmail}</p>
             <form onSubmit={onSubmit}>
               <div className="field">
                 <div className="control is-expanded has-icons-left">
@@ -80,7 +77,7 @@ export default function ForgotPasswordPage() {
                 }`}
                 type="submit"
               >
-                Submit
+                {general.buttons[router.locale].submit}
               </button>
             </form>
           </div>

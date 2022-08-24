@@ -7,6 +7,7 @@ import { useRouter } from "next/router";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { API_URL } from "@/config/index";
+import { general, register as t } from "@/i18n";
 
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
@@ -56,15 +57,15 @@ export default function Register() {
   return (
     <div className="columns is-centered has-text-centered ">
       <div className="column is-5 box p-5">
-        <h1 className="title is-4">Register</h1>
-        <p className="description">Register now to apply for a school.</p>
+        <h1 className="title is-4">{t[router.locale].title}</h1>
+        <p className="description mb-5">{t[router.locale].description}</p>
         <form onSubmit={onSubmit}>
           <div className="field">
             <div className="control">
               <input
                 className="input is-medium"
                 type="text"
-                placeholder="Name"
+                placeholder={t[router.locale].name}
                 id="name"
                 name="name"
                 value={formData.name}
@@ -77,7 +78,7 @@ export default function Register() {
               <input
                 className="input is-medium"
                 type="email"
-                placeholder="Email"
+                placeholder={t[router.locale].email}
                 id="email"
                 name="email"
                 value={formData.email}
@@ -90,7 +91,7 @@ export default function Register() {
               <input
                 className="input is-medium"
                 type="password"
-                placeholder="Password"
+                placeholder={t[router.locale].password}
                 id="password"
                 autoComplete="on"
                 name="password"
@@ -104,7 +105,7 @@ export default function Register() {
               <input
                 className="input is-medium"
                 type="password"
-                placeholder="Confirm Password"
+                placeholder={t[router.locale].confirmPassword}
                 id="confirmPassword"
                 autoComplete="on"
                 name="confirmPassword"
@@ -118,17 +119,22 @@ export default function Register() {
               isLoading && "is-loading"
             }`}
           >
-            Submit
+            {general.buttons[router.locale].submit}
           </button>
           <br />
           <small>
             <em>
-              Already have an account? <Link href="/account/login">Login</Link>
+              {t[router.locale].alreadyAccount}
+              <Link href="/account/login">
+                <a>{general.buttons[router.locale].login}</a>
+              </Link>
             </em>
           </small>
         </form>
         <br />
-        <div className="separator has-text-grey is-italic">or</div>
+        <div className="separator has-text-grey is-italic">
+          {t[router.locale].or}
+        </div>
         <br />
         <button
           className="button is-light is-fullwidth is-medium"
@@ -137,7 +143,7 @@ export default function Register() {
           <span className="icon">
             <FontAwesomeIcon icon={faGoogle} />
           </span>
-          <span>Login with Google</span>
+          <span>{t[router.locale].registerWithGoogle}</span>
         </button>
       </div>
     </div>

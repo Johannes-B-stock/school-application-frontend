@@ -1,14 +1,15 @@
 import GoogleSpinner from "@/components/common/GoogleSpinner";
 import UserAvatar from "@/components/user/UserAvatar";
 import { parseCookie } from "@/helpers/index";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { userSchool } from "@/i18n";
 import { getSchoolDetails } from "lib/school";
 import { getAllUsers } from "lib/user";
-import Image from "next/image";
+import { GetServerSideProps } from "next";
+import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-export default function MySchoolPage({ school, token }) {
+export default function MySchoolPage({ school, token, locale }) {
   const [isLoadingStudentDetails, setIsLoadingStudentDetails] = useState(false);
   const [students, setStudents] = useState([]);
   const [isLoadingStaffDetails, setIsLoadingStaffDetails] = useState(false);
@@ -65,23 +66,27 @@ export default function MySchoolPage({ school, token }) {
         <div className="card my-5">
           <div className="card-header">
             <p className="card-header-title background-gradient-primary-info">
-              General
+              {userSchool[locale].general}
             </p>
           </div>
           <div className="card-content">
             <div className="columns is-mobile">
-              <div className="column is-3 has-text-weight-bold">Name:</div>
+              <div className="column is-3 has-text-weight-bold">
+                {userSchool[locale].name}:
+              </div>
               <div className="column">{school.attributes.name}</div>
             </div>
             <div className="columns is-mobile">
               <div className="column is-3 has-text-weight-bold">
-                Description:
+                {userSchool[locale].description}:
               </div>
               <div className="column">{school.attributes.description}</div>
             </div>
             {school.attributes.contactEmail && (
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">Contact:</div>
+                <div className="column is-3 has-text-weight-bold">
+                  {userSchool[locale].contact}:
+                </div>
                 <div className="column">
                   <a href={`mailto:${school.attributes.contactEmail}`}>
                     {school.attributes.contactEmail}
@@ -91,26 +96,30 @@ export default function MySchoolPage({ school, token }) {
             )}
 
             <div className="columns is-mobile">
-              <div className="column is-3 has-text-weight-bold">Starts at:</div>
+              <div className="column is-3 has-text-weight-bold">
+                {userSchool[locale].startsAt}:
+              </div>
               <div className="column">
                 {new Date(school.attributes.startDate).toLocaleDateString()}
               </div>
             </div>
             <div className="columns is-mobile">
-              <div className="column is-3 has-text-weight-bold">Ends at:</div>
+              <div className="column is-3 has-text-weight-bold">
+                {userSchool[locale].endsAt}:
+              </div>
               <div className="column">
                 {new Date(school.attributes.endDate).toLocaleDateString()}
               </div>
             </div>
             <div className="columns is-mobile">
               <div className="column is-3 has-text-weight-bold">
-                Application Fee:
+                {userSchool[locale].applicationFee}:
               </div>
               <div className="column">{school.attributes.applicationFee}</div>
             </div>
             <div className="columns is-mobile">
               <div className="column is-3 has-text-weight-bold">
-                School Fee:
+                {userSchool[locale].schoolFee}:
               </div>
               <div className="column">{school.attributes.schoolFee}</div>
             </div>
@@ -121,7 +130,7 @@ export default function MySchoolPage({ school, token }) {
         <div className="card my-5">
           <header className="card-header">
             <p className="card-header-title background-gradient-primary-right">
-              Students
+              {userSchool[locale].students}
             </p>
           </header>
           <div className="card-content">
@@ -139,13 +148,15 @@ export default function MySchoolPage({ school, token }) {
                 ))}
               </div>
             )}
-            {students.length === 0 && <p>No students are accepted yet</p>}
+            {students.length === 0 && (
+              <p>{userSchool[locale].noStudentsAccepted}</p>
+            )}
           </div>
         </div>
         <div className="card my-5">
           <header className="card-header">
             <p className="card-header-title background-gradient-primary-right">
-              Staff
+              {userSchool[locale].staff}
             </p>
           </header>
           <div className="card-content">
@@ -163,9 +174,7 @@ export default function MySchoolPage({ school, token }) {
                 ))}
               </div>
             )}
-            {staff.length === 0 && (
-              <p>This school does not have any staff yet</p>
-            )}
+            {staff.length === 0 && <p>{userSchool[locale].noStaffYet}</p>}
             <br />
           </div>
         </div>
@@ -174,7 +183,11 @@ export default function MySchoolPage({ school, token }) {
   );
 }
 
-export async function getServerSideProps({ params: { id }, req }) {
+export const getServerSideProps: GetServerSideProps = async ({
+  params: { id },
+  req,
+  locale,
+}) => {
   const { token } = parseCookie(req);
   const schoolDetails = await getSchoolDetails(id, token, [
     "students",
@@ -185,6 +198,7 @@ export async function getServerSideProps({ params: { id }, req }) {
     props: {
       school: schoolDetails.data,
       token,
+      locale,
     },
   };
-}
+};
