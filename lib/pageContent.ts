@@ -28,7 +28,7 @@ async function fetchPageContentData(locale: string): Promise<PageContentData> {
     return {
       ...jsonResult.data?.attributes,
       brandImage:
-        jsonResult.data?.attributes.navbar_brand.data.attributes.formats
+        jsonResult.data?.attributes?.navbar_brand.data.attributes.formats
           .thumbnail.url ?? null,
       showcase:
         jsonResult.data?.attributes.showcase.data.attributes.formats.large

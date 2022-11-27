@@ -16,7 +16,7 @@ async function fetchImage() {
   );
   const pageContent = pageContentData.data;
   const brandImageUrl =
-    pageContent.data?.attributes.navbar_brand.data.attributes.formats.thumbnail
+    pageContent.data?.attributes?.navbar_brand.data.attributes.formats.thumbnail
       .url ?? null;
   let brandImagePath = "";
   if (brandImageUrl === null) {

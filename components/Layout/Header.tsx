@@ -16,15 +16,15 @@ export default function Header() {
 
   useEffect(() => {
     setBrandImage(
-      pageContent.navbar_brand?.data?.attributes?.formats.thumbnail.url ??
-        pageContent.brandImage
+      pageContent?.navbar_brand?.data?.attributes?.formats.thumbnail.url ??
+        pageContent?.brandImage
     );
     setBrandWidth(
-      pageContent.navbar_brand?.data?.attributes?.formats.thumbnail.width ??
+      pageContent?.navbar_brand?.data?.attributes?.formats.thumbnail.width ??
         "112"
     );
     setBrandHeight(
-      pageContent.navbar_brand?.data?.attributes?.formats.thumbnail.height ??
+      pageContent?.navbar_brand?.data?.attributes?.formats.thumbnail.height ??
         "112"
     );
   }, [pageContent]);
