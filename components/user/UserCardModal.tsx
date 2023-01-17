@@ -1,6 +1,13 @@
+import { User } from "api-definitions/backend";
 import ProfileCard from "./ProfileCard";
 
-export default function UserCardModal({ user, show }) {
+export default function UserCardModal({
+  user,
+  show,
+}: {
+  user: User;
+  show: boolean;
+}) {
   return (
     <div className={`modal ${show ? "is-active" : ""}`}>
       <div className="modal-card">

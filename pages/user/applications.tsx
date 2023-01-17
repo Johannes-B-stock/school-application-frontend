@@ -1,7 +1,7 @@
 import ApplicationItem from "@/components/application/ApplicationItem";
 import { API_URL } from "@/config/index";
 import qs from "qs";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import ProfileHeaderCard from "@/components/user/ProfileHeaderCard";
 import { useContext } from "react";
 import AuthContext from "@/context/AuthContext";
@@ -10,10 +10,23 @@ import axios from "axios";
 import { applications as appli18n } from "@/i18n";
 import StaffApplicationItem from "@/components/application/StaffApplicationItem";
 import { GetServerSideProps } from "next";
+import { ArrayDataResponse } from "api-definitions/strapiBaseTypes";
+import {
+  Application,
+  SchoolApplication,
+  StaffApplication,
+} from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 
-export default function ApplicationsPage({ applications, token, locale }) {
+export default function ApplicationsPage({
+  applications,
+  token,
+}: {
+  applications: (SchoolApplication | StaffApplication)[];
+  token: string;
+}) {
   const { user } = useContext(AuthContext);
-
+  const locale = useLocale();
   return (
     <>
       <ProfileHeaderCard user={user} />
@@ -24,7 +37,9 @@ export default function ApplicationsPage({ applications, token, locale }) {
         <div className="column">
           <h1 className="title is-3">{appli18n[locale].applications}</h1>
           {applications.length === 0 && (
-            <h3 className="subtitle is-4">{appli18n[locale].noApplications}</h3>
+            <h3 className="subtitle is-5 mt-5">
+              {appli18n[locale].noApplications}
+            </h3>
           )}
           <div className="columns is-multiline is-variable">
             {applications &&
@@ -35,7 +50,7 @@ export default function ApplicationsPage({ applications, token, locale }) {
                     applications.length > 3 && "is-5-tablet is-4-desktop"
                   }`}
                 >
-                  {application.school != null ? (
+                  {"school" in application ? (
                     <ApplicationItem
                       key={application.id}
                       application={application}
@@ -76,19 +91,16 @@ export const getServerSideProps: GetServerSideProps = async ({
       encodeValuesOnly: true,
     }
   );
-  const res = await fetch(`${API_URL}/api/school-applications/me?${query}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  const result = await res.json();
-  const applications = result.data?.map((data) => ({
-    id: data.id,
-    ...data.attributes,
-  }));
-
+  const result = await axios.get<ArrayDataResponse<SchoolApplication>>(
+    `${API_URL}/api/school-applications/me?${query}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  const applications: Application[] = result.data?.data ?? [];
   query = qs.stringify(
     {
       sort: ["createdAt:desc"],
@@ -98,22 +110,16 @@ export const getServerSideProps: GetServerSideProps = async ({
     }
   );
 
-  const staffApplicationsFetch = await axios.get(
-    `${API_URL}/api/staff-applications/me?${query}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const staffApplicationsFetch = await axios.get<
+    ArrayDataResponse<StaffApplication>
+  >(`${API_URL}/api/staff-applications/me?${query}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
 
-  applications.push(
-    ...staffApplicationsFetch.data.data.map((application) => ({
-      id: application.id,
-      ...application.attributes,
-    }))
-  );
+  applications.push(...(staffApplicationsFetch.data.data ?? []));
 
   applications.sort((first, second) => {
     if (first.createdAt > second.createdAt) {

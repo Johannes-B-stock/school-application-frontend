@@ -1,20 +1,18 @@
 import { API_URL } from "../config";
 import axios from "axios";
 import qs from "qs";
+import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import { SchoolApplication } from "api-definitions/backend";
 
 export async function getApplicationDetails(
   id: string,
   token: string,
-  populate: string[]
+  queryObject: object
 ) {
-  const query = qs.stringify(
-    {
-      populate,
-    },
-    { encodeValuesOnly: true }
-  );
+  const query = qs.stringify(queryObject, { encodeValuesOnly: true });
+  console.log(query);
 
-  const result = await axios.get(
+  const result = await axios.get<SingleDataResponse<SchoolApplication>>(
     `${API_URL}/api/school-applications/${id}?${query}`,
     {
       headers: {
@@ -27,11 +25,12 @@ export async function getApplicationDetails(
 }
 
 export async function updateState(
-  id: string,
+  id: number,
   token: string,
-  desiredState: string
+  desiredState: string,
+  type: "school" | "staff" = "school"
 ) {
-  const changeFetch = await fetch(`${API_URL}/api/school-applications/${id}`, {
+  const changeFetch = await fetch(`${API_URL}/api/${type}-applications/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -49,7 +48,7 @@ export async function updateState(
   }
 }
 
-export async function updateStep(id: string, step: number, token: string) {
+export async function updateStep(id: number, step: number, token: string) {
   const fetchUpdate = await fetch(`${API_URL}/api/school-applications/${id}`, {
     method: "PUT",
     headers: {

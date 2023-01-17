@@ -3,14 +3,16 @@ import AddressEdit from "@/components/user/AddressEdit";
 import ProfileHeaderCard from "@/components/user/ProfileHeaderCard";
 import ProfileSidebar from "@/components/user/ProfileSidebar";
 import AuthContext from "@/context/AuthContext";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import { address } from "@/i18n";
 import styles from "@/styles/ProfilePage.module.css";
 import { GetServerSideProps } from "next";
 import { useContext } from "react";
+import { useLocale } from "i18n/useLocale";
 
-export default function AddressPage({ token, locale }) {
+export default function AddressPage({ token }: { token: string }) {
   const { user } = useContext(AuthContext);
+  const locale = useLocale();
 
   if (!user) {
     return <GoogleSpinner />;
@@ -33,7 +35,12 @@ export default function AddressPage({ token, locale }) {
             </div>
             <div className="card-content">
               {user && (
-                <AddressEdit token={token} user={user} address={user.address} />
+                <AddressEdit
+                  token={token}
+                  user={user}
+                  address={user.address}
+                  addressId={user.address?.id}
+                />
               )}
             </div>
           </div>
@@ -50,6 +57,7 @@ export default function AddressPage({ token, locale }) {
                   token={token}
                   user={user}
                   address={user.emergency_address}
+                  addressId={user.emergency_address?.id}
                   isEmergencyAddress={true}
                 />
               )}
@@ -61,13 +69,10 @@ export default function AddressPage({ token, locale }) {
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({
-  req,
-  locale,
-}) => {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const { token } = parseCookie(req);
 
   return {
-    props: { token: token ?? null, locale },
+    props: { token: token ?? null },
   };
 };

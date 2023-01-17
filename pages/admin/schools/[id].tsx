@@ -3,7 +3,7 @@ import DashboardLayout from "@/components/Layout/DashboardLayout";
 import GoogleSpinner from "@/components/common/GoogleSpinner";
 import NotAuthorized from "@/components/auth/NotAuthorized";
 import AuthContext from "@/context/AuthContext";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import { faAdd, faSpinner } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -19,22 +19,33 @@ import { useRouter } from "next/router";
 import ApplicationsTable from "@/components/admin/ApplicationsTable";
 import UserAvatar from "@/components/user/UserAvatar";
 import _ from "lodash";
+import { School, SchoolApplication, User } from "api-definitions/backend";
+import { Pagination } from "api-definitions/strapiBaseTypes";
+import { UserThumbnail } from "./dashboard";
+import { GetServerSideProps } from "next";
 
-export default function SchoolAdmin({ school, token }) {
+export default function SchoolAdmin({
+  school,
+  token,
+}: {
+  school: School;
+  token: string;
+}) {
   const { user } = useContext(AuthContext);
   const [isLoadingStudentDetails, setIsLoadingStudentDetails] = useState(false);
-  const [students, setStudents] = useState([]);
+  const [students, setStudents] = useState<User[]>([]);
   const [isLoadingStaffDetails, setIsLoadingStaffDetails] = useState(false);
-  const [staff, setStaff] = useState([]);
+  const [staff, setStaff] = useState<User[]>([]);
   const [showStaffModal, setShowStaffModal] = useState(false);
-  const [addedStaff, setAddedStaff] = useState([]);
+  const [addedStaff, setAddedStaff] = useState<User[]>([]);
   const [isSavingStaff, setIsSavingStaff] = useState(false);
   const [filter, setFilter] = useState("");
 
   const [isLoadingApplications, setIsLoadingApplications] = useState(true);
-  const [applications, setApplications] = useState([]);
-  const [userPictures, setUserPictures] = useState([]);
-  const [applicationPagination, setApplicationPagination] = useState(null);
+  const [applications, setApplications] = useState<SchoolApplication[]>([]);
+  const [applicationPagination, setApplicationPagination] = useState<
+    Pagination | undefined
+  >(undefined);
   const [page, setPage] = useState(1);
 
   const router = useRouter();
@@ -43,31 +54,38 @@ export default function SchoolAdmin({ school, token }) {
     async function fetchData() {
       try {
         setIsLoadingStaffDetails(true);
-        const staff = await getAllUsers(
-          school.attributes.staff.data.map((staff) => staff.id),
-          token,
-          ["picture"]
-        );
-        setStaff(staff);
-      } catch (error) {
+        if (!school.staff) {
+          setStaff([]);
+        } else {
+          const staff = await getAllUsers(
+            school.staff.map((staff) => staff.id),
+            token,
+            ["picture"]
+          );
+          setStaff(staff ?? []);
+        }
+      } catch (error: any) {
         toast(error.message ?? error);
       } finally {
         setIsLoadingStaffDetails(false);
       }
       try {
         setIsLoadingStudentDetails(true);
-        const students = await getAllUsers(
-          school.attributes.students.data.map((user) => user.id),
-          token,
-          ["picture"]
-        );
-        setStudents(students);
+        if (!school.students) {
+          setStudents([]);
+        } else {
+          const students = await getAllUsers(
+            school.students.map((user) => user.id),
+            token,
+            ["picture"]
+          );
+          setStudents(students);
+        }
 
         setIsLoadingStudentDetails(false);
-      } catch (error) {
+      } catch (error: any) {
         setIsLoadingStudentDetails(false);
         toast(error.message ?? error);
-      } finally {
       }
     }
     fetchData();
@@ -77,45 +95,24 @@ export default function SchoolAdmin({ school, token }) {
     async function loadApplicationDetails() {
       setIsLoadingApplications(true);
 
-      const appFetch = await getPaginatedApplications(
+      const applicationsResponse = await getPaginatedApplications(
         page,
         filter,
         token,
         school.id
       );
-      const applicationsResult = await appFetch.json();
 
-      if (appFetch.ok) {
+      if (applicationsResponse.status < 400) {
         setIsLoadingApplications(false);
-        setApplications(applicationsResult.data);
-        setApplicationPagination(applicationsResult.meta.pagination);
+        setApplications(applicationsResponse.data.data ?? []);
+        setApplicationPagination(applicationsResponse.data.meta?.pagination);
       } else {
         toast.error(
-          "Cannot load applications because " + applicationsResult.error.message
+          "Cannot load applications because " +
+            applicationsResponse.data.error?.message ??
+            applicationsResponse.statusText
         );
       }
-      const condensedUserIds = [];
-      applicationsResult.data.forEach(
-        (app) =>
-          !condensedUserIds.includes(app.attributes.user.data.id) &&
-          app.attributes.user.data.id &&
-          condensedUserIds.push(app.attributes.user.data.id)
-      );
-      const users = [];
-      await Promise.all(
-        condensedUserIds.map(async (userId) => {
-          try {
-            const user = await getUser(userId, token, ["picture"]);
-            users.push(user);
-          } catch (error) {
-            console.log(error.message ?? error);
-          }
-        })
-      );
-      const pictures = users.map((user) => {
-        return { id: user.id, picture: user.picture?.formats.thumbnail.url };
-      });
-      setUserPictures(pictures);
     }
     loadApplicationDetails();
   }, [school, token, filter, page]);
@@ -130,17 +127,21 @@ export default function SchoolAdmin({ school, token }) {
     }
     try {
       setIsSavingStaff(true);
-      await addMultipleStaffToSchool(addedStaff, school.id, token);
+      await addMultipleStaffToSchool(
+        addedStaff.map((user) => user.id),
+        school.id,
+        token
+      );
       setStaff([...staff, ...addedStaff]);
       setShowStaffModal(false);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message ?? error);
     } finally {
       setIsSavingStaff(false);
     }
   };
 
-  const clickRemoveStaff = async (userId) => {
+  const clickRemoveStaff = async (userId: number) => {
     await removeStaffFromSchool(userId, school.id, token);
     const updatedStaff = [...staff];
     _.remove(updatedStaff, (staff) => staff.id === userId);
@@ -156,7 +157,7 @@ export default function SchoolAdmin({ school, token }) {
   }
   return (
     <section className="section has-background-light">
-      <h2 className="title is-3">School {school.attributes.name}</h2>
+      <h2 className="title is-3">School {school.name}</h2>
       <div className="columns">
         <div className="column">
           <div className="card my-5">
@@ -168,22 +169,22 @@ export default function SchoolAdmin({ school, token }) {
             <div className="card-content">
               <div className="columns">
                 <div className="column is-3 has-text-weight-bold">Name:</div>
-                <div className="column">{school.attributes.name}</div>
+                <div className="column">{school.name}</div>
               </div>
               <div className="columns">
                 <div className="column is-3 has-text-weight-bold">
                   Description:
                 </div>
-                <div className="column">{school.attributes.description}</div>
+                <div className="column">{school.description}</div>
               </div>
-              {school.attributes.contactEmail && (
+              {school.contactEmail && (
                 <div className="columns is-mobile">
                   <div className="column is-3 has-text-weight-bold">
                     Contact:
                   </div>
                   <div className="column">
-                    <a href={`mailto:${school.attributes.contactEmail}`}>
-                      {school.attributes.contactEmail}
+                    <a href={`mailto:${school.contactEmail}`}>
+                      {school.contactEmail}
                     </a>
                   </div>
                 </div>
@@ -194,26 +195,26 @@ export default function SchoolAdmin({ school, token }) {
                   Starts at:
                 </div>
                 <div className="column">
-                  {new Date(school.attributes.startDate).toLocaleDateString()}
+                  {new Date(school.startDate).toLocaleDateString()}
                 </div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">Ends at:</div>
                 <div className="column">
-                  {new Date(school.attributes.endDate).toLocaleDateString()}
+                  {new Date(school.endDate).toLocaleDateString()}
                 </div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   Application Fee:
                 </div>
-                <div className="column">{school.attributes.applicationFee}</div>
+                <div className="column">{school.applicationFee}</div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   School Fee:
                 </div>
-                <div className="column">{school.attributes.schoolFee}</div>
+                <div className="column">{school.schoolFee}</div>
               </div>
               <div
                 className="button is-primary"
@@ -355,7 +356,6 @@ export default function SchoolAdmin({ school, token }) {
                   applications={applications}
                   applicationPagination={applicationPagination}
                   setPage={setPage}
-                  userPictures={userPictures}
                   setApplications={setApplications}
                   token={token}
                 />
@@ -402,12 +402,26 @@ export default function SchoolAdmin({ school, token }) {
   );
 }
 
-SchoolAdmin.getLayout = function getLayout(page) {
+SchoolAdmin.getLayout = function getLayout(page: any) {
   return <DashboardLayout>{page}</DashboardLayout>;
 };
 
-export async function getServerSideProps({ req, params: { id } }) {
+export const getServerSideProps: GetServerSideProps = async ({
+  req,
+  params,
+}) => {
+  const id = params?.id;
   const { token } = parseCookie(req);
+
+  if (!id) {
+    return {
+      props: {
+        school: null,
+        token,
+      },
+    };
+  }
+
   const schoolDetails = await getSchoolDetails(id, token, [
     "students",
     "staff",
@@ -421,4 +435,4 @@ export async function getServerSideProps({ req, params: { id } }) {
       token,
     },
   };
-}
+};

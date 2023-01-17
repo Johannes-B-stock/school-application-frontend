@@ -1,17 +1,20 @@
 import { API_URL } from "../config";
 import axios from "axios";
 import qs from "qs";
-import { StaffApplication } from "definitions/backend";
+import { ApplicationState, StaffApplication } from "api-definitions/backend";
+import {
+  ArrayDataResponse,
+  SingleDataResponse,
+} from "api-definitions/strapiBaseTypes";
 
-export async function getApplicationDetails(id, token, populate) {
-  const query = qs.stringify(
-    {
-      populate,
-    },
-    { encodeValuesOnly: true }
-  );
+export async function getStaffApplicationDetails(
+  id: string,
+  token: string,
+  queryObject: object
+) {
+  const query = qs.stringify(queryObject, { encodeValuesOnly: true });
 
-  const result = await axios.get(
+  const result = await axios.get<SingleDataResponse<StaffApplication>>(
     `${API_URL}/api/staff-applications/${id}?${query}`,
     {
       headers: {
@@ -23,7 +26,25 @@ export async function getApplicationDetails(id, token, populate) {
   return result.data;
 }
 
-export async function updateState(id, token, desiredState) {
+export async function getAllStaffApplications(token: string, query: string) {
+  const allStaff = await axios.get<ArrayDataResponse<StaffApplication>>(
+    `${API_URL}/api/staff-applications?${query}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+
+  return allStaff.data;
+}
+
+export async function updateState(
+  id: number,
+  token: string,
+  desiredState: ApplicationState
+) {
   const changeFetch = await fetch(`${API_URL}/api/staff-applications/${id}`, {
     method: "PUT",
     headers: {
@@ -42,7 +63,7 @@ export async function updateState(id, token, desiredState) {
   }
 }
 
-export async function updateStep(id, step, token) {
+export async function updateStep(id: number, step: number, token: string) {
   const fetchUpdate = await fetch(`${API_URL}/api/staff-applications/${id}`, {
     method: "PUT",
     headers: {

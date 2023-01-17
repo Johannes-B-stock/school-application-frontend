@@ -1,18 +1,19 @@
 import AuthContext from "@/context/AuthContext";
 import { useContext } from "react";
 import styles from "@/styles/ProfilePage.module.css";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import ProfileHeaderCard from "@/components/user/ProfileHeaderCard";
 import ProfileSidebar from "@/components/user/ProfileSidebar";
 import GoogleSpinner from "@/components/common/GoogleSpinner";
 import UserProfileEdit from "@/components/user/UserProfileEdit";
 import UserDetailsEdit from "@/components/user/UserDetailsEdit";
 import { profile } from "@/i18n";
-import { useRouter } from "next/router";
+import { useLocale } from "i18n/useLocale";
+import { GetServerSideProps } from "next";
 
-export default function ProfilePage({ token }) {
+export default function ProfilePage({ token }: { token: string }) {
   const { user } = useContext(AuthContext);
-  const { locale } = useRouter();
+  const locale = useLocale();
 
   if (!user) {
     return <GoogleSpinner />;
@@ -54,10 +55,10 @@ export default function ProfilePage({ token }) {
   );
 }
 
-export async function getServerSideProps({ req }) {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const { token } = parseCookie(req);
 
   return {
-    props: { token: token ?? null },
+    props: { token: token },
   };
-}
+};

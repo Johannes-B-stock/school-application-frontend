@@ -1,5 +1,4 @@
-import { useRouter } from "next/router";
-import { useState, useContext } from "react";
+import { useState, useContext, FormEvent, ChangeEvent } from "react";
 import styles from "@/styles/Form.module.css";
 import { toast } from "react-toastify";
 import { API_URL } from "@/config/index";
@@ -7,9 +6,18 @@ import qs from "qs";
 import Image from "next/image";
 import AuthContext from "@/context/AuthContext";
 import NotAuthorized from "@/components/auth/NotAuthorized";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
+import { School } from "api-definitions/backend";
+import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import { GetServerSideProps } from "next";
 
-export default function EditSchoolPage({ school, token }) {
+export default function EditSchoolPage({
+  school,
+  token,
+}: {
+  school: School;
+  token: string;
+}) {
   const { user } = useContext(AuthContext);
 
   const [values, setValues] = useState({
@@ -23,12 +31,11 @@ export default function EditSchoolPage({ school, token }) {
     isPublic: school.isPublic,
     acceptingStudents: school.acceptingStudents,
   });
-  const router = useRouter();
 
   const [imagePreview, setImagePreview] = useState(
-    school.image ? school.image.data?.attributes.formats.thumbnail : null
+    school.image ? school.image.formats.thumbnail : null
   );
-  const handleUpdate = async (e) => {
+  const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
 
     const hasEmptyValues = Object.values(values).some((value) => value === "");
@@ -57,12 +64,14 @@ export default function EditSchoolPage({ school, token }) {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setValues({ ...values, [name]: value });
   };
 
-  const handleCheckboxChange = (e) => {
+  const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setValues({ ...values, [name]: checked });
   };
@@ -295,21 +304,22 @@ export default function EditSchoolPage({ school, token }) {
   );
 }
 
-export async function getServerSideProps({ params: { id }, req }) {
+export const getServerSideProps: GetServerSideProps = async ({
+  params,
+  req,
+}) => {
+  const id = params?.id;
   const { token } = parseCookie(req);
   const query = qs.stringify({
     populate: "image",
   });
   const res = await fetch(`${API_URL}/api/schools/${id}?${query}`);
 
-  const response = await res.json();
+  const response = (await res.json()) as SingleDataResponse<School>;
   return {
     props: {
       token,
-      school: {
-        id: response.data.id,
-        ...response.data.attributes,
-      },
+      school: response.data,
     },
   };
-}
+};

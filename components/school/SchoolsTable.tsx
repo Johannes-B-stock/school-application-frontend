@@ -7,8 +7,9 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import { School } from "api-definitions/backend";
 
-export default function SchoolsTable({ schools }) {
+export default function SchoolsTable({ schools }: { schools: School[] }) {
   const router = useRouter();
 
   return (
@@ -20,31 +21,29 @@ export default function SchoolsTable({ schools }) {
               <td width="5%">
                 <span className="icon has-text-info">
                   <FontAwesomeIcon
-                    icon={school.attributes.isPublic ? faSchool : faSchoolLock}
+                    icon={school.isPublic ? faSchool : faSchoolLock}
                   />
                 </span>
               </td>
               <td>
-                <Link href={`/admin/schools/${school.id}`}>
-                  {school.attributes.name}
-                </Link>
+                <Link href={`/admin/schools/${school.id}`}>{school.name}</Link>
               </td>
               <td>
                 <span className="is-italic has-text-grey is-size-6">
-                  {new Date(school.attributes.startDate).toLocaleDateString()} -{" "}
-                  {new Date(school.attributes.endDate).toLocaleDateString()}
+                  {new Date(school.startDate).toLocaleDateString()} -{" "}
+                  {new Date(school.endDate).toLocaleDateString()}
                 </span>
               </td>
               <td>
                 <span
                   className={`tag ${
-                    school.attributes.isSecondary ? "is-warning" : "is-danger"
+                    school.secondarySchool ? "is-warning" : "is-danger"
                   }`}
                 >
-                  {school.attributes.isSecondary ? "Secondary school" : "DTS"}
+                  {school.secondarySchool ? "Secondary school" : "DTS"}
                 </span>
               </td>
-              <td>{school.attributes.students.data.length} Students</td>
+              <td>{school.students?.length ?? 0} Students</td>
               <td>
                 <div
                   className="button is-small is-primary mx-1"

@@ -3,7 +3,7 @@ import axios from "axios";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
-export default function FailedPage({ params, req }) {
+export default function FailedPage() {
   const router = useRouter();
 
   const sessionId = null;

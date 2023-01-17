@@ -1,5 +1,4 @@
 import { API_URL } from "@/config/index";
-import Image from "next/image";
 import { toast } from "react-toastify";
 import Link from "next/link";
 import qs from "qs";
@@ -9,27 +8,32 @@ import AuthContext from "@/context/AuthContext";
 import styles from "@/styles/Showcase.module.css";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import ReactMarkdown from "react-markdown";
+import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import { School } from "api-definitions/backend";
+import Currency from "@/components/common/Currency";
+import { general, userSchool } from "@/i18n";
+import { useLocale } from "i18n/useLocale";
+import { GetServerSideProps } from "next";
 
-export default function SchoolDetailsPage({ school }) {
+export default function SchoolDetailsPage({ school }: { school: School }) {
   const { user } = useContext(AuthContext);
   const router = useRouter();
+  const locale = useLocale();
 
   let schoolInfo = school;
 
-  const schoolImage = school.image
-    ? school.image
-    : "/images/school-default.png";
+  const schoolImage = school?.image?.url ?? "/images/school-default.png";
 
-  if (router.locale !== router.defaultLocale) {
-    const localizedSchool = school.localizations.data.find(
-      (schoolLoc) => schoolLoc.attributes.locale === router.locale.split("-")[0]
+  if (locale !== router.defaultLocale) {
+    const localizedSchool = school.localizations?.find(
+      (schoolLoc) => schoolLoc.locale === locale
     );
     if (localizedSchool) {
-      schoolInfo = localizedSchool.attributes;
+      schoolInfo = localizedSchool;
     }
   }
 
-  const handleDelete = async (e) => {
+  const handleDelete = async () => {
     if (confirm("Are you sure?")) {
       const res = await fetch(`${API_URL}/api/schools/${school.id}`, {
         method: "DELETE",
@@ -56,8 +60,8 @@ export default function SchoolDetailsPage({ school }) {
         <div className="container hero-body">
           <p className="title mb-1">{schoolInfo?.name}</p>
           <h4 className="is-italic mb-3">
-            {new Date(school.startDate).toLocaleDateString(router.locale)} -{" "}
-            {new Date(school.endDate).toLocaleDateString(router.locale)}
+            {new Date(school.startDate).toLocaleDateString(locale)} -{" "}
+            {new Date(school.endDate).toLocaleDateString(locale)}
           </h4>
           <p>{schoolInfo.description}</p>
         </div>
@@ -67,23 +71,36 @@ export default function SchoolDetailsPage({ school }) {
           <div className="content">
             <ReactMarkdown>{schoolInfo.detailedDescription}</ReactMarkdown>
 
-            <h3>Fees</h3>
-            <p>Application Fee: {school.applicationFee}</p>
-            <p>School Fee: {school.schoolFee}</p>
+            <h3>{userSchool[locale].fees}</h3>
+            <p>
+              {userSchool[locale].applicationFee}:&nbsp;
+              <Currency
+                currency={school.currency}
+                value={+school.applicationFee}
+              />
+            </p>
+            <p>
+              {userSchool[locale].schoolFee}:&nbsp;
+              <Currency currency={school.currency} value={+school.schoolFee} />
+            </p>
 
             {school.acceptingStudents && (
               <Link href={`/schools/${school.id}/apply`}>
-                <a className="button m-1 is-primary">Apply</a>
+                <a className="button m-1 is-primary">
+                  {general.buttons[locale].apply}
+                </a>
               </Link>
             )}
             {user && user.role?.name === "SchoolAdmin" && (
               <>
                 {" "}
                 <Link href={`/schools/${school.id}/edit`}>
-                  <a className="button m-1 is-secondary">Edit</a>
+                  <a className="button m-1 is-secondary">
+                    {general.buttons[locale].edit}
+                  </a>
                 </Link>
                 <a onClick={handleDelete} className="button m-1 is-danger">
-                  Delete
+                  {general.buttons[locale].delete}
                 </a>
               </>
             )}
@@ -94,11 +111,12 @@ export default function SchoolDetailsPage({ school }) {
   );
 }
 
-SchoolDetailsPage.getLayout = function getLayout(page) {
+SchoolDetailsPage.getLayout = function getLayout(page: any) {
   return <DashboardLayout title="School details">{page}</DashboardLayout>;
 };
 
-export async function getServerSideProps({ params: { id } }) {
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const id = params?.id;
   const query = qs.stringify(
     {
       filters: {
@@ -113,27 +131,12 @@ export async function getServerSideProps({ params: { id } }) {
     }
   );
   const res = await fetch(`${API_URL}/api/schools/${id}?${query}`);
-  const result = await res.json();
-  const school = {
-    id: result.data.id,
-    ...result.data.attributes,
-    image: result.data.attributes.image?.data?.attributes.url ?? null,
-  };
+  const result = (await res.json()) as SingleDataResponse<School>;
+  const school = result.data;
 
   return {
     props: {
       school: school,
     },
-    // revalidate: 1,
   };
-}
-
-// export async function getServerSideProps({ query: { slug } }) {
-//   const res = await fetch(`${API_URL}/api/schools/${slug}`);
-//   const schools = await res.json();
-//   return {
-//     props: {
-//       school: schools[0],
-//     },
-//   };
-// }
+};

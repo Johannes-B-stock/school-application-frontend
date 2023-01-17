@@ -1,13 +1,13 @@
 import { notConfirmed as t } from "@/i18n";
+import { useLocale } from "i18n/useLocale";
 import Link from "next/link";
-import { useRouter } from "next/router";
 
 export default function NotConfirmedPage() {
-  const { locale } = useRouter();
+  const locale = useLocale();
   return (
     <section className="section hero">
       <div className="columns is-centered has-text-centered ">
-        <div className="column is-7 box p-6 hero is-warning">
+        <div className="column is-7 box p-6 hero has-background-warning-light">
           <h1 className="title is-4">{t[locale].title}</h1>
           <p>{t[locale].text1}</p>
           <p>

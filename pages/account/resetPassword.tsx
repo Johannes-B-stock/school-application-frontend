@@ -2,12 +2,14 @@ import AuthContext from "@/context/AuthContext";
 import { general, resetPassword as t } from "@/i18n";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useLocale } from "i18n/useLocale";
 import { useRouter } from "next/router";
 import { ChangeEvent, FormEvent, useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
+  const locale = useLocale();
   const [formData, setFormData] = useState<{
     password: string;
     confirmPassword: string;
@@ -46,6 +48,10 @@ export default function ResetPasswordPage() {
         toast.error("Passwords do not match");
         return;
       }
+      if (!code) {
+        toast.error("No code given");
+        return;
+      }
       if (typeof code !== "string") {
         code = code[0];
       }
@@ -56,7 +62,7 @@ export default function ResetPasswordPage() {
       if (successful) {
         router.push("/account/login");
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message ?? error);
     } finally {
       setIsLoading(false);
@@ -71,15 +77,15 @@ export default function ResetPasswordPage() {
     <div className="columns is-centered has-text-centered ">
       <div className="column is-5">
         <div className="box p-5">
-          <h1 className="title is-4">{t[router.locale].title}</h1>
-          <p className="description mb-5">{t[router.locale].description}</p>
+          <h1 className="title is-4">{t[locale].title}</h1>
+          <p className="description mb-5">{t[locale].description}</p>
           <form onSubmit={onSubmit}>
             <div className="field">
               <div className="control has-icons-left">
                 <input
                   className="input is-medium"
                   type="password"
-                  placeholder={t[router.locale].password}
+                  placeholder={t[locale].password}
                   id="password"
                   name="password"
                   value={formData.password}
@@ -95,7 +101,7 @@ export default function ResetPasswordPage() {
                 <input
                   className="input is-medium"
                   type="password"
-                  placeholder={t[router.locale].confirmPassword}
+                  placeholder={t[locale].confirmPassword}
                   id="confirmPassword"
                   name="confirmPassword"
                   value={formData.confirmPassword}
@@ -113,7 +119,7 @@ export default function ResetPasswordPage() {
               }`}
               type="submit"
             >
-              {general.buttons[router.locale].submit}
+              {general.buttons[locale].submit}
             </button>
           </form>
         </div>

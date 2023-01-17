@@ -3,44 +3,52 @@ import GoogleSpinner from "@/components/common/GoogleSpinner";
 import NotFound from "@/components/common/NotFound";
 import { API_URL } from "@/config/index";
 import { general, references } from "@/i18n";
-import { Data, Reference } from "definitions/backend";
+import { Answer, Reference } from "api-definitions/backend";
+import { ArrayDataResponse } from "api-definitions/strapiBaseTypes";
+import { useLocale } from "i18n/useLocale";
 import { GetServerSideProps } from "next";
 import qs from "qs";
-import { ChangeEvent, useState } from "react";
+import { ChangeEvent, MouseEvent, useState } from "react";
 import { toast } from "react-toastify";
 
 export default function ReferencePage({
   reference,
   errorCode,
-  locale,
 }: {
-  reference: Data<Reference>;
+  reference: Reference;
   errorCode: number;
-  locale: string;
 }) {
-  const [answers, setAnswers] = useState(reference?.attributes.answers.data);
+  const [answers, setAnswers] = useState(reference.answers);
+  const [referenceEdit, setReferenceEdit] = useState(reference);
   const [isLoading, setIsLoading] = useState(false);
-
-  console.log(reference);
+  const locale = useLocale();
 
   const onAnswered = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
+    if (!answers) {
+      throw new Error("No Answers given");
+    }
     const updatedAnswer = answers.find(
       (answer) => answer.id.toString() === e.target.name
     );
+    if (!updatedAnswer) {
+      throw new Error("Could not find Answer to update");
+    }
     const index = answers.indexOf(updatedAnswer);
-    updatedAnswer.attributes.answer = e.target.value;
+    updatedAnswer.answer = e.target.value;
+
     const newAnswers = [...answers];
     newAnswers[index] = updatedAnswer;
     setAnswers(newAnswers);
   };
 
-  const handleSave = async (e) => {
+  const handleSave = async (e: MouseEvent) => {
     e.preventDefault();
-    if (isLoading) {
+    if (isLoading || !answers) {
       return;
     }
+
     setIsLoading(true);
     await Promise.all(
       answers.map(async (answer) => {
@@ -53,7 +61,7 @@ export default function ReferencePage({
             },
             body: JSON.stringify({
               data: {
-                answer: answer.attributes.answer,
+                answer: answer.answer,
               },
             }),
           }
@@ -73,13 +81,19 @@ export default function ReferencePage({
       .finally(() => setIsLoading(false));
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: MouseEvent) => {
     e.preventDefault();
-    if (isLoading) {
+    if (isLoading || !answers) {
       return;
     }
+
     try {
       setIsLoading(true);
+
+      if (notAllRequiredQuestionsHaveBeenAnswered(answers)) {
+        toast.error(references[locale].answerRequired);
+        return;
+      }
       await Promise.all(
         answers.map(async (answer) => {
           const updateAnswerFetch = await fetch(
@@ -91,7 +105,7 @@ export default function ReferencePage({
               },
               body: JSON.stringify({
                 data: {
-                  answer: answer.attributes.answer,
+                  answer: answer.answer,
                 },
               }),
             }
@@ -121,6 +135,7 @@ export default function ReferencePage({
         }
       );
       if (updateAnswerFetch.ok) {
+        setReferenceEdit({ ...referenceEdit, submitted: true });
         toast.success("Reference sucessfully submitted");
       } else {
         toast.error(
@@ -128,7 +143,7 @@ export default function ReferencePage({
             updateAnswerFetch.statusText
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       toast.error(
         "There was an error when trying to submit reference: " + err.message ??
           err
@@ -147,20 +162,20 @@ export default function ReferencePage({
       <div className="title is-4">{references[locale].reference}</div>
       <br />
       <div className="subtitle is-5">
-        {references[locale].hello} {reference.attributes.name}
+        {references[locale].hello} {reference.name}
       </div>
       <p>
         {(references[locale].referenceDescription as string)
-          .replaceAll("{0}", reference.attributes.relation)
-          .replaceAll("{1}", reference.attributes.applicant)}
+          .replaceAll("{0}", reference.relation)
+          .replaceAll("{1}", reference.applicant)}
       </p>
       <br />
       <form className="form">
-        {reference.attributes.answers?.data?.map((answer) => (
+        {answers?.map((answer) => (
           <QuestionItem
             key={answer.id}
             answer={answer}
-            disabled={reference.attributes.submitted}
+            disabled={referenceEdit.submitted}
             onAnswered={onAnswered}
           />
         ))}
@@ -174,7 +189,7 @@ export default function ReferencePage({
                 <button
                   className="button is-light"
                   onClick={handleSave}
-                  disabled={reference.attributes.submitted}
+                  disabled={referenceEdit.submitted}
                 >
                   {general.buttons[locale].save}
                 </button>
@@ -183,7 +198,7 @@ export default function ReferencePage({
                 <button
                   className="button is-primary"
                   onClick={handleSubmit}
-                  disabled={reference.attributes.submitted}
+                  disabled={referenceEdit.submitted}
                 >
                   {general.buttons[locale].submit}
                 </button>
@@ -196,10 +211,8 @@ export default function ReferencePage({
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({
-  params: { uid },
-  locale,
-}) => {
+export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+  const uid = params?.uid;
   const query = qs.stringify({
     populate: {
       answers: {
@@ -220,20 +233,24 @@ export const getServerSideProps: GetServerSideProps = async ({
   const referenceFetch = await fetch(`${API_URL}/api/references?${query}`, {
     method: "GET",
   });
-  const referenceJson = await referenceFetch.json();
-  const reference = referenceJson.data?.[0] ?? null;
+  const referenceJson =
+    (await referenceFetch.json()) as ArrayDataResponse<Reference>;
+  const reference = referenceJson.data?.[0];
   if (!reference) {
     return {
-      props: {
-        errorCode: 404,
-        locale,
-      },
+      notFound: true,
     };
   }
   return {
     props: {
       reference: reference,
-      locale,
     },
   };
 };
+function notAllRequiredQuestionsHaveBeenAnswered(answers: Answer[]) {
+  return answers.some(
+    (answer) =>
+      answer.question.required &&
+      (answer.answer == undefined || answer.answer?.trim() === "")
+  );
+}

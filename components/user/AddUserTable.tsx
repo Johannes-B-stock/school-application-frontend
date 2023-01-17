@@ -1,5 +1,11 @@
 import Image from "next/image";
-import { Dispatch, SetStateAction, useEffect, useState } from "react";
+import {
+  ChangeEvent,
+  Dispatch,
+  SetStateAction,
+  useEffect,
+  useState,
+} from "react";
 import GoogleSpinner from "../common/GoogleSpinner";
 import { throttle } from "throttle-debounce";
 import { findUsersWithName } from "lib/user";
@@ -7,6 +13,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus, faSearch, faXmark } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import Link from "next/link";
+import { User } from "api-definitions/backend";
 
 export default function AddUserTable({
   token,
@@ -16,13 +23,13 @@ export default function AddUserTable({
 }: {
   token: string;
   load: boolean;
-  excludedUsers: any[];
-  addedUsers: Dispatch<SetStateAction<any[]>>;
+  excludedUsers: User[];
+  addedUsers: Dispatch<SetStateAction<User[]>>;
 }) {
-  const [users, setUsers] = useState(null);
+  const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [userSearch, setUserSearch] = useState("");
-  const [usersToAdd, setUsersToAdd] = useState([]);
+  const [usersToAdd, setUsersToAdd] = useState<User[]>([]);
 
   const throttleUserSearch = throttle(
     500,
@@ -50,6 +57,7 @@ export default function AddUserTable({
           );
           setUsers(users);
         } catch (error) {
+          console.log(error);
         } finally {
           setUsersLoading(false);
         }
@@ -61,12 +69,12 @@ export default function AddUserTable({
     fetchData();
   }, [load, userSearch, token, excludedUsers, addedUsers]);
 
-  const onChangeUserSearch = (e) => {
+  const onChangeUserSearch = (e: ChangeEvent<HTMLInputElement>) => {
     const { value } = e.target;
     throttleUserSearch(value);
   };
 
-  const addUser = (user) => {
+  const addUser = (user: User) => {
     if (usersToAdd.includes(user)) {
       return;
     }
@@ -75,7 +83,7 @@ export default function AddUserTable({
     addedUsers(newUserlist);
   };
 
-  const removeUser = (user) => {
+  const removeUser = (user: User) => {
     const updatedUsers = [...usersToAdd];
     _.remove(updatedUsers, (u) => u.id === user.id);
     setUsersToAdd(updatedUsers);
@@ -148,7 +156,7 @@ export default function AddUserTable({
                     <Image
                       alt={user.username}
                       src={
-                        user.picture?.formats.small.url ??
+                        user.picture?.formats?.small?.url ??
                         "/images/defaultAvatar.png"
                       }
                       className="image is-32x32 is-rounded"

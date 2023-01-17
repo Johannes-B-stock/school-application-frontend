@@ -1,6 +1,6 @@
 import { general } from "@/i18n";
-import { Answer, Data } from "definitions/backend";
-import { useRouter } from "next/router";
+import { Answer } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 import { ChangeEventHandler } from "react";
 
 export default function QuestionItem({
@@ -8,47 +8,47 @@ export default function QuestionItem({
   disabled = false,
   onAnswered,
 }: {
-  answer: Data<Answer>;
+  answer: Answer;
   disabled: boolean;
   onAnswered: ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 }) {
-  const { locale } = useRouter();
-  const question = answer.attributes.question?.data?.attributes;
+  const locale = useLocale();
+  const question = answer.question;
   let questionText = question.question;
   if (question.locale !== locale && question.localizations) {
-    const localeQuestion = question.localizations.data.find(
-      (localizedQuestion) => localizedQuestion.attributes.locale === locale
+    const localeQuestion = question.localizations.find(
+      (localizedQuestion) => localizedQuestion.locale === locale
     );
     if (localeQuestion) {
-      questionText = localeQuestion.attributes.question;
+      questionText = localeQuestion.question;
     }
   }
 
   return (
     <div className="field">
-      <label htmlFor={answer.id} className="label">
+      <label htmlFor={answer.id.toString()} className="label">
         {questionText} {question.required ? "*" : ""}
       </label>
       <div className="control">
         {(question.inputType === "text" || question.inputType == undefined) && (
           <input
             type="text"
-            name={answer.id}
+            name={answer.id.toString()}
             className={`input ${
-              question.required && answer.attributes.answer == "" && "is-danger"
+              question.required && answer.answer == "" && "is-danger"
             }`}
-            value={answer.attributes.answer}
+            value={answer.answer}
             onChange={onAnswered}
             disabled={disabled}
           />
         )}
         {question.inputType === "longtext" && (
           <textarea
-            name={answer.id}
+            name={answer.id.toString()}
             className={`textarea ${
-              question.required && answer.attributes.answer == "" && "is-danger"
+              question.required && answer.answer == "" && "is-danger"
             }`}
-            value={answer.attributes.answer}
+            value={answer.answer}
             disabled={disabled}
             onChange={onAnswered}
           />
@@ -58,10 +58,10 @@ export default function QuestionItem({
             <label className="radio">
               <input
                 type="radio"
-                name={answer.id}
+                name={answer.id.toString()}
                 value={"true"}
                 onChange={onAnswered}
-                checked={answer.attributes.answer === "true"}
+                checked={answer.answer === "true"}
                 disabled={disabled}
               />
               {general.buttons[locale].yes}
@@ -69,10 +69,10 @@ export default function QuestionItem({
             <label className="radio">
               <input
                 type="radio"
-                name={answer.id}
+                name={answer.id.toString()}
                 value={"false"}
                 onChange={onAnswered}
-                checked={answer.attributes.answer === "false"}
+                checked={answer.answer === "false"}
                 disabled={disabled}
               />
               {general.buttons[locale].no}

@@ -1,3 +1,4 @@
+import { COOKIE_NAME } from "@/config/index";
 import cookie from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -8,10 +9,9 @@ export default async function logout(
   if (req.method === "POST") {
     res.setHeader(
       "Set-Cookie",
-      cookie.serialize("token", "", {
+      cookie.serialize(COOKIE_NAME, "", {
         httpOnly: true,
         secure: process.env.NODE_ENV !== "development",
-        expires: new Date(0),
         sameSite: "strict",
         path: "/",
       })

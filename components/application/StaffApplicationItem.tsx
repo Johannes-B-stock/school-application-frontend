@@ -4,9 +4,18 @@ import { API_URL } from "../../config";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
 import { applications, general } from "@/i18n";
+import { StaffApplication } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 
-export default function StaffApplicationItem({ application, token }) {
+export default function StaffApplicationItem({
+  application,
+  token,
+}: {
+  application: StaffApplication;
+  token: string;
+}) {
   const router = useRouter();
+  const locale = useLocale();
   const onDelete = async () => {
     if (
       !confirm(
@@ -63,25 +72,22 @@ export default function StaffApplicationItem({ application, token }) {
     <div className={`card ${styles.applicationItem}`}>
       <div className="card-content">
         <p className="title is-4 has-text-centered">
-          {applications[router.locale].staffApplication}
+          {applications[locale].staffApplication}
         </p>
         <p className="mt-3 subtitle is-italic is-6 has-text-grey has-text-centered">
-          {applications[router.locale].arriveAt}:{" "}
+          {applications[locale].arriveAt}:{" "}
           {application.arriveAt
-            ? new Date(application.arriveAt).toLocaleDateString(router.locale, {
+            ? new Date(application.arriveAt).toLocaleDateString(locale, {
                 dateStyle: "long",
               })
-            : applications[router.locale].unknown}
+            : applications[locale].unknown}
           <br />
-          {applications[router.locale].leaveAt}:{" "}
+          {applications[locale].leaveAt}:{" "}
           {application.stayUntil
-            ? new Date(application.stayUntil).toLocaleDateString(
-                router.locale,
-                {
-                  dateStyle: "long",
-                }
-              )
-            : applications[router.locale].unknown}
+            ? new Date(application.stayUntil).toLocaleDateString(locale, {
+                dateStyle: "long",
+              })
+            : applications[locale].unknown}
         </p>
         <div className="content has-text-left">
           <div className="px-4 mb-5">
@@ -95,54 +101,50 @@ export default function StaffApplicationItem({ application, token }) {
           </div>
           <div className="columns is-mobile is-1">
             <div className="column is-6 has-text-right has-text-weight-semibold">
-              {applications[router.locale].status}:
-            </div>
-            <div className="column">{application.state ?? "unknown"}</div>
-          </div>
-          <div className="columns is-mobile is-1">
-            <div className="column is-6 has-text-right has-text-weight-semibold">
-              <p>{applications[router.locale].created}:</p>
+              {applications[locale].status}:
             </div>
             <div className="column">
-              {new Date(application.createdAt).toLocaleDateString(
-                router.locale
-              )}
+              {applications[locale][application.state] ?? "unknown"}
             </div>
           </div>
           <div className="columns is-mobile is-1">
             <div className="column is-6 has-text-right has-text-weight-semibold">
-              {applications[router.locale].updated}:
+              <p>{applications[locale].created}:</p>
             </div>
             <div className="column">
-              {new Date(application.updatedAt).toLocaleDateString(
-                router.locale
-              )}
+              {new Date(application.createdAt).toLocaleDateString(locale)}
+            </div>
+          </div>
+          <div className="columns is-mobile is-1">
+            <div className="column is-6 has-text-right has-text-weight-semibold">
+              {applications[locale].updated}:
+            </div>
+            <div className="column">
+              {new Date(application.updatedAt).toLocaleDateString(locale)}
             </div>
           </div>
         </div>
       </div>
       <footer className="card-footer">
         <Link href={`/staff-application/${application.id}`}>
-          <a className="card-footer-item">
-            {general.buttons[router.locale].details}
-          </a>
+          <a className="card-footer-item">{general.buttons[locale].details}</a>
         </Link>
         {application.state === "created" && application.step === 3 ? (
           <a onClick={onSubmit} className="card-footer-item">
-            {general.buttons[router.locale].submit}
+            {general.buttons[locale].submit}
           </a>
         ) : (
           <span
             className="card-footer-item disabled"
             title="You can only submit when the application is finished and not yet submitted"
           >
-            {general.buttons[router.locale].submit}
+            {general.buttons[locale].submit}
           </span>
         )}
         {application.state === "created" && (
           <>
             <a onClick={onDelete} className="card-footer-item">
-              {general.buttons[router.locale].delete}
+              {general.buttons[locale].delete}
             </a>
           </>
         )}

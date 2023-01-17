@@ -1,11 +1,12 @@
 import ReactMarkdown from "react-markdown";
 import { API_URL } from "../config";
 import { GetStaticProps } from "next";
+import { Privacy } from "api-definitions/backend";
 
-export default function PrivacyPage({ privacy }) {
+export default function PrivacyPage({ privacy }: { privacy: Privacy }) {
   return (
     <div className="content">
-      <ReactMarkdown>{privacy.attributes.content}</ReactMarkdown>
+      <ReactMarkdown>{privacy.content}</ReactMarkdown>
     </div>
   );
 }

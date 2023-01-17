@@ -1,0 +1,182 @@
+import {
+  ArrayDataResponse,
+  BaseData,
+  Image,
+  LocaleInfo,
+  Localization,
+  Pagination,
+} from "./strapiBaseTypes";
+
+export interface Answer extends BaseData {
+  question: Question;
+  answer?: string;
+}
+
+export interface Reference extends BaseData {
+  name: string;
+  relation: string;
+  applicant: string;
+  email: string;
+  emailSend: boolean;
+  submitted: boolean;
+  answers?: Answer[];
+}
+
+export interface ErrorResponse {
+  status: string;
+  message: string;
+}
+
+export interface School extends LocaleInfo, Localization<School>, BaseData {
+  name: string;
+  description: string;
+  detailedDescription: string;
+  isPublic: boolean;
+  acceptingStudents: boolean;
+  schoolFee: string;
+  applicationFee: string;
+  startDate: string;
+  endDate: string;
+  preApplicationText: string;
+  secondarySchool: boolean;
+  contactEmail: string;
+  stripeAppFeeId: number;
+  stripeSchoolFeeId: number;
+  currency: string;
+  image?: Image;
+  staff?: User[];
+  students?: User[];
+  applications?: SchoolApplication[];
+  referenceQuestions?: QuestionCollection;
+  applicationQuestions?: QuestionCollection;
+}
+
+export interface User extends BaseData {
+  username: string;
+  firstname?: string;
+  lastname?: string;
+  email: string;
+  middle_names?: string;
+  gender?: "male" | "female";
+  birthday?: string;
+  address?: Address;
+  picture?: Image;
+  role?: Role;
+  emergency_address?: Address;
+  details?: UserDetails;
+  schools?: School[];
+}
+
+export interface UserDetails extends BaseData {
+  phone?: string;
+  mobile_phone?: string;
+  nationality: string;
+  native_language?: string;
+  language2?: string;
+  language3?: string;
+  language2_skills?: string;
+  language3_skills?: string;
+}
+
+export interface Role extends BaseData {
+  description?: string;
+  name: string;
+  type: string;
+}
+
+export interface Address extends BaseData {
+  id: number;
+  firstname: string;
+  lastname: string;
+  street: string;
+  number: string;
+  city: string;
+  country?: string;
+  postalCode: string;
+}
+
+export interface Application extends BaseData {
+  reference1?: Reference;
+  reference2?: Reference;
+  user: User;
+  answers: Answer[];
+  step: number;
+  state: ApplicationState;
+}
+
+export type ApplicationState =
+  | "created"
+  | "submitted"
+  | "reviewed"
+  | "revoked"
+  | "approved";
+
+export interface SchoolApplication extends Application {
+  school: School;
+  applicationFeePaid: boolean;
+}
+
+export interface StaffApplication extends Application {
+  arriveAt?: string;
+  stayUntil?: string;
+}
+
+export interface QuestionType extends Localization<QuestionType> {
+  name: string;
+  description: string;
+  order: number;
+}
+
+export interface GetAllStaffResponse {
+  staff: User[];
+  pagination?: Pagination;
+}
+
+export interface Question extends BaseData, Localization<Question> {
+  collection?: QuestionCollection;
+  required: boolean;
+  type?: QuestionType;
+  order: number;
+  inputType: "text" | "bool" | "longtext";
+  question: string;
+}
+
+export interface QuestionCollection extends BaseData {
+  name: string;
+  questions: ArrayDataResponse<Question>;
+}
+
+export interface StaffApplicationSetting
+  extends BaseData,
+    Localization<StaffApplicationSetting> {
+  shortDescription: string;
+  details: string;
+  allowApplications: boolean;
+  locale: string;
+  cardImage: Image;
+  questions: QuestionCollection;
+  referenceQuestions: QuestionCollection;
+}
+
+export interface PageContentData extends BaseData {
+  showcaseTitle?: string;
+  showcaseSubtitle?: string;
+  showcase?: Image;
+  contact?: string;
+  facebookLink?: string;
+  twitterLink?: string;
+  instagramLink?: string;
+  navbar_brand: Image;
+}
+
+export interface AboutPage {
+  content: string;
+}
+
+export interface Imprint {
+  content: string;
+}
+
+export interface Privacy {
+  content: string;
+}

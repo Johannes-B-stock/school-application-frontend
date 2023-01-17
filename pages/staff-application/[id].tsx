@@ -1,9 +1,9 @@
 import { useRouter } from "next/router";
 import qs from "qs";
 import { API_URL } from "@/config/index";
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext, ChangeEvent } from "react";
 import styles from "@/styles/Application.module.css";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast } from "react-toastify";
 import { faAddressCard } from "@fortawesome/free-regular-svg-icons";
@@ -31,7 +31,9 @@ import UserDetailsEdit from "@/components/user/UserDetailsEdit";
 import GenderSelect from "@/components/common/GenderSelect";
 import { GetServerSideProps } from "next";
 import { general, profile, staffApplicationDetails } from "@/i18n";
-import { ErrorResponse, StaffApplication } from "definitions/backend";
+import { ErrorResponse, StaffApplication } from "api-definitions/backend";
+import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import { useLocale } from "i18n/useLocale";
 
 export default function StaffApplicationPage({
   application,
@@ -43,11 +45,7 @@ export default function StaffApplicationPage({
   token: string;
 }) {
   const router = useRouter();
-  useEffect(() => {
-    if (error) {
-      toast.error(`${error.status} - ${error.message}`);
-    }
-  }, [router, error]);
+  const locale = useLocale();
   const { user } = useContext(AuthContext);
   const [applicationEdit, setApplicationEdit] = useState(application);
   const [isLoadingNext, setIsLoadingNext] = useState(false);
@@ -55,32 +53,37 @@ export default function StaffApplicationPage({
   const [userEdit, setUserEdit] = useState(user);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [reference1Send, setReference1Send] = useState(
-    application.reference1?.data?.attributes.emailSend ?? false
+    application.reference1?.emailSend ?? false
   );
   const [reference2Send, setReference2Send] = useState(
-    application.reference2?.data?.attributes.emailSend ?? false
+    application.reference2?.emailSend ?? false
   );
+
+  useEffect(() => {
+    if (error) {
+      toast.error(`${error.status} - ${error.message}`);
+    }
+  }, [router, error]);
 
   if (!application) {
     router.push("/404");
     return;
   }
-  if (application.user.data.id !== user?.id) {
+  if (application.user.id !== user?.id) {
     return <NotAuthorized />;
   }
 
-  let addressSaveFunction = undefined;
+  let addressSaveFunction: (() => Promise<void>) | undefined = undefined;
 
-  function bindAddressSave(saveFunction) {
+  function bindAddressSave(saveFunction: () => Promise<void>) {
     addressSaveFunction = saveFunction;
   }
-  let questionSaveFunction = undefined;
-  function bindQuestionSave(saveFunction) {
+  let questionSaveFunction: (() => Promise<void>) | undefined = undefined;
+  function bindQuestionSave(saveFunction: () => Promise<void>) {
     questionSaveFunction = saveFunction;
   }
-
-  let userDetailsSaveFunction = undefined;
-  function bindUserDetailsSave(saveFunction) {
+  let userDetailsSaveFunction: (() => Promise<void>) | undefined = undefined;
+  function bindUserDetailsSave(saveFunction: () => Promise<void>) {
     userDetailsSaveFunction = saveFunction;
   }
 
@@ -158,7 +161,7 @@ export default function StaffApplicationPage({
       if (nextStep > application.step) {
         application.step = nextStep;
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message ?? error);
     } finally {
       setIsLoadingNext(false);
@@ -188,27 +191,30 @@ export default function StaffApplicationPage({
     }
   }
 
-  const handleUserInputChange = (e) => {
+  const handleUserInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
+    if (!userEdit) {
+      return;
+    }
     setUserEdit({ ...userEdit, [name]: value });
   };
 
-  const handleApplicationInputChange = (e) => {
+  const handleApplicationInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setApplicationEdit({ ...applicationEdit, [name]: value });
   };
 
   async function saveUserEdit() {
-    if (!userEdit.firstname) {
+    if (!userEdit?.firstname) {
       throw new Error("Please fill in your first name");
     }
-    if (!userEdit.lastname) {
+    if (!userEdit?.lastname) {
       throw new Error("Please fill in your last name");
     }
-    if (!userEdit.gender) {
+    if (!userEdit?.gender) {
       throw new Error("Please fill in your gender");
     }
-    if (!userEdit.birthday) {
+    if (!userEdit?.birthday) {
       throw new Error("Please fill in your birthday");
     }
     await updateMe(userEdit, token);
@@ -224,7 +230,7 @@ export default function StaffApplicationPage({
       setApplicationEdit({ ...applicationEdit, state: "submitted" });
 
       toast.success("Successfully submitted!");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message);
     } finally {
       setSubmitLoading(false);
@@ -233,9 +239,9 @@ export default function StaffApplicationPage({
 
   return (
     <div className="content has-text-centered">
-      <h1>{staffApplicationDetails[router.locale].title}</h1>
+      <h1>{staffApplicationDetails[locale].title}</h1>
       <div style={{ maxWidth: "590px", margin: "auto" }}>
-        <p>{staffApplicationDetails[router.locale].subtitle}</p>
+        <p>{staffApplicationDetails[locale].subtitle}</p>
       </div>
 
       <br />
@@ -255,10 +261,10 @@ export default function StaffApplicationPage({
           </div>
           <div className="step-details">
             <p className="step-title is-hidden-mobile">
-              {staffApplicationDetails[router.locale].step1Title}
+              {staffApplicationDetails[locale].step1Title}
             </p>
             <p className="is-hidden-mobile">
-              {staffApplicationDetails[router.locale].step1Desc}
+              {staffApplicationDetails[locale].step1Desc}
             </p>
           </div>
         </div>
@@ -275,10 +281,10 @@ export default function StaffApplicationPage({
           </div>
           <div className="step-details">
             <p className="step-title is-hidden-mobile">
-              {staffApplicationDetails[router.locale].step2Title}
+              {staffApplicationDetails[locale].step2Title}
             </p>
             <p className="is-hidden-mobile">
-              {staffApplicationDetails[router.locale].step2Desc}
+              {staffApplicationDetails[locale].step2Desc}
             </p>
           </div>
         </div>
@@ -295,11 +301,11 @@ export default function StaffApplicationPage({
           </div>
           <div className="step-details">
             <p className="step-title is-hidden-mobile">
-              {staffApplicationDetails[router.locale].step3Title}
+              {staffApplicationDetails[locale].step3Title}
             </p>
 
             <p className="is-hidden-mobile">
-              {staffApplicationDetails[router.locale].step3Desc}
+              {staffApplicationDetails[locale].step3Desc}
             </p>
           </div>
         </div>
@@ -320,10 +326,10 @@ export default function StaffApplicationPage({
           </div>
           <div className="step-details">
             <p className="step-title is-hidden-mobile">
-              {staffApplicationDetails[router.locale].step4Title}
+              {staffApplicationDetails[locale].step4Title}
             </p>
             <p className={`is-hidden-mobile`}>
-              {staffApplicationDetails[router.locale].step4Desc}
+              {staffApplicationDetails[locale].step4Desc}
             </p>
           </div>
         </div>
@@ -345,16 +351,16 @@ export default function StaffApplicationPage({
           >
             {" "}
             <h1 className="title is-4 has-text-left my-6">
-              {staffApplicationDetails[router.locale].arrival}
+              {staffApplicationDetails[locale].arrival}
             </h1>
             <h5 className="subtitle is-5 has-text-left">
-              {staffApplicationDetails[router.locale].arrivalSubtitle}
+              {staffApplicationDetails[locale].arrivalSubtitle}
             </h5>
             <form className="has-text-left longer-form-labels">
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
                   <label className="label">
-                    {staffApplicationDetails[router.locale].arrivalDate}*:
+                    {staffApplicationDetails[locale].arrivalDate}*:
                   </label>
                 </div>
                 <div className="field-body">
@@ -377,7 +383,7 @@ export default function StaffApplicationPage({
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
                   <label className="label">
-                    {staffApplicationDetails[router.locale].stayUntil}:
+                    {staffApplicationDetails[locale].stayUntil}:
                   </label>
                 </div>
                 <div className="field-body">
@@ -399,13 +405,13 @@ export default function StaffApplicationPage({
               </div>
             </form>
             <h1 className="title is-4 has-text-left my-6">
-              {profile[router.locale].personal}
+              {profile[locale].personal}
             </h1>
             <form className="has-text-left longer-form-labels">
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
                   <label className="label">
-                    {staffApplicationDetails[router.locale].name}*:
+                    {staffApplicationDetails[locale].name}*:
                   </label>
                 </div>
                 <div className="field-body">
@@ -455,25 +461,21 @@ export default function StaffApplicationPage({
               </div>
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">
-                    {profile[router.locale].gender}*:
-                  </label>
+                  <label className="label">{profile[locale].gender}*:</label>
                 </div>
                 <div className="field-body">
                   <div className="field">
                     <GenderSelect
                       value={userEdit?.gender}
                       onInputChange={handleUserInputChange}
-                      locale={router.locale}
+                      locale={locale}
                     />
                   </div>
                 </div>
               </div>
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">
-                    {profile[router.locale].birthdate}*:
-                  </label>
+                  <label className="label">{profile[locale].birthdate}*:</label>
                 </div>
                 <div className="field-body">
                   <div className="field">
@@ -502,16 +504,19 @@ export default function StaffApplicationPage({
               setSaveFunction={bindUserDetailsSave}
             />
             <h1 className="title is-4 has-text-left my-6">
-              {profile[router.locale].address}
+              {profile[locale].address}
             </h1>
-            <AddressEdit
-              token={token}
-              user={userEdit}
-              address={application.user.data.attributes.address.data}
-              alwaysEdit={true}
-              noButtons={true}
-              bindSave={bindAddressSave}
-            />
+            {userEdit && (
+              <AddressEdit
+                token={token}
+                user={userEdit}
+                address={application.user.address}
+                addressId={application.user.address?.id}
+                alwaysEdit={true}
+                noButtons={true}
+                bindSave={bindAddressSave}
+              />
+            )}
           </div>
           <div
             className={`step-content has-text-centered ${
@@ -521,7 +526,7 @@ export default function StaffApplicationPage({
             }`}
           >
             <ApplicationQuestions
-              answerDetails={application.answers.data}
+              answerDetails={application.answers}
               bindSave={bindQuestionSave}
               disabled={applicationEdit.state !== "created"}
               token={token}
@@ -535,16 +540,14 @@ export default function StaffApplicationPage({
             }`}
           >
             <h1 className="title is-4">
-              {staffApplicationDetails[router.locale].pickReferences}
+              {staffApplicationDetails[locale].pickReferences}
             </h1>
             <br />
             <ReferenceForm
               application={application}
               user={user}
-              token={token}
               reference1Send={setReference1Send}
               reference2Send={setReference2Send}
-              schoolReference={false}
             />
           </div>
           <div
@@ -567,7 +570,7 @@ export default function StaffApplicationPage({
               className={`button is-light ${isLoadingBack ? "is-loading" : ""}`}
               disabled={applicationEdit.step === 0 ? true : false}
             >
-              {general.buttons[router.locale].previous}
+              {general.buttons[locale].previous}
             </button>
           </div>
           <div className="steps-action">
@@ -579,7 +582,7 @@ export default function StaffApplicationPage({
               }`}
               disabled={applicationEdit.step > 2 ? true : false}
             >
-              {general.buttons[router.locale].next}
+              {general.buttons[locale].next}
             </button>
           </div>
         </div>
@@ -590,9 +593,10 @@ export default function StaffApplicationPage({
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
-  params: { id },
+  params,
 }) => {
-  let query = qs.stringify({
+  const id = params?.id;
+  const query = qs.stringify({
     populate: {
       answers: {
         populate: {
@@ -617,7 +621,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       Authorization: `Bearer ${token}`,
     },
   });
-  const result = await res.json();
+  const result = (await res.json()) as SingleDataResponse<StaffApplication>;
   if (!res.ok) {
     return {
       props: {
@@ -625,14 +629,10 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     };
   }
-  let application = {
-    id: result.data.id,
-    ...result.data.attributes,
-  };
 
   return {
     props: {
-      application,
+      application: result.data,
       token,
     },
   };

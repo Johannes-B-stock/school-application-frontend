@@ -1,63 +1,62 @@
 import { references } from "@/i18n";
 import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { SchoolApplication, User } from "definitions/backend";
+import {
+  Reference,
+  SchoolApplication,
+  StaffApplication,
+  User,
+} from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 import { sendReference } from "lib/references";
-import { useRouter } from "next/router";
-import { Dispatch, SetStateAction, useState } from "react";
+import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
 import { toast } from "react-toastify";
 
 export default function ReferenceForm({
   application,
   user,
-  token,
   reference1Send,
   reference2Send,
-  schoolReference = true,
 }: {
-  application: any;
-  user: User;
-  token: string;
+  application: SchoolApplication | StaffApplication;
+  user?: User;
   reference1Send: Dispatch<SetStateAction<boolean>>;
   reference2Send: Dispatch<SetStateAction<boolean>>;
-  schoolReference: boolean;
 }) {
   const [sendingReference1, setSendingReference1] = useState(false);
   const [sendingReference2, setSendingReference2] = useState(false);
-  const [reference1, setReference1] = useState(
-    application?.reference1?.data
-      ? {
-          id: application?.reference1?.data.id,
-          ...application?.reference1?.data.attributes,
-        }
-      : {}
+  const [reference1, setReference1] = useState<Partial<Reference> | undefined>(
+    application?.reference1
   );
-  const [reference2, setReference2] = useState(
-    application?.reference2?.data
-      ? {
-          id: application?.reference2?.data.id,
-          ...application?.reference2?.data.attributes,
-        }
-      : {}
+  const [reference2, setReference2] = useState<Partial<Reference> | undefined>(
+    application?.reference2
   );
-  const { locale } = useRouter();
-  const onReference1ValueChanged = (e) => {
+  const locale = useLocale();
+  const onReference1ValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setReference1({ ...reference1, [name]: value });
+    if (reference1) {
+      setReference1({ ...reference1, [name]: value });
+    } else {
+      setReference1({ [name]: value });
+    }
   };
 
-  const onReference2ValueChanged = (e) => {
+  const onReference2ValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setReference2({ ...reference2, [name]: value });
+    if (reference2) {
+      setReference2({ ...reference2, [name]: value });
+    } else {
+      setReference2({ [name]: value });
+    }
   };
 
   const sendReference1 = async () => {
-    if (sendingReference1) {
+    if (sendingReference1 || !user) {
       return;
     }
 
     const allInfoSet =
-      reference1.email && reference1.relation && reference1.name;
+      reference1?.email && reference1.relation && reference1.name;
 
     if (!allInfoSet) {
       toast.error("Please fill in all fields for reference 1.");
@@ -67,31 +66,24 @@ export default function ReferenceForm({
     try {
       setSendingReference1(true);
 
-      await sendReference(
-        "reference1",
-        application,
-        reference1,
-        user,
-        token,
-        schoolReference
-      );
+      await sendReference("reference1", application, reference1, user);
       setReference1({ ...reference1, emailSend: true });
       reference1Send && reference1Send(true);
       toast.success("email send successfully");
-    } catch (error) {
-      toast.error(`Failed to send reference because ${error.message}`);
+    } catch (error: any) {
+      toast.error(`Failed to send reference because ${error.message ?? error}`);
     } finally {
       setSendingReference1(false);
     }
   };
 
   const sendReference2 = async () => {
-    if (sendingReference2) {
+    if (sendingReference2 || !user) {
       return;
     }
 
     const allInfoSet =
-      reference2.email && reference2.relation && reference2.name;
+      reference2?.email && reference2.relation && reference2.name;
 
     if (!allInfoSet) {
       toast.error("Please fill in all fields for reference 2.");
@@ -100,18 +92,11 @@ export default function ReferenceForm({
 
     try {
       setSendingReference2(true);
-      await sendReference(
-        "reference2",
-        application,
-        reference2,
-        user,
-        token,
-        schoolReference
-      );
+      await sendReference("reference2", application, reference2, user);
       setReference2({ ...reference2, emailSend: true });
       reference2Send && reference2Send(true);
       toast.success("email send successfully");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(`Failed to send reference because ${error.message}`);
     } finally {
       setSendingReference2(false);
@@ -166,7 +151,7 @@ export default function ReferenceForm({
                     type="text"
                     name="name"
                     className="input"
-                    value={reference1.name ?? ""}
+                    value={reference1?.name ?? ""}
                     onChange={onReference1ValueChanged}
                   />
                 </div>
@@ -178,7 +163,7 @@ export default function ReferenceForm({
                     type="text"
                     name="relation"
                     className="input"
-                    value={reference1.relation ?? ""}
+                    value={reference1?.relation ?? ""}
                     onChange={onReference1ValueChanged}
                   />
                 </div>
@@ -190,7 +175,7 @@ export default function ReferenceForm({
                     type="email"
                     name="email"
                     className="input"
-                    value={reference1.email ?? ""}
+                    value={reference1?.email ?? ""}
                     onChange={onReference1ValueChanged}
                   />
                 </div>
@@ -246,7 +231,7 @@ export default function ReferenceForm({
                     type="text"
                     name="name"
                     className="input"
-                    value={reference2.name ?? ""}
+                    value={reference2?.name ?? ""}
                     onChange={onReference2ValueChanged}
                   />
                 </div>
@@ -258,7 +243,7 @@ export default function ReferenceForm({
                     type="text"
                     name="relation"
                     className="input"
-                    value={reference2.relation ?? ""}
+                    value={reference2?.relation ?? ""}
                     onChange={onReference2ValueChanged}
                   />
                 </div>
@@ -270,7 +255,7 @@ export default function ReferenceForm({
                     type="email"
                     name="email"
                     className="input"
-                    value={reference2.email ?? ""}
+                    value={reference2?.email ?? ""}
                     onChange={onReference2ValueChanged}
                   />
                 </div>

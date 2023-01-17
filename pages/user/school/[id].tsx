@@ -1,68 +1,20 @@
-import GoogleSpinner from "@/components/common/GoogleSpinner";
 import UserAvatar from "@/components/user/UserAvatar";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import { userSchool } from "@/i18n";
 import { getSchoolDetails } from "lib/school";
-import { getAllUsers } from "lib/user";
 import { GetServerSideProps } from "next";
-import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { toast } from "react-toastify";
+import Currency from "@/components/common/Currency";
+import { School } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 
-export default function MySchoolPage({ school, token, locale }) {
-  const [isLoadingStudentDetails, setIsLoadingStudentDetails] = useState(false);
-  const [students, setStudents] = useState([]);
-  const [isLoadingStaffDetails, setIsLoadingStaffDetails] = useState(false);
-  const [staff, setStaff] = useState([]);
-
-  useEffect(() => {
-    async function fetchData() {
-      try {
-        setIsLoadingStaffDetails(true);
-        const staff = await getAllUsers(
-          school.attributes.staff.data.map((staff) => staff.id),
-          token,
-          ["picture"]
-        );
-        setStaff(staff);
-      } catch (error) {
-        toast(error.message ?? error);
-      } finally {
-        setIsLoadingStaffDetails(false);
-      }
-      try {
-        setIsLoadingStudentDetails(true);
-        const students = await getAllUsers(
-          school.attributes.students.data.map((user) => user.id),
-          token,
-          ["picture"]
-        );
-        setStudents(students);
-
-        setIsLoadingStudentDetails(false);
-      } catch (error) {
-        setIsLoadingStudentDetails(false);
-        toast(error.message ?? error);
-      } finally {
-      }
-    }
-    fetchData();
-  }, [school, token]);
+export default function MySchoolPage({ school }: { school: School }) {
+  const locale = useLocale();
+  const localizedSchool =
+    school.localizations?.find((school) => school.locale === locale) ?? school;
 
   return (
     <div className="columns">
       <div className="column">
-        {/* <Image
-          src={
-            school.attributes.image?.data.attributes.formats.small?.url
-              ? school.attributes.image.data.attributes.formats.small?.url
-              : "/images/school-default.png"
-          }
-          alt="school image"
-          objectFit="cover"
-          width={school.attributes.image?.data.attributes?.width ?? "800"}
-          height={school.attributes.image?.data.attributes?.height ?? "600"}
-        /> */}
         <div className="card my-5">
           <div className="card-header">
             <p className="card-header-title background-gradient-primary-info">
@@ -74,22 +26,22 @@ export default function MySchoolPage({ school, token, locale }) {
               <div className="column is-3 has-text-weight-bold">
                 {userSchool[locale].name}:
               </div>
-              <div className="column">{school.attributes.name}</div>
+              <div className="column">{localizedSchool.name}</div>
             </div>
             <div className="columns is-mobile">
               <div className="column is-3 has-text-weight-bold">
                 {userSchool[locale].description}:
               </div>
-              <div className="column">{school.attributes.description}</div>
+              <div className="column">{localizedSchool.description}</div>
             </div>
-            {school.attributes.contactEmail && (
+            {school.contactEmail && (
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   {userSchool[locale].contact}:
                 </div>
                 <div className="column">
-                  <a href={`mailto:${school.attributes.contactEmail}`}>
-                    {school.attributes.contactEmail}
+                  <a href={`mailto:${school.contactEmail}`}>
+                    {school.contactEmail}
                   </a>
                 </div>
               </div>
@@ -100,7 +52,7 @@ export default function MySchoolPage({ school, token, locale }) {
                 {userSchool[locale].startsAt}:
               </div>
               <div className="column">
-                {new Date(school.attributes.startDate).toLocaleDateString()}
+                {new Date(school.startDate).toLocaleDateString()}
               </div>
             </div>
             <div className="columns is-mobile">
@@ -108,20 +60,30 @@ export default function MySchoolPage({ school, token, locale }) {
                 {userSchool[locale].endsAt}:
               </div>
               <div className="column">
-                {new Date(school.attributes.endDate).toLocaleDateString()}
+                {new Date(school.endDate).toLocaleDateString()}
               </div>
             </div>
             <div className="columns is-mobile">
               <div className="column is-3 has-text-weight-bold">
                 {userSchool[locale].applicationFee}:
               </div>
-              <div className="column">{school.attributes.applicationFee}</div>
+              <div className="column">
+                <Currency
+                  value={+school.applicationFee}
+                  currency={school.currency}
+                />
+              </div>
             </div>
             <div className="columns is-mobile">
               <div className="column is-3 has-text-weight-bold">
                 {userSchool[locale].schoolFee}:
               </div>
-              <div className="column">{school.attributes.schoolFee}</div>
+              <div className="column">
+                <Currency
+                  value={+school.schoolFee}
+                  currency={school.currency}
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -134,21 +96,18 @@ export default function MySchoolPage({ school, token, locale }) {
             </p>
           </header>
           <div className="card-content">
-            {isLoadingStudentDetails ? (
-              <GoogleSpinner />
-            ) : (
-              <div className="columns is-multiline">
-                {students.map((student) => (
-                  <div
-                    className="column is-narrow has-text-centered"
-                    key={student.id}
-                  >
-                    <UserAvatar user={student} />
-                  </div>
-                ))}
-              </div>
-            )}
-            {students.length === 0 && (
+            <div className="columns is-multiline is-mobile">
+              {school.students?.map((student) => (
+                <div
+                  className="column is-narrow has-text-centered"
+                  key={student.id}
+                >
+                  <UserAvatar user={student} />
+                </div>
+              ))}
+            </div>
+
+            {(!school?.students || school?.students?.length === 0) && (
               <p>{userSchool[locale].noStudentsAccepted}</p>
             )}
           </div>
@@ -160,21 +119,20 @@ export default function MySchoolPage({ school, token, locale }) {
             </p>
           </header>
           <div className="card-content">
-            {isLoadingStaffDetails ? (
-              <GoogleSpinner />
-            ) : (
-              <div className="class columns is-multiline">
-                {staff.map((user) => (
-                  <div
-                    className="column is-narrow has-text-centered m-1"
-                    key={user.id}
-                  >
-                    <UserAvatar user={user} />
-                  </div>
-                ))}
-              </div>
+            <div className="columns is-multiline is-mobile">
+              {school.staff?.map((staff) => (
+                <div
+                  className="column is-narrow has-text-centered m-1"
+                  key={staff.id}
+                >
+                  <UserAvatar user={staff} />
+                </div>
+              ))}
+            </div>
+
+            {(!school.staff || school.staff.length === 0) && (
+              <p>{userSchool[locale].noStaffYet}</p>
             )}
-            {staff.length === 0 && <p>{userSchool[locale].noStaffYet}</p>}
             <br />
           </div>
         </div>
@@ -184,21 +142,30 @@ export default function MySchoolPage({ school, token, locale }) {
 }
 
 export const getServerSideProps: GetServerSideProps = async ({
-  params: { id },
+  params,
   req,
-  locale,
 }) => {
+  const id = typeof params?.id === "string" ? params.id : params?.id?.[0];
+
+  if (!id) {
+    throw new Error("No school id given");
+  }
+
   const { token } = parseCookie(req);
-  const schoolDetails = await getSchoolDetails(id, token, [
-    "students",
-    "staff",
-    "image",
-  ]);
+  const schoolDetails = await getSchoolDetails(id, token, {
+    students: {
+      populate: ["picture"],
+    },
+    staff: {
+      populate: ["picture"],
+    },
+    image: {},
+    localizations: {},
+  });
   return {
     props: {
       school: schoolDetails.data,
       token,
-      locale,
     },
   };
 };

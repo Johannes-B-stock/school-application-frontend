@@ -2,7 +2,7 @@ import { useEffect, useContext, useState } from "react";
 import { useRouter } from "next/router";
 import AuthContext from "@/context/AuthContext";
 
-export default function RouteGuard({ children }) {
+export default function RouteGuard({ children }: { children: any }) {
   const router = useRouter();
   const { user } = useContext(AuthContext);
   const [authorized, setAuthorized] = useState(false);
@@ -11,6 +11,7 @@ export default function RouteGuard({ children }) {
     const publicPaths = [
       "/account/login",
       "/account/notConfirmed",
+      "/account/confirmed",
       "/account/forgotPassword",
       "/account/resetPassword",
       "/",
@@ -44,5 +45,5 @@ export default function RouteGuard({ children }) {
     }
   }, [user, router, router.asPath]);
 
-  return authorized && children;
+  return authorized && children ? children : <></>;
 }

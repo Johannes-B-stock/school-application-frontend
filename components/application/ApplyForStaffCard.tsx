@@ -1,25 +1,28 @@
 import Link from "next/link";
 import Image from "next/image";
 import styles from "@/styles/SchoolItem.module.css";
-import { useRouter } from "next/router";
 import { general, home } from "@/i18n";
+import { StaffApplicationSetting } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
+import { defaultLocale } from "@/config/index";
 
-export default function ApplyForStaffCard({ staffApplicationDetails }) {
-  const router = useRouter();
-  const locale = router.locale.split("-")[0];
-  const useLocale = router.locale !== router.defaultLocale;
-  if (useLocale) {
+export default function ApplyForStaffCard({
+  staffApplicationDetails,
+}: {
+  staffApplicationDetails: StaffApplicationSetting;
+}) {
+  const locale = useLocale();
+  const getLocalized = locale !== defaultLocale;
+  if (getLocalized) {
     const localizedApplicationInfo =
-      staffApplicationDetails.attributes.localizations.data.find(
-        (localization) => localization.attributes.locale === locale
+      staffApplicationDetails.localizations?.find(
+        (localization) => localization.locale === locale
       );
     if (localizedApplicationInfo) {
-      staffApplicationDetails = localizedApplicationInfo.attributes;
+      staffApplicationDetails = localizedApplicationInfo;
     }
   }
-  const image =
-    staffApplicationDetails.attributes.cardImage?.data?.attributes.formats
-      .small;
+  const image = staffApplicationDetails.cardImage?.formats.small;
 
   return (
     <div className={`card ${styles.schoolItem} has-background-light`}>
@@ -38,7 +41,7 @@ export default function ApplyForStaffCard({ staffApplicationDetails }) {
         <p className="title">{home[locale].applyForStaff}</p>
 
         <div className="content">
-          {staffApplicationDetails.attributes.shortDescription}
+          {staffApplicationDetails.shortDescription}
           <br />
         </div>
       </div>

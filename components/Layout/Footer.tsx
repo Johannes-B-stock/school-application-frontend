@@ -4,17 +4,24 @@ import { useRouter } from "next/router";
 import { MouseEvent, useContext, useState } from "react";
 import styles from "@/styles/Footer.module.css";
 import { footer } from "@/i18n";
+import AnimatedModeSwitch from "./AnimatedModeSwitch";
+import { useLocale } from "i18n/useLocale";
+import { LOCALES } from "@/config/index";
 
 export default function Footer() {
   const router = useRouter();
+  const locale = useLocale();
   const [langActive, setLangActive] = useState(false);
   const { triggerSetPageContent } = useContext(PageContentContext);
 
   const changeLocale = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     const locale = e.currentTarget.getAttribute("data-value");
-    document.cookie = `NEXT_LOCALE=${locale}`;
-    triggerSetPageContent(locale);
+    if (!locale) {
+      return;
+    }
+    document.cookie = `NEXT_LOCALE=${locale};path=/`;
+    triggerSetPageContent(locale as "en" | "de");
     const { pathname, asPath, query } = router;
     // change just the locale and maintain all other route information including href's query
     router.push({ pathname, query }, asPath, { locale });
@@ -32,18 +39,18 @@ export default function Footer() {
           <nav className="level">
             <div className="level-left is-size-6">
               <div className="level-item has-text-centered mx-3">
-                <Link href="/impressum">{footer[router.locale].impressum}</Link>
+                <Link href="/impressum">{footer[locale].impressum}</Link>
               </div>
               <div className="level-item has-text-centered mx-3">
-                <Link href="/privacy">{footer[router.locale].privacy}</Link>
+                <Link href="/privacy">{footer[locale].privacy}</Link>
               </div>
             </div>
             <div className="level-right">
               <div className="level-item has-text-centered mx-3">
-                <Link href="/about">{footer[router.locale].about}</Link>
+                <Link href="/about">{footer[locale].about}</Link>
               </div>
               <div className="level-item has-text-centered mx-3">
-                <Link href="/contact">{footer[router.locale].contact}</Link>
+                <Link href="/contact">{footer[locale].contact}</Link>
               </div>
               <div className="level-item">
                 <div
@@ -56,7 +63,7 @@ export default function Footer() {
                       aria-haspopup="true"
                       aria-controls="dropdown-menu"
                     >
-                      <span>{router.locale}</span>
+                      <span>{locale}</span>
                     </button>
                   </div>
                   <div
@@ -65,7 +72,7 @@ export default function Footer() {
                     role="menu"
                   >
                     <div className="dropdown-content">
-                      {router.locales.map((locale, index) => (
+                      {LOCALES.map((locale, index) => (
                         <a
                           data-value={locale}
                           key={index}
@@ -81,6 +88,7 @@ export default function Footer() {
               </div>
             </div>
           </nav>
+          <AnimatedModeSwitch size={30} />
 
           <p className="has-text-grey is-size-6">&copy; Johannes Birkenstock</p>
         </div>

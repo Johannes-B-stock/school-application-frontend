@@ -14,6 +14,7 @@ export const general = {
       no: "No",
       back: "Back",
       login: "Login",
+      register: "Register",
     },
     de: {
       edit: "Bearbeiten",
@@ -29,6 +30,7 @@ export const general = {
       no: "Nein",
       back: "Zurück",
       login: "Einloggen",
+      register: "Registrieren",
     },
   },
 };
@@ -51,6 +53,8 @@ export const footer = {
 export const header = {
   en: {
     admin: "Admin",
+    adminSchools: "Schools",
+    adminStaff: "Staff",
     home: "Home",
     schools: "My Schools",
     profile: "Profile",
@@ -62,6 +66,8 @@ export const header = {
   },
   de: {
     admin: "Admin",
+    adminSchools: "Schulen",
+    adminStaff: "Mitarbeiter",
     home: "Home",
     schools: "Meine Schulen",
     profile: "Profil",
@@ -208,8 +214,11 @@ export const applicationDetails = {
 
 export const address = {
   en: {
+    firstName: "First Name",
+    lastName: "Last Name",
     name: "Name",
     street: "Street",
+    number: "Number",
     city: "City",
     postal: "Postal Code",
     country: "Country",
@@ -218,10 +227,13 @@ export const address = {
     emergencyContact: "Emergency Contact",
   },
   de: {
+    firstName: "Vorname",
+    lastName: "Nachname",
     name: "Name",
     street: "Straße",
+    number: "Hausnummer",
     city: "Stadt",
-    postal: "Plz",
+    postal: "PLZ",
     country: "Land",
     addresses: "Adressen",
     myAddress: "Meine Adresse",
@@ -321,6 +333,7 @@ export const applications = {
   en: {
     applications: "My Applications",
     noApplications: "You don&apos;t have any open applications yet",
+    applicationFeePaid: "Fee paid",
     schoolStarts: "School starts",
     schoolEnds: "School ends",
     status: "status",
@@ -340,7 +353,8 @@ export const applications = {
   },
   de: {
     applications: "Meine Anmeldungen",
-    noApplications: "Du hast dich noch keine Anmeldungen erstellt",
+    noApplications: "Du hast noch keine Anmeldungen.",
+    applicationFeePaid: "Anmeldegebühr bezahlt",
     schoolStarts: "Schule beginnt",
     schoolEnds: "Schule endet",
     status: "Status",
@@ -373,6 +387,8 @@ export const references = {
     status: "Status",
     submitted: "Reference has been submitted",
     notSubmitted: "Reference has not yet been submitted",
+    answerRequired:
+      "All required questions have to be answered before submitting.",
     sendEmail: "Send Email",
     reference2Title: "Reference Person 2",
   },
@@ -388,8 +404,21 @@ export const references = {
     status: "Status",
     submitted: "Referenzanfrage wurde beantwortet",
     notSubmitted: "Referenzanfrage wurde noch nicht beantwortet",
+    answerRequired:
+      "Alle erforderlichen Fragen müssen beantwortet werden bevor die Referenz abgeschickt werden kann.",
     sendEmail: "Email Abschicken",
     reference2Title: "Referenz Person 2",
+  },
+};
+
+export const serverError = {
+  en: {
+    title: "500 Server Error",
+    subtitle: "Oops, something has failed...",
+  },
+  de: {
+    title: "500 Server Error",
+    subtitle: "Upsi, da ist wohl was schiefgelaufen...",
   },
 };
 
@@ -409,7 +438,10 @@ export const notAuthorized = {
     title: "403 Not authorized",
     subtitle: "You are not authorized to access this page!",
   },
-  de: {},
+  de: {
+    title: "403 Not authorized",
+    subtitle: "Du bist nicht authorisiert auf diese Seite zuzugreifen!",
+  },
 };
 
 export const forgotPassword = {
@@ -433,7 +465,7 @@ export const login = {
     redirectDescription: "You have to login to see this.",
     description: "Login to have access to your schools and applications.",
     forgotPasswordLink: "Forgot your password?",
-    noAccount: "Don&apos;t have an account? ",
+    noAccount: "Don't have an account? ",
     or: "or",
     loginWithGoogle: "Login with Google",
     email: "Email",
@@ -468,6 +500,23 @@ export const notConfirmed = {
       "Deine email wurde noch nicht bestätigt. Klick auf den Bestätigungs-link in der Email, die du nach der Registrierung bekommen hast.",
     textBeforeLogin:
       "Nachdem du auf den Bestätigungslink geklickt hast, musst du dich nochmal ",
+    login: "einloggen",
+    textAfterLogin: ".",
+  },
+};
+
+export const confirmed = {
+  en: {
+    title: "Welcome!",
+    text1: "Your account has been confirmed.",
+    textBeforeLogin: " You can now ",
+    login: "login",
+    textAfterLogin: " to your account.",
+  },
+  de: {
+    title: "Herzlich Willkommen!",
+    text1: "Deine Email wurde bestätigt.",
+    textBeforeLogin: "Jetzt kannst du dich in deinen Account ",
     login: "einloggen",
     textAfterLogin: ".",
   },
@@ -522,6 +571,7 @@ export const userSchool = {
     contact: "Contact",
     startsAt: "Starts at",
     endsAt: "Ends at",
+    fees: "Fees",
     applicationFee: "Application Fee",
     schoolFee: "School Fee",
     students: "Students",
@@ -536,11 +586,23 @@ export const userSchool = {
     contact: "Kontakt",
     startsAt: "beginnt am",
     endsAt: "endet am",
+    fees: "Gebühren",
     applicationFee: "Anmeldungs-gebühr",
     schoolFee: "Schulgebühr",
     students: "Studenten",
     noStudentsAccepted: "Es wurden noch keine Studenten angenommen",
     staff: "Mitarbeiter",
     noStaffYet: "Die Schule hat noch keine Mitarbeiter",
+  },
+};
+
+export const cookieBanner = {
+  en: {
+    text: "By clicking Accept, you agree to the storing of cookies on your device to enhance site navigation.",
+    accept: "Accept",
+  },
+  de: {
+    text: "Durch klicken auf Akzeptieren stimmst du dem Speichern von Cookies zu um die Seitennavigation zu verbessern.",
+    accept: "Akzeptieren",
   },
 };

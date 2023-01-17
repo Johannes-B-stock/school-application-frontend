@@ -6,8 +6,9 @@ import {
   faUser,
 } from "@fortawesome/free-solid-svg-icons";
 import styles from "@/styles/ProfilePage.module.css";
+import { User } from "api-definitions/backend";
 
-export default function ProfileCard({ user }) {
+export default function ProfileCard({ user }: { user: User }) {
   return (
     <div className={`box ${styles.profileBox} backgroundGradient`}>
       <div className="image is-130x130 is-rounded my-4">

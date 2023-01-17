@@ -1,10 +1,18 @@
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { updateMyPassword } from "lib/user";
-import { useEffect, useState } from "react";
+import { ChangeEvent, MouseEvent, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-export default function PasswordResetModal({ show, setShow, token }) {
+export default function PasswordResetModal({
+  show,
+  setShow,
+  token,
+}: {
+  show: boolean;
+  setShow: (show: boolean) => any;
+  token: string;
+}) {
   const [formData, setFormData] = useState({
     currentPassword: "",
     password: "",
@@ -16,7 +24,7 @@ export default function PasswordResetModal({ show, setShow, token }) {
     setShow(show);
   }, [show, setShow]);
 
-  const onChange = (e) => {
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
 
     setFormData((prevState) => ({
@@ -25,7 +33,7 @@ export default function PasswordResetModal({ show, setShow, token }) {
     }));
   };
 
-  const handleSavePassword = async (e) => {
+  const handleSavePassword = async (e: MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     if (isLoading) {
       return;
@@ -43,7 +51,7 @@ export default function PasswordResetModal({ show, setShow, token }) {
       );
       toast.success("Password successfully changed");
       togglePasswordModal();
-    } catch (error) {
+    } catch (error: any) {
       console.log(error);
       toast.error(
         error.response?.data?.error?.message ?? error.message ?? error

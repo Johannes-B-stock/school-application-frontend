@@ -1,5 +1,5 @@
-import { API_URL } from "@/config/index";
-import { parseCookie } from "@/helpers/index";
+import { API_URL, COOKIE_NAME } from "@/config/index";
+import { parseCookie } from "lib/utils";
 import cookie from "cookie";
 import { getMyDetails } from "lib/user";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -24,10 +24,10 @@ export default async function login(req: NextApiRequest, res: NextApiResponse) {
       if (strapiRes.ok) {
         res.setHeader(
           "Set-Cookie",
-          cookie.serialize("token", data.jwt, {
+          cookie.serialize(COOKIE_NAME, data.jwt, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== "development",
-            maxAge: 60 * 60 * 24 * 7, // 1 week
+            maxAge: 60 * 60 * 24, // 1 day
             sameSite: "strict",
             path: "/",
           })

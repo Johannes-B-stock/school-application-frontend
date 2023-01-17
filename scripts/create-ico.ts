@@ -1,8 +1,10 @@
-const axios = require("axios");
-const qs = require("qs");
-const path = require("path");
-const fs = require("fs");
-const icongen = require("icon-gen");
+import axios from "axios";
+import qs from "qs";
+import path from "path";
+import fs from "fs";
+import icongen from "icon-gen";
+import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import { PageContentData } from "api-definitions/backend";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:1337";
 const query = qs.stringify({
@@ -11,13 +13,12 @@ const query = qs.stringify({
 fetchImage();
 
 async function fetchImage() {
-  const pageContentData = await axios.get(
+  const pageContentData = await axios.get<SingleDataResponse<PageContentData>>(
     `${API_URL}/api/page-content?${query}`
   );
   const pageContent = pageContentData.data;
   const brandImageUrl =
-    pageContent.data?.attributes?.navbar_brand.data.attributes.formats.thumbnail
-      .url ?? null;
+    pageContent.data?.navbar_brand.formats.thumbnail.url ?? null;
   let brandImagePath = "";
   if (brandImageUrl === null) {
     brandImagePath = path.join("..", "public", "images", "school-default.png");
@@ -31,16 +32,16 @@ async function fetchImage() {
   });
 }
 
-const downloadImage = (url, image_path) =>
+const downloadImage = (url: string, image_path: fs.PathLike) =>
   axios({
     url,
     responseType: "stream",
   }).then(
     (response) =>
-      new Promise((resolve, reject) => {
+      new Promise<void>((resolve, reject) => {
         response.data
           .pipe(fs.createWriteStream(image_path))
           .on("finish", () => resolve())
-          .on("error", (e) => reject(e));
+          .on("error", (e: any) => reject(e));
       })
   );

@@ -1,27 +1,25 @@
 import styles from "@/styles/Showcase.module.css";
 import PageContentContext from "@/context/PageContentContext";
-import { useContext, useEffect } from "react";
-import { useRouter } from "next/router";
+import { useContext } from "react";
 
 export default function Showcase() {
   const { pageContent } = useContext(PageContentContext);
-  const { locale } = useRouter();
 
-  useEffect(() => {}, [locale, pageContent]);
+  const showcase = pageContent?.showcase?.formats?.large?.url ?? null;
 
-  return (
-    pageContent && (
-      <section
-        className={`hero is-medium is-link has-text-centered ${styles.showcase}`}
-        style={{
-          backgroundImage: `url(${pageContent?.showcase})`,
-        }}
-      >
-        <div className="hero-body">
-          <p className="title">{pageContent?.showcaseTitle}</p>
-          <p className="subtitle">{pageContent?.showcaseSubtitle}</p>
-        </div>
-      </section>
-    )
+  return pageContent ? (
+    <section
+      className={`hero is-medium is-link has-text-centered ${styles.showcase}`}
+      style={{
+        backgroundImage: `url(${showcase})`,
+      }}
+    >
+      <div className="hero-body">
+        <p className="title">{pageContent?.showcaseTitle}</p>
+        <p className="subtitle">{pageContent?.showcaseSubtitle}</p>
+      </div>
+    </section>
+  ) : (
+    <></>
   );
 }

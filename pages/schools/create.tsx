@@ -1,13 +1,14 @@
 import { useRouter } from "next/router";
-import { useState, useContext } from "react";
+import { useState, useContext, FormEvent, ChangeEvent } from "react";
 import styles from "@/styles/Form.module.css";
 import { toast } from "react-toastify";
 import { API_URL } from "@/config/index";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import AuthContext from "@/context/AuthContext";
 import NotAuthorized from "@/components/auth/NotAuthorized";
+import { GetServerSideProps } from "next";
 
-export default function CreateSchoolPage({ token }) {
+export default function CreateSchoolPage({ token }: { token: string }) {
   const { user } = useContext(AuthContext);
   const [values, setValues] = useState({
     name: "",
@@ -22,7 +23,7 @@ export default function CreateSchoolPage({ token }) {
   });
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
     const hasEmptyValues = Object.values(values).some((value) => value === "");
@@ -48,12 +49,14 @@ export default function CreateSchoolPage({ token }) {
     }
   };
 
-  const handleInputChange = (e) => {
+  const handleInputChange = (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
     const { name, value } = e.target;
     setValues({ ...values, [name]: value });
   };
 
-  const handleCheckboxChange = (e) => {
+  const handleCheckboxChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setValues({ ...values, [name]: checked });
   };
@@ -272,7 +275,7 @@ export default function CreateSchoolPage({ token }) {
   );
 }
 
-export async function getServerSideProps({ req }) {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const { token } = parseCookie(req);
 
   return {
@@ -280,4 +283,4 @@ export async function getServerSideProps({ req }) {
       token,
     },
   };
-}
+};

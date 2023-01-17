@@ -24,7 +24,7 @@ export default function GoogleCallback() {
   }, [router.query, googleCallback]);
 
   if (user) {
-    var returnUrl = router.query?.returnUrl ?? "/";
+    const returnUrl = router.query?.returnUrl ?? "/";
     if (typeof returnUrl !== "string") return;
     router.push(returnUrl);
   }
@@ -39,6 +39,6 @@ export default function GoogleCallback() {
   );
 }
 
-GoogleCallback.getLayout = function getLayout(page) {
+GoogleCallback.getLayout = function getLayout(page: any) {
   return page;
 };

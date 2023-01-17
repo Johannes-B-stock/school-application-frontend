@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout/Layout";
 import Link from "next/link";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, ChangeEvent, FormEvent } from "react";
 import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
 import { useRouter } from "next/router";
@@ -8,6 +8,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { API_URL } from "@/config/index";
 import { general, register as t } from "@/i18n";
+import { useLocale } from "i18n/useLocale";
 
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +21,7 @@ export default function Register() {
   const { user, register, error } = useContext(AuthContext);
 
   const router = useRouter();
+  const locale = useLocale();
 
   if (user) {
     router.push("/");
@@ -29,14 +31,14 @@ export default function Register() {
     error && toast.error(error);
   }, [error]);
 
-  const onChange = (e) => {
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value,
     }));
   };
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (isLoading) {
       return;
@@ -57,15 +59,15 @@ export default function Register() {
   return (
     <div className="columns is-centered has-text-centered ">
       <div className="column is-5 box p-5">
-        <h1 className="title is-4">{t[router.locale].title}</h1>
-        <p className="description mb-5">{t[router.locale].description}</p>
+        <h1 className="title is-4">{t[locale].title}</h1>
+        <p className="description mb-5">{t[locale].description}</p>
         <form onSubmit={onSubmit}>
           <div className="field">
             <div className="control">
               <input
                 className="input is-medium"
                 type="text"
-                placeholder={t[router.locale].name}
+                placeholder={t[locale].name}
                 id="name"
                 name="name"
                 value={formData.name}
@@ -78,7 +80,7 @@ export default function Register() {
               <input
                 className="input is-medium"
                 type="email"
-                placeholder={t[router.locale].email}
+                placeholder={t[locale].email}
                 id="email"
                 name="email"
                 value={formData.email}
@@ -91,7 +93,7 @@ export default function Register() {
               <input
                 className="input is-medium"
                 type="password"
-                placeholder={t[router.locale].password}
+                placeholder={t[locale].password}
                 id="password"
                 autoComplete="on"
                 name="password"
@@ -105,7 +107,7 @@ export default function Register() {
               <input
                 className="input is-medium"
                 type="password"
-                placeholder={t[router.locale].confirmPassword}
+                placeholder={t[locale].confirmPassword}
                 id="confirmPassword"
                 autoComplete="on"
                 name="confirmPassword"
@@ -119,22 +121,20 @@ export default function Register() {
               isLoading && "is-loading"
             }`}
           >
-            {general.buttons[router.locale].submit}
+            {general.buttons[locale].submit}
           </button>
           <br />
           <small>
             <em>
-              {t[router.locale].alreadyAccount}
+              {t[locale].alreadyAccount}
               <Link href="/account/login">
-                <a>{general.buttons[router.locale].login}</a>
+                <a>{general.buttons[locale].login}</a>
               </Link>
             </em>
           </small>
         </form>
         <br />
-        <div className="separator has-text-grey is-italic">
-          {t[router.locale].or}
-        </div>
+        <div className="separator has-text-grey is-italic">{t[locale].or}</div>
         <br />
         <button
           className="button is-light is-fullwidth is-medium"
@@ -143,13 +143,13 @@ export default function Register() {
           <span className="icon">
             <FontAwesomeIcon icon={faGoogle} />
           </span>
-          <span>{t[router.locale].registerWithGoogle}</span>
+          <span>{t[locale].registerWithGoogle}</span>
         </button>
       </div>
     </div>
   );
 }
 
-Register.getLayout = function getLayout(page) {
+Register.getLayout = function getLayout(page: any) {
   return <Layout title="User registration">{page}</Layout>;
 };

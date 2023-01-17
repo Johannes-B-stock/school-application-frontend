@@ -3,14 +3,17 @@ import NotAuthorized from "@/components/auth/NotAuthorized";
 import AuthContext from "@/context/AuthContext";
 import { useContext } from "react";
 import axios from "axios";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import { API_URL } from "@/config/index";
 import { user as useri18n } from "@/i18n";
 import qs from "qs";
 import { GetServerSideProps } from "next";
+import { School, User } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 
-export default function MySchools({ schools, locale }) {
+export default function MySchools({ schools }: { schools: School[] }) {
   const { user } = useContext(AuthContext);
+  const locale = useLocale();
 
   if (!user) {
     return <NotAuthorized />;
@@ -50,7 +53,7 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
       { encodeValuesOnly: true }
     );
-    const me = await axios.get(`${API_URL}/api/users/me?${query}`, {
+    const me = await axios.get<User>(`${API_URL}/api/users/me?${query}`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -58,11 +61,11 @@ export const getServerSideProps: GetServerSideProps = async ({
     });
     return {
       props: {
-        schools: me.data.schools ?? null,
+        schools: me.data?.schools ?? [],
         locale,
       },
     };
-  } catch (error) {
+  } catch (error: any) {
     return {
       props: {
         error: error.message ?? error,

@@ -1,8 +1,11 @@
 import SchoolItem from "@/components/school/SchoolItem";
 import { API_URL } from "@/config/index";
+import { School } from "api-definitions/backend";
+import { ArrayDataResponse } from "api-definitions/strapiBaseTypes";
+import { GetServerSideProps } from "next";
 import qs from "qs";
 
-export default function SchoolsPage({ schools }) {
+export default function SchoolsPage({ schools }: { schools: School[] }) {
   return (
     <div className="content">
       <h1>Schools</h1>
@@ -26,7 +29,7 @@ export default function SchoolsPage({ schools }) {
   );
 }
 
-export async function getServerSideProps({ locale }) {
+export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   const query = qs.stringify(
     {
       filters: {
@@ -43,14 +46,9 @@ export async function getServerSideProps({ locale }) {
     }
   );
   const res = await fetch(`${API_URL}/api/schools?${query}`);
-  const result = await res.json();
-  const schools = result.data.map((data) => ({
-    id: data.id,
-    ...data.attributes,
-    image: data.attributes.image.data.attributes.url,
-  }));
+  const result = (await res.json()) as ArrayDataResponse<School>;
 
   return {
-    props: { schools },
+    props: { schools: result.data },
   };
-}
+};

@@ -1,10 +1,17 @@
 import Image from "next/image";
 import styles from "@/styles/ProfilePage.module.css";
-import { useRouter } from "next/router";
 import { profile } from "@/i18n";
+import { User } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 
-export default function ProfileHeaderCard({ user }) {
-  const { locale } = useRouter();
+export default function ProfileHeaderCard({ user }: { user?: User }) {
+  const locale = useLocale();
+  const joinedAt = user?.createdAt
+    ? new Date(user?.createdAt).toLocaleDateString(locale, {
+        dateStyle: "long",
+      })
+    : "undefined";
+
   return (
     <div className={`card ${styles.profileHeaderCard}`}>
       <div className="card-content">
@@ -13,15 +20,13 @@ export default function ProfileHeaderCard({ user }) {
             <p className="title is-3">{user?.username}</p>
             <p className="subtitle is-6">{user?.email}</p>
             <p className="is-6">
-              {profile[locale].role.replace("{0}", user?.role?.name)}
+              {profile[locale].role.replace(
+                "{0}",
+                user?.role?.name ?? "undefined"
+              )}
             </p>
             <p className="is-6">
-              {profile[locale].joined.replace(
-                "{0}",
-                new Date(user?.createdAt).toLocaleDateString(locale, {
-                  dateStyle: "long",
-                })
-              )}
+              {profile[locale].joined.replace("{0}", joinedAt)}
             </p>
           </div>
           <div className="media-right">

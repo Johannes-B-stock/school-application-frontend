@@ -1,5 +1,14 @@
-export default function Pagination({ pagination, changePage }) {
-  const arrayOfNumbers = (num) => {
+import { Pagination as ApiPagination } from "api-definitions/strapiBaseTypes";
+import { Dispatch, SetStateAction } from "react";
+
+export default function Pagination({
+  pagination,
+  changePage,
+}: {
+  pagination?: ApiPagination;
+  changePage: Dispatch<SetStateAction<number>>;
+}) {
+  const arrayOfNumbers = (num: number) => {
     let index = 1;
     const allNumbers = [];
     while (index <= num) {

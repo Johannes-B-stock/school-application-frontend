@@ -1,10 +1,34 @@
 import { API_URL } from "@/config/index";
 import axios from "axios";
+import { GetServerSideProps } from "next";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 
-export default function SuccessPage({ paymentDetails }) {
+export interface PaymentDetails {
+  payment_status: string;
+  id: number;
+  amount_total: number;
+  customer_details: CustomerDetails;
+  metadata: MetaData;
+  currency: string;
+}
+
+export interface CustomerDetails {
+  name: string;
+  email: string;
+}
+
+export interface MetaData {
+  productId: number;
+  productName: string;
+}
+
+export default function SuccessPage({
+  paymentDetails,
+}: {
+  paymentDetails: PaymentDetails;
+}) {
   const router = useRouter();
   if (!paymentDetails) {
     router.back();
@@ -90,7 +114,7 @@ export default function SuccessPage({ paymentDetails }) {
   );
 }
 
-export async function getServerSideProps({ query }) {
+export const getServerSideProps: GetServerSideProps = async ({ query }) => {
   const sessionId = query?.sessionId;
   const response = await axios.get(
     `${API_URL}/strapi-stripe/retrieveCheckoutSession/${sessionId}`,
@@ -103,4 +127,4 @@ export async function getServerSideProps({ query }) {
       paymentDetails: response.data ?? null,
     },
   };
-}
+};

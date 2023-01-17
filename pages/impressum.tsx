@@ -1,16 +1,17 @@
+import { Imprint } from "api-definitions/backend";
 import { GetStaticProps } from "next";
 import ReactMarkdown from "react-markdown";
 import { API_URL } from "../config";
 
-export default function ImprintPage({ imprint }) {
+export default function ImprintPage({ imprint }: { imprint: Imprint }) {
   return (
     <div className="content">
-      <ReactMarkdown>{imprint.attributes.content}</ReactMarkdown>
+      <ReactMarkdown>{imprint.content}</ReactMarkdown>
     </div>
   );
 }
 
-export const getStaticProps: GetStaticProps = async ({ locale })=>{
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
   const imprintFetch = await fetch(`${API_URL}/api/impressum?locale=${locale}`);
 
   const imprintResult = await imprintFetch.json();
@@ -25,4 +26,4 @@ export const getStaticProps: GetStaticProps = async ({ locale })=>{
     },
     revalidate: 1,
   };
-}
+};

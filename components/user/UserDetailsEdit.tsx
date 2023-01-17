@@ -1,4 +1,4 @@
-import { useContext, useState } from "react";
+import { ChangeEvent, MouseEvent, useState } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { API_URL } from "@/config/index";
 import { toast } from "react-toastify";
@@ -9,24 +9,42 @@ import {
   faPhone,
 } from "@fortawesome/free-solid-svg-icons";
 import { general, profile } from "@/i18n";
-import { useRouter } from "next/router";
+import { UserDetails } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 
 export default function UserDetailsEdit({
   allowEdit = false,
   token,
   userDetails,
   showSave = true,
-  setSaveFunction = null,
+  setSaveFunction = undefined,
+}: {
+  allowEdit?: boolean;
+  token: string;
+  userDetails?: UserDetails;
+  showSave?: boolean;
+  setSaveFunction?: (fn: any) => void;
 }) {
-  const [userEdit, setUserEdit] = useState(userDetails);
-  const { locale } = useRouter();
+  const [updatedUser, setUpdatedUser] = useState<
+    Partial<UserDetails> | undefined
+  >(userDetails);
+  const [userEdit, setUserEdit] = useState<Partial<UserDetails> | undefined>(
+    updatedUser
+  );
+
+  const locale = useLocale();
   const [allowPersonalEdit, setAllowDetailEdit] = useState(allowEdit ?? false);
-  const handleInputChange = (e) => {
+
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUserEdit({ ...userEdit, [name]: value });
+    if (userEdit) {
+      setUserEdit({ ...userEdit, [name]: value });
+    } else {
+      setUserEdit({ [name]: value });
+    }
   };
 
-  const onSaveDetails = async (e) => {
+  const onSaveDetails = async (e: MouseEvent) => {
     e?.preventDefault();
     if (!userEdit?.nationality) {
       throw new Error("Nationality missing!");
@@ -42,11 +60,11 @@ export default function UserDetailsEdit({
       });
       if (!res.ok) {
         const errorObj = await res.json();
-        toast.error(
+        throw new Error(
           errorObj.error.message ?? res.statusText ?? "Something went wrong."
         );
       } else {
-        toast.success("Saved successfully");
+        setUpdatedUser(userEdit);
       }
       return;
     }
@@ -65,14 +83,14 @@ export default function UserDetailsEdit({
         errorObj.error.message ?? res.statusText ?? "Something went wrong."
       );
     } else {
-      toast.success("Saved successfully");
+      setUpdatedUser(userEdit);
     }
   };
   setSaveFunction && setSaveFunction(onSaveDetails);
 
   const handleDetailsEditCancel = () => {
     setAllowDetailEdit(false);
-    setUserEdit(userDetails);
+    setUserEdit(updatedUser);
   };
 
   return allowPersonalEdit ? (
@@ -238,40 +256,40 @@ export default function UserDetailsEdit({
         <div className="column is-3 has-text-weight-semibold">
           {profile[locale].phone}:
         </div>
-        <div className="column">{userDetails?.phone}</div>
+        <div className="column">{updatedUser?.phone}</div>
       </div>
 
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
           {profile[locale].mobilePhone}:
         </div>
-        <div className="column">{userDetails?.mobile_phone}</div>
+        <div className="column">{updatedUser?.mobile_phone}</div>
       </div>
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
           {profile[locale].nationality}:
         </div>
-        <div className="column">{userDetails?.nationality}</div>
+        <div className="column">{updatedUser?.nationality}</div>
       </div>
       <hr />
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
           {profile[locale].nativeLanguage}:
         </div>
-        <div className="column">{userDetails?.native_language}</div>
+        <div className="column">{updatedUser?.native_language}</div>
       </div>
 
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
           {profile[locale].secondLanguage}:
         </div>
-        <div className="column">{userDetails?.language2}</div>
+        <div className="column">{updatedUser?.language2}</div>
       </div>
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
           {profile[locale].thirdLanguage}:
         </div>
-        <div className="column">{userDetails?.language3}</div>
+        <div className="column">{updatedUser?.language3}</div>
       </div>
       <div
         className="button is-primary"

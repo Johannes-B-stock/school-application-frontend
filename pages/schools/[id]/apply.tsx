@@ -1,22 +1,37 @@
-import Link from "next/link";
 import { useRouter } from "next/router";
 import qs from "qs";
 import { API_URL } from "@/config/index";
 import { toast } from "react-toastify";
 import ReactMarkdown from "react-markdown";
-import { useState } from "react";
-import { parseCookie } from "@/helpers/index";
+import { MouseEvent, useContext, useState } from "react";
+import { parseCookie } from "lib/utils";
 import NotAuthorized from "@/components/auth/NotAuthorized";
+import {
+  ArrayDataResponse,
+  SingleDataResponse,
+} from "api-definitions/strapiBaseTypes";
+import { Question, School } from "api-definitions/backend";
+import { GetServerSideProps } from "next";
+import AuthContext from "@/context/AuthContext";
 
-export default function ApplyPage({ school, questions, token }) {
+export default function ApplyPage({
+  school,
+  questions,
+  token,
+}: {
+  school: School;
+  questions: Question[];
+  token: string;
+}) {
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useContext(AuthContext);
 
   const router = useRouter();
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: MouseEvent) => {
     try {
       e.preventDefault();
-      if (isLoading) {
+      if (isLoading || !user) {
         return;
       }
       setIsLoading(true);
@@ -30,6 +45,7 @@ export default function ApplyPage({ school, questions, token }) {
         body: JSON.stringify({
           data: {
             school: school.id,
+            user: user.id,
           },
         }),
       });
@@ -100,10 +116,16 @@ export default function ApplyPage({ school, questions, token }) {
   );
 }
 
-export async function getServerSideProps({ params: { id }, req, res }) {
+export const getServerSideProps: GetServerSideProps = async ({
+  params,
+  req,
+  res,
+}) => {
+  const id = params?.id;
   if (!req.headers.cookie) {
-    res.status(403).json({ message: "Not authorized" });
-    return;
+    res.statusCode = 403;
+    res.write(JSON.stringify({ message: "Not authorized" }));
+    return { props: { school: null } };
   }
   const query = qs.stringify({
     populate: "applicationQuestions",
@@ -117,28 +139,18 @@ export async function getServerSideProps({ params: { id }, req, res }) {
     },
   });
 
-  const result = await resultFetch.json();
+  const result = (await resultFetch.json()) as SingleDataResponse<School>;
+  const school = result.data;
 
   if (!resultFetch.ok) {
-    return {
-      props: {
-        school: null,
-        question: null,
-        token: token ?? null,
-        error: result.error?.message,
-      },
-    };
+    throw new Error("School could not be found");
   }
-  const school = {
-    id: result.data.id,
-    ...result.data.attributes,
-  };
   const questionQuery = qs.stringify(
     {
       filters: {
         collection: {
           id: {
-            $eq: school.applicationQuestions.data.id,
+            $eq: result.data?.applicationQuestions?.id,
           },
         },
       },
@@ -153,13 +165,13 @@ export async function getServerSideProps({ params: { id }, req, res }) {
       Authorization: `Bearer ${token}`,
     },
   });
-  const questionResult = await quesRes.json();
-  const questions =
-    questionResult.data?.map((data) => ({
-      id: data.id,
-      ...data.attributes,
-    })) ?? null;
+  const questionResult = (await quesRes.json()) as ArrayDataResponse<Question>;
+  const questions = questionResult.data;
   return {
-    props: { school, questions, token },
+    props: {
+      school: school ?? null,
+      questions: questions ?? null,
+      token,
+    },
   };
-}
+};

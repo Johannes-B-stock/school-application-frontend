@@ -14,17 +14,43 @@ import { updateState } from "lib/schoolApplication";
 import { addStudentToSchool } from "lib/school";
 import { API_URL } from "@/config/index";
 import { useRouter } from "next/router";
+import {
+  Application,
+  ApplicationState,
+  School,
+  SchoolApplication,
+  StaffApplication,
+} from "api-definitions/backend";
+import { Pagination as ApiPagination } from "api-definitions/strapiBaseTypes";
+import { Dispatch, SetStateAction } from "react";
 
-export default function ApplicationsTable({
+export default function ApplicationsTable<
+  T extends Application & { school?: School }
+>({
   applications,
   applicationPagination,
   setPage,
   setApplications,
-  userPictures,
   token,
-}) {
+}: {
+  applications: T[];
+  applicationPagination?: ApiPagination;
+  setPage: Dispatch<SetStateAction<number>>;
+  setApplications: Dispatch<SetStateAction<T[]>>;
+  token: string;
+}): JSX.Element {
   const router = useRouter();
-  const deleteApplication = async (id) => {
+
+  const hasSchoolApplications = applications.some((app) => "school" in app);
+
+  const applicationLink = (application: T) => {
+    console.log(application);
+    return application.school !== undefined
+      ? "/admin/school-applications"
+      : "/admin/staff-applications";
+  };
+
+  const deleteApplication = async (id: number) => {
     if (
       !confirm(
         "Do you really want to delete this application? There is no going back..."
@@ -51,30 +77,37 @@ export default function ApplicationsTable({
     }
   };
 
-  const revokeApplication = async (application) => {
+  const revokeApplication = async (application: Application) => {
     await changeState(application, "revoked");
   };
 
-  const approveApplication = async (application) => {
+  const approveApplication = async (
+    application: SchoolApplication | StaffApplication
+  ) => {
     try {
       await changeState(application, "approved");
-      await addStudentToSchool(application, token);
-    } catch (error) {
+      if ("school" in application) {
+        await addStudentToSchool(application, token);
+      }
+    } catch (error: any) {
       toast.error(error.message ?? error);
     }
   };
 
-  async function changeState(application, desiredState) {
+  async function changeState(
+    application: Application,
+    desiredState: ApplicationState
+  ) {
     try {
-      const currentState = application.attributes.state;
+      const currentState = application.state;
       if (currentState !== "submitted" && currentState !== "reviewed") {
         return;
       }
       await updateState(application.id, token, desiredState);
       toast.success(`Application was successful ${desiredState}`);
-      application.attributes.state = desiredState;
+      application.state = desiredState;
       setApplications([...applications]);
-    } catch (err) {
+    } catch (err: any) {
       toast.error(
         "Error while changing state of application: " + err?.message ?? err
       );
@@ -88,7 +121,7 @@ export default function ApplicationsTable({
           <tr>
             <th></th>
             <th>User</th>
-            <th>School</th>
+            {hasSchoolApplications && <th>School</th>}
             <th>Progress</th>
             <th>State</th>
             <th>Created At</th>
@@ -110,10 +143,8 @@ export default function ApplicationsTable({
                     className="image is-32x32 is-rounded"
                     alt="Profile"
                     src={
-                      userPictures.find(
-                        (user) =>
-                          user.id === application.attributes.user.data.id
-                      )?.picture ?? "/images/defaultAvatar.png"
+                      application.user?.picture?.formats?.thumbnail?.url ??
+                      "/images/defaultAvatar.png"
                     }
                     width="32"
                     height="32"
@@ -122,41 +153,40 @@ export default function ApplicationsTable({
                 </div>
               </td>
               <td>
-                <Link href={`/user/${application.attributes.user.data.id}`}>
-                  {application.attributes.user.data.attributes.username}
+                <Link href={`/user/${application.user.id}`}>
+                  {application.user.username}
                 </Link>
               </td>
-              <td>{application.attributes.school.data.attributes.name}</td>
-
+              {"school" in application ? (
+                <td>{application.school?.name}</td>
+              ) : (
+                <></>
+              )}
               <td width="12%">
                 <progress
                   className="progress is-primary is-small my-2"
-                  value={application.attributes.step}
+                  value={application.step}
                   max="3"
                 >
-                  {application.attributes.step} / 3
+                  {application.step} / 3
                 </progress>
               </td>
-              <td>{application.attributes.state}</td>
+              <td>{application.state}</td>
               <td>
                 <span className="is-italic">
-                  {new Date(
-                    application.attributes.createdAt
-                  ).toLocaleDateString()}
+                  {new Date(application.createdAt).toLocaleDateString()}
                 </span>
               </td>
               <td>
                 <span className="is-italic">
-                  {new Date(
-                    application.attributes.updatedAt
-                  ).toLocaleDateString()}
+                  {new Date(application.updatedAt).toLocaleDateString()}
                 </span>
               </td>
               <td>
                 <button
                   className={`button is-small mx-1 is-success`}
                   title="Approve"
-                  disabled={application.attributes.state !== "submitted"}
+                  disabled={application.state !== "submitted"}
                   onClick={() => approveApplication(application)}
                 >
                   <span className="icon">
@@ -166,7 +196,7 @@ export default function ApplicationsTable({
                 <button
                   className="button is-small mx-1 is-warning"
                   title="Revoke"
-                  disabled={application.attributes.state !== "submitted"}
+                  disabled={application.state !== "submitted"}
                   onClick={() => revokeApplication(application)}
                 >
                   <FontAwesomeIcon icon={faXmark} />
@@ -175,7 +205,9 @@ export default function ApplicationsTable({
                   className="button is-small mx-1 is-link"
                   title="Show Details"
                   onClick={() =>
-                    router.push(`/admin/applications/${application.id}`)
+                    router.push(
+                      `${applicationLink(application)}/${application.id}`
+                    )
                   }
                 >
                   <span className="icon">

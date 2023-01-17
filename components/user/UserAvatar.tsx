@@ -2,8 +2,15 @@ import { faXmark } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styles from "@/styles/AdminOverview.module.css";
 import Image from "next/image";
+import { User } from "api-definitions/backend";
 
-export default function UserAvatar({ user, clickRemoveStaff = null }) {
+export default function UserAvatar({
+  user,
+  clickRemoveStaff = undefined,
+}: {
+  user: User;
+  clickRemoveStaff?: (userId: number) => Promise<void>;
+}) {
   return (
     <div className={styles.user}>
       {clickRemoveStaff && (

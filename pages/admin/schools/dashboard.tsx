@@ -1,29 +1,47 @@
 import { API_URL } from "@/config/index";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import qs from "qs";
 import AuthContext from "@/context/AuthContext";
 import { useContext, useEffect, useState } from "react";
 import NotAuthorized from "@/components/auth/NotAuthorized";
 import { toast } from "react-toastify";
-import InfoTiles from "@/components/admin/InfoTiles";
+import SchoolInfoTiles from "@/components/admin/SchoolInfoTiles";
 import SchoolsTable from "@/components/school/SchoolsTable";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faSpinner } from "@fortawesome/free-solid-svg-icons";
-import _ from "lodash";
 import { getPaginatedApplications } from "lib/school";
-import { getUser } from "lib/user";
 import ApplicationsTable from "@/components/admin/ApplicationsTable";
+import { Role, School, SchoolApplication } from "api-definitions/backend";
+import {
+  ApiError,
+  ArrayDataResponse,
+  Pagination,
+} from "api-definitions/strapiBaseTypes";
+import axios from "axios";
+import { GetServerSideProps } from "next";
 
-export default function AdminDashboard({ schools, error, token }) {
+export interface UserThumbnail {
+  userId: number;
+  pictureUrl?: string;
+}
+
+export default function AdminDashboard({
+  schools,
+  error,
+  token,
+}: {
+  schools: School[];
+  error: ApiError;
+  token: string;
+}) {
   const [isLoadingApplications, setIsLoadingApplications] = useState(true);
-  const [applications, setApplications] = useState([]);
-  const [userPictures, setUserPictures] = useState([]);
-  const [applicationPagination, setApplicationPagination] = useState(null);
+  const [applications, setApplications] = useState<SchoolApplication[]>([]);
+  const [applicationPagination, setApplicationPagination] = useState<
+    Pagination | undefined
+  >(undefined);
   const [page, setPage] = useState(1);
-
   const [filter, setFilter] = useState("");
-
   const { user } = useContext(AuthContext);
 
   useEffect(() => {
@@ -31,39 +49,17 @@ export default function AdminDashboard({ schools, error, token }) {
       setIsLoadingApplications(true);
 
       const appFetch = await getPaginatedApplications(page, filter, token);
-      const applicationsResult = await appFetch.json();
-
-      if (appFetch.ok) {
+      const applicationsResult = appFetch.data;
+      if (appFetch.status === 200) {
         setIsLoadingApplications(false);
-        setApplications(applicationsResult.data);
-        setApplicationPagination(applicationsResult.meta.pagination);
+        setApplications(applicationsResult.data ?? []);
+        setApplicationPagination(applicationsResult.meta?.pagination);
       } else {
         toast.error(
-          "Cannot load applications because " + applicationsResult.error.message
+          "Cannot load applications because " +
+            applicationsResult.error?.message
         );
       }
-      const condensedUserIds = [];
-      applicationsResult.data.forEach(
-        (app) =>
-          !condensedUserIds.includes(app.attributes.user.data.id) &&
-          app.attributes.user.data.id &&
-          condensedUserIds.push(app.attributes.user.data.id)
-      );
-      const users = [];
-      await Promise.all(
-        condensedUserIds.map(async (userId) => {
-          try {
-            const user = await getUser(userId, token, ["picture"]);
-            users.push(user);
-          } catch (error) {
-            console.log(error.message ?? error);
-          }
-        })
-      );
-      const pictures = users.map((user) => {
-        return { id: user.id, picture: user.picture?.formats.thumbnail.url };
-      });
-      setUserPictures(pictures);
     }
     fetchData();
   }, [schools, token, filter, page]);
@@ -73,7 +69,7 @@ export default function AdminDashboard({ schools, error, token }) {
   }
 
   if (error) {
-    toast.error(error);
+    toast.error(error.message);
   }
 
   return (
@@ -81,10 +77,10 @@ export default function AdminDashboard({ schools, error, token }) {
       <div className="container">
         <div className="level has-text-centered">
           <div className="level-item">
-            <p className="title">Dashboard</p>
+            <p className="title">Schools Dashboard</p>
           </div>
         </div>
-        <InfoTiles schools={schools} />
+        <SchoolInfoTiles schools={schools} />
         <div className="tile is-ancestor">
           <div className="tile ">
             <div className="tile is-parent is-vertical">
@@ -148,7 +144,6 @@ export default function AdminDashboard({ schools, error, token }) {
                     applications={applications}
                     applicationPagination={applicationPagination}
                     setPage={setPage}
-                    userPictures={userPictures}
                     setApplications={setApplications}
                     token={token}
                   />
@@ -181,11 +176,11 @@ export default function AdminDashboard({ schools, error, token }) {
   );
 }
 
-AdminDashboard.getLayout = function getLayout(page) {
+AdminDashboard.getLayout = function getLayout(page: any) {
   return <DashboardLayout>{page}</DashboardLayout>;
 };
 
-export async function getServerSideProps({ req }) {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const { token } = parseCookie(req);
 
   const dateToFilter = new Date(Date.now() - 1000 * 60 * 60 * 24 * 30 * 6);
@@ -198,33 +193,28 @@ export async function getServerSideProps({ req }) {
     sort: "startDate",
     populate: ["students", "applications", "staff"],
   });
-  const schoolFetch = await fetch(`${API_URL}/api/schools?${query}`, {
-    method: "GET",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  let schools = null;
-  let error = null;
-
-  const schoolResult = await schoolFetch.json();
-  if (schoolFetch.ok) {
-    schools = schoolResult.data;
-  } else {
-    error = schoolResult.error.message;
-  }
+  const schoolFetch = await axios.get<ArrayDataResponse<School>>(
+    `${API_URL}/api/schools?${query}`,
+    {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
 
   return {
     props: {
-      schools,
-      error,
+      schools: schoolFetch.data.data ?? [],
+      error: schoolFetch.data.error ?? null,
       token,
     },
   };
-}
+};
 
-export function isSchoolAdmin(role) {
-  return role.name === "SchoolAdmin" || role.name === "admin";
+export function isSchoolAdmin(role: Role | undefined) {
+  return (
+    role?.name.toLowerCase() === "schooladmin" ||
+    role?.name.toLowerCase() === "admin"
+  );
 }

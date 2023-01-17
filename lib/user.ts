@@ -1,9 +1,9 @@
 import { API_URL } from "../config";
 import qs from "qs";
 import axios from "axios";
-import { User, UsersResponse } from "definitions/backend";
+import { User } from "api-definitions/backend";
 
-export async function getMyDetails(token: string) {
+export async function getMyDetails(token: string): Promise<User> {
   const query = qs.stringify({
     populate: [
       "role",
@@ -15,7 +15,7 @@ export async function getMyDetails(token: string) {
       "emergency_address",
     ],
   });
-  const strapiRes = await axios.get(`${API_URL}/api/users/me?${query}`, {
+  const strapiRes = await axios.get<User>(`${API_URL}/api/users/me?${query}`, {
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
@@ -29,21 +29,19 @@ export async function updateMyPassword(
   newPassword: string,
   token: string
 ) {
-  const userResult = await axios.put<User>(
-    `${API_URL}/api/users/change-password`,
+  await axios.post(
+    `${API_URL}/api/auth/change-password`,
     {
       currentPassword,
-      newPassword,
+      password: newPassword,
+      passwordConfirmation: newPassword,
     },
     {
       headers: {
-        "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
       },
     }
   );
-
-  return userResult;
 }
 
 export async function updateMe(user: User, token: string) {
@@ -64,10 +62,10 @@ export async function updateMe(user: User, token: string) {
     }),
   });
 
-  const result = await userFetch.json();
+  (await userFetch.json()) as User;
 
   if (!userFetch.ok) {
-    throw new Error(result.error?.message ?? userFetch.statusText);
+    throw new Error(userFetch.statusText);
   }
 }
 
@@ -76,7 +74,7 @@ export async function findUsersWithName(
   token: string,
   populate: string[],
   filters: { [key: string]: any }
-) {
+): Promise<User[]> {
   const queryObject = {
     populate,
     filters,
@@ -110,38 +108,37 @@ export async function findUsersWithName(
     };
   }
   const query = qs.stringify(queryObject);
-  const users = await axios.get<UsersResponse>(
-    `${API_URL}/api/users?${query}`,
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
+  const users = await axios.get<User[]>(`${API_URL}/api/users?${query}`, {
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+  });
   return users.data;
 }
 
 export async function getAllUsers(
-  ids: string[],
+  ids: number[],
   token: string,
   populate: string[]
 ) {
   if (ids.length === 0) {
     return [];
   }
-  return await Promise.all(
-    ids.map(async (userId) => {
-      return await getUser(userId, token, populate);
-    })
+  return Promise.all(
+    ids.map(async (userId) => await getUser(userId, token, populate))
   );
 }
 
-export async function getUser(id: string, token: string, populate: string[]) {
+export async function getUser(
+  id: number,
+  token: string,
+  populate: string[]
+): Promise<User> {
   const userQuery = qs.stringify({
     populate,
   });
-  const userResult = await axios.get(
+  const userResult = await axios.get<User>(
     `${API_URL}/api/users/${id}?${userQuery}`,
     {
       headers: {
@@ -150,5 +147,20 @@ export async function getUser(id: string, token: string, populate: string[]) {
       },
     }
   );
+  if (userResult.status !== 200) {
+    throw new ApiError(
+      userResult.status,
+      `User can not be found because ${userResult.status} - ${userResult.statusText}`
+    );
+  }
   return userResult.data;
+}
+
+export class ApiError extends Error {
+  /**
+   *
+   */
+  constructor(public readonly status: number, message: string) {
+    super(message);
+  }
 }

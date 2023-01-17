@@ -14,18 +14,21 @@ import "../styles/NProgress.scss";
 import { ReactElement, useEffect } from "react";
 import Layout from "@/components/Layout/Layout";
 import { ThemeProvider } from "next-themes";
-import { AppProps } from 'next/app';
+import { AppProps } from "next/app";
 import { Page } from "types/page";
+import { cookieBanner } from "@/i18n";
+import { useLocale } from "i18n/useLocale";
 
 config.autoAddCss = false;
 
 // this should give a better typing
 export type Props = AppProps & {
-  Component: Page
-}
+  Component: Page;
+};
 
 export default function MyApp({ Component, pageProps }: Props) {
   const router = useRouter();
+  const locale = useLocale();
 
   NProgress.configure({ showSpinner: false });
 
@@ -55,7 +58,7 @@ export default function MyApp({ Component, pageProps }: Props) {
   const getLayout = Component.getLayout || defaultLayout;
 
   return (
-    <PageContentProvider locale={router.locale}>
+    <PageContentProvider locale={locale}>
       <AuthProvider>
         <ThemeProvider>
           <RouteGuard>{getLayout(<Component {...pageProps} />)}</RouteGuard>
@@ -65,7 +68,7 @@ export default function MyApp({ Component, pageProps }: Props) {
       <ToastContainer />
       <CookieConsent
         location="bottom"
-        buttonText="Accept"
+        buttonText={cookieBanner[locale].accept}
         style={{ background: "#2B373B", opacity: 0.9 }}
         disableButtonStyles={true}
         cookieName="CookieConsent"
@@ -74,8 +77,7 @@ export default function MyApp({ Component, pageProps }: Props) {
         contentClasses="ml-5"
         buttonWrapperClasses="buttons is-flex-grow-1 is-left mt-6 mt-0-tablet mr-6 mb-6"
       >
-        By clicking Accept, you agree to the storing of cookies on your device
-        to enhance site navigation.
+        {cookieBanner[locale].text}
       </CookieConsent>
     </PageContentProvider>
   );

@@ -1,6 +1,6 @@
 import Layout from "@/components/Layout/Layout";
 import Link from "next/link";
-import { useEffect, useState, useContext } from "react";
+import { useEffect, useState, useContext, ChangeEvent, FormEvent } from "react";
 import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
 import { useRouter } from "next/router";
@@ -10,6 +10,7 @@ import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { general, login as t } from "@/i18n";
+import { useLocale } from "i18n/useLocale";
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,17 +24,18 @@ export default function Login() {
   }, [error]);
 
   const router = useRouter();
+  const locale = useLocale();
 
   const isRedirecting = router.query["returnUrl"] != undefined;
 
-  const onChange = (e) => {
+  const onChange = (e: ChangeEvent<HTMLInputElement>) => {
     setFormData((prevState) => ({
       ...prevState,
       [e.target.name]: e.target.value,
     }));
   };
 
-  const onSubmit = async (e) => {
+  const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (isLoading) {
       return;
@@ -46,11 +48,11 @@ export default function Login() {
   return (
     <div className="columns is-centered has-text-centered ">
       <div className="column is-5 box p-5">
-        <h1 className="title is-4">{t[router.locale].title}</h1>
+        <h1 className="title is-4">{t[locale].title}</h1>
         <p className="description mb-5">
           {isRedirecting
-            ? t[router.locale].redirectDescription
-            : t[router.locale].description}
+            ? t[locale].redirectDescription
+            : t[locale].description}
         </p>
         <form onSubmit={onSubmit}>
           <div className="field">
@@ -58,7 +60,7 @@ export default function Login() {
               <input
                 className="input is-medium"
                 type="email"
-                placeholder={t[router.locale].email}
+                placeholder={t[locale].email}
                 id="email"
                 name="email"
                 autoComplete="on"
@@ -75,7 +77,7 @@ export default function Login() {
               <input
                 className="input is-medium"
                 type="password"
-                placeholder={t[router.locale].password}
+                placeholder={t[locale].password}
                 id="password"
                 name="password"
                 autoComplete="on"
@@ -91,7 +93,7 @@ export default function Login() {
           <div className="has-text-left mb-4 mt-2">
             <small>
               <Link href="/account/forgotPassword">
-                {t[router.locale].forgotPasswordLink}
+                {t[locale].forgotPasswordLink}
               </Link>
             </small>
           </div>
@@ -101,22 +103,20 @@ export default function Login() {
             }`}
             type="submit"
           >
-            {general.buttons[router.locale].submit}
+            {general.buttons[locale].submit}
           </button>
           <br />
           <small>
             <em>
-              {t[router.locale].noAccount}
+              {t[locale].noAccount}
               <Link href="/account/register">
-                <a>{general.buttons[router.locale].register}</a>
+                <a>{general.buttons[locale].register}</a>
               </Link>
             </em>
           </small>
         </form>
         <br />
-        <div className="separator has-text-grey is-italic">
-          {t[router.locale].or}
-        </div>
+        <div className="separator has-text-grey is-italic">{t[locale].or}</div>
         <br />
         <button
           className="button is-light is-fullwidth is-medium"
@@ -125,13 +125,13 @@ export default function Login() {
           <span className="icon">
             <FontAwesomeIcon icon={faGoogle} />
           </span>
-          <span>{t[router.locale].loginWithGoogle}</span>
+          <span>{t[locale].loginWithGoogle}</span>
         </button>
       </div>
     </div>
   );
 }
 
-Login.getLayout = function getLayout(page) {
+Login.getLayout = function getLayout(page: any) {
   return <Layout title="Login to page">{page}</Layout>;
 };

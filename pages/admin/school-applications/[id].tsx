@@ -1,5 +1,5 @@
 import DashboardLayout from "@/components/Layout/DashboardLayout";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import {
   faAngleDown,
   faAngleUp,
@@ -19,32 +19,44 @@ import countries from "i18n-iso-countries";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { addStudentToSchool } from "lib/school";
-import { getSchoolApplicationAnswerDetails } from "lib/answers";
 import { API_URL } from "@/config/index";
 import { GetServerSideProps } from "next";
+import {
+  Answer,
+  Application,
+  ApplicationState,
+  SchoolApplication,
+  User,
+} from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 
-export default function ApplicationAdminView({ application, token, user }) {
+export default function ApplicationAdminView({
+  application,
+  token,
+  user,
+}: {
+  application: SchoolApplication;
+  token: string;
+  user: User;
+}) {
   const [showReference1, setShowReference1] = useState(false);
   const [showReference2, setShowReference2] = useState(false);
   const [loadReference1Answers, setLoadReference1Answers] = useState(false);
   const [loadReference2Answers, setLoadReference2Answers] = useState(false);
   const [isLoadingAppAnswers, setIsLoadingAppAnswers] = useState(false);
-  const [answers1, setAnswers1] = useState(null);
-  const [answers2, setAnswers2] = useState(null);
+  const [answers1, setAnswers1] = useState<Answer[] | undefined>(undefined);
+  const [answers2, setAnswers2] = useState<Answer[] | undefined>(undefined);
   const [showQuestionary, setShowQuestionary] = useState(false);
-  const [applicationAnswers, setApplicationAnswers] = useState([]);
+  const [applicationAnswers, setApplicationAnswers] = useState<Answer[]>([]);
 
   const toggleShowQuestionary = async () => {
     setShowQuestionary(!showQuestionary);
     if (!showQuestionary && applicationAnswers.length === 0) {
       try {
         setIsLoadingAppAnswers(true);
-        const answerDetails = await getSchoolApplicationAnswerDetails(
-          application.attributes.answers.data,
-          token
-        );
+        const answerDetails = application.answers ?? [];
         setApplicationAnswers(answerDetails);
-      } catch (error) {
+      } catch (error: any) {
         toast.error(error.message ?? error);
       } finally {
         setIsLoadingAppAnswers(false);
@@ -61,25 +73,26 @@ export default function ApplicationAdminView({ application, token, user }) {
   };
 
   const router = useRouter();
-  const reference1 = application.attributes.reference1.data;
-  const reference2 = application.attributes.reference2.data;
+  const locale = useLocale();
+  const reference1 = application.reference1;
+  const reference2 = application.reference2;
 
-  const loadAnswers = async (referenceId, token) => {
+  const loadAnswers = async (referenceId: number, token: string) => {
     try {
-      referenceId === reference1.id && setLoadReference1Answers(true);
-      referenceId === reference2.id && setLoadReference2Answers(true);
+      referenceId === reference1?.id && setLoadReference1Answers(true);
+      referenceId === reference2?.id && setLoadReference2Answers(true);
       const answerDetails = await getReferenceAnswers(referenceId, token);
-      referenceId === reference1.id && setAnswers1(answerDetails);
-      referenceId === reference2.id && setAnswers2(answerDetails);
-    } catch (error) {
+      referenceId === reference1?.id && setAnswers1(answerDetails);
+      referenceId === reference2?.id && setAnswers2(answerDetails);
+    } catch (error: any) {
       toast.error(error.message ?? error);
     } finally {
-      referenceId === reference1.id && setLoadReference1Answers(false);
-      referenceId === reference2.id && setLoadReference2Answers(false);
+      referenceId === reference1?.id && setLoadReference1Answers(false);
+      referenceId === reference2?.id && setLoadReference2Answers(false);
     }
   };
 
-  const deleteApplication = async (id) => {
+  const deleteApplication = async (id: number) => {
     if (
       !confirm(
         "Do you really want to delete this application? There is no going back..."
@@ -106,30 +119,33 @@ export default function ApplicationAdminView({ application, token, user }) {
     }
   };
 
-  const revokeApplication = async (application) => {
-    if (application.attributes.state === "revoked") {
+  const revokeApplication = async (application: Application) => {
+    if (application.state === "revoked") {
       return;
     }
     await changeState(application, "revoked");
   };
 
-  const approveApplication = async (application) => {
+  const approveApplication = async (application: SchoolApplication) => {
     try {
-      if (application.attributes.state === "approved") {
+      if (application.state === "approved") {
         return;
       }
       await changeState(application, "approved");
       await addStudentToSchool(application, token);
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message ?? error);
     }
   };
-  async function changeState(application, desiredState) {
+  async function changeState(
+    application: Application,
+    desiredState: ApplicationState
+  ) {
     try {
       await updateState(application.id, token, desiredState);
       toast.success(`Application was successful ${desiredState}`);
       router.reload();
-    } catch (err) {
+    } catch (err: any) {
       toast.error(
         "Error while changing state of application: " + err?.message ?? err
       );
@@ -139,8 +155,7 @@ export default function ApplicationAdminView({ application, token, user }) {
   return (
     <section className="section has-background-light">
       <h3 className="title is-3">
-        Application for School{" "}
-        {application.attributes.school.data.attributes.name}
+        Application for School {application.school.name}
       </h3>
       <div className="columns">
         <div className="column is-7">
@@ -156,16 +171,14 @@ export default function ApplicationAdminView({ application, token, user }) {
                   Applied For:
                 </div>
                 <div className="column">
-                  <Link
-                    href={`/admin/schools/${application.attributes.school.data.id}`}
-                  >
-                    {application.attributes.school.data.attributes.name}
+                  <Link href={`/admin/schools/${application.school.id}`}>
+                    {application.school.name}
                   </Link>
                 </div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">Status:</div>
-                <div className="column">{application.attributes.state}</div>
+                <div className="column">{application.state}</div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
@@ -174,10 +187,10 @@ export default function ApplicationAdminView({ application, token, user }) {
                 <div className="column is-7 has-text-weight-bold">
                   <progress
                     className="progress is-primary my-2"
-                    value={application.attributes.step}
+                    value={application.step}
                     max="3"
                   >
-                    {application.attributes.step} / 3
+                    {application.step} / 3
                   </progress>
                 </div>
               </div>
@@ -186,7 +199,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                   <button
                     className={`button mx-1 is-success`}
                     title="Approve"
-                    disabled={application.attributes.state === "approved"}
+                    disabled={application.state === "approved"}
                     onClick={() => approveApplication(application)}
                   >
                     <span className="icon">
@@ -196,7 +209,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                   <button
                     className="button mx-1 is-warning"
                     title="Revoke"
-                    disabled={application.attributes.state === "revoked"}
+                    disabled={application.state === "revoked"}
                     onClick={() => revokeApplication(application)}
                   >
                     <FontAwesomeIcon icon={faXmark} />
@@ -270,7 +283,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                   Birthday:
                 </div>
                 <div className="column">
-                  {new Date(user.birthday).toLocaleDateString()}
+                  {new Date(user.birthday ?? "").toLocaleDateString()}
                 </div>
               </div>
             </div>
@@ -308,10 +321,8 @@ export default function ApplicationAdminView({ application, token, user }) {
                   Country:
                 </div>
                 <div className="column">
-                  {countries.getName(
-                    user.address?.country,
-                    router.locale.split("-")[0]
-                  )}
+                  {user.address?.country &&
+                    countries.getName(user.address?.country, locale)}
                 </div>
               </div>
             </div>
@@ -343,18 +354,16 @@ export default function ApplicationAdminView({ application, token, user }) {
             >
               {isLoadingAppAnswers && <GoogleSpinner />}
               {applicationAnswers?.map((answer) => (
-                <div key={answer.data.id}>
+                <div key={answer.id}>
                   <div className="has-text-weight-bold">
-                    {answer.data.attributes.question.data.attributes.question}
+                    {answer.question.question}
                   </div>
                   <div>
-                    {answer.data.attributes.question.data.attributes
-                      .inputType === "bool"
-                      ? answer.data.attributes.question.data.attributes
-                          .answer === "true"
+                    {answer.question.inputType === "bool"
+                      ? answer.answer === "true"
                         ? "Yes"
                         : "No"
-                      : answer.data.attributes.answer}
+                      : answer.answer}
                   </div>
                   <hr />
                 </div>
@@ -384,7 +393,7 @@ export default function ApplicationAdminView({ application, token, user }) {
               }`}
               aria-expanded={showReference1 ? "true" : "false"}
             >
-              {reference1 === null ? (
+              {reference1 == undefined ? (
                 <p>Reference has not been created yet</p>
               ) : (
                 <>
@@ -392,28 +401,26 @@ export default function ApplicationAdminView({ application, token, user }) {
                     <div className="column is-4 has-text-weight-bold">
                       Name:
                     </div>
-                    <div className="column">{reference1.attributes.name}</div>
+                    <div className="column">{reference1.name}</div>
                   </div>
                   <div className="columns is-mobile">
                     <div className="column is-4 has-text-weight-bold">
                       Relation:
                     </div>
-                    <div className="column">
-                      {reference1.attributes.relation}
-                    </div>
+                    <div className="column">{reference1.relation}</div>
                   </div>
                   <div className="columns is-mobile">
                     <div className="column is-4 has-text-weight-bold">
                       Email:
                     </div>
-                    <div className="column">{reference1.attributes.email}</div>
+                    <div className="column">{reference1.email}</div>
                   </div>
                   <div className="columns is-mobile">
                     <div className="column is-4 has-text-weight-bold">
                       Email send:
                     </div>
                     <div className="column">
-                      {reference1.attributes.emailSend ? (
+                      {reference1.emailSend ? (
                         <span className="has-text-success">
                           <FontAwesomeIcon icon={faCheck} />
                         </span>
@@ -429,7 +436,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                       Submitted:
                     </div>
                     <div className="column">
-                      {reference1.attributes.submitted ? (
+                      {reference1.submitted ? (
                         <span className="has-text-success">
                           <FontAwesomeIcon icon={faCheck} />
                         </span>
@@ -446,7 +453,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                     </div>
                     <div className="column">
                       {new Date(
-                        reference1.attributes.createdAt
+                        reference1.createdAt ?? ""
                       ).toLocaleDateString()}
                     </div>
                   </div>
@@ -467,15 +474,9 @@ export default function ApplicationAdminView({ application, token, user }) {
                       <>
                         {" "}
                         <p className="has-text-weight-bold">
-                          {
-                            answer.data.attributes.question.data.attributes
-                              .question
-                          }
-                          :
+                          {answer.question.question}:
                         </p>
-                        <p className="column">
-                          {answer.data.attributes.answer}
-                        </p>
+                        <p className="column">{answer.answer}</p>
                         <br />
                       </>
                     ))}
@@ -509,7 +510,7 @@ export default function ApplicationAdminView({ application, token, user }) {
               }`}
               aria-expanded={showReference2 ? "true" : "false"}
             >
-              {reference2 === null ? (
+              {reference2 == undefined ? (
                 <p>Reference has not been created yet</p>
               ) : (
                 <>
@@ -517,28 +518,26 @@ export default function ApplicationAdminView({ application, token, user }) {
                     <div className="column is-4 has-text-weight-bold">
                       Name:
                     </div>
-                    <div className="column">{reference2.attributes.name}</div>
+                    <div className="column">{reference2.name}</div>
                   </div>
                   <div className="columns is-mobile">
                     <div className="column is-4 has-text-weight-bold">
                       Relation:
                     </div>
-                    <div className="column">
-                      {reference2.attributes.relation}
-                    </div>
+                    <div className="column">{reference2.relation}</div>
                   </div>
                   <div className="columns is-mobile">
                     <div className="column is-4 has-text-weight-bold">
                       Email:
                     </div>
-                    <div className="column">{reference2.attributes.email}</div>
+                    <div className="column">{reference2.email}</div>
                   </div>
                   <div className="columns is-mobile">
                     <div className="column is-4 has-text-weight-bold">
                       Email send:
                     </div>
                     <div className="column">
-                      {reference2.attributes.emailSend ? (
+                      {reference2.emailSend ? (
                         <span className="has-text-success">
                           <FontAwesomeIcon icon={faCheck} />
                         </span>
@@ -554,7 +553,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                       Submitted:
                     </div>
                     <div className="column">
-                      {reference2.attributes.submitted ? (
+                      {reference2.submitted ? (
                         <span className="has-text-success">
                           <FontAwesomeIcon icon={faCheck} />
                         </span>
@@ -570,9 +569,7 @@ export default function ApplicationAdminView({ application, token, user }) {
                       Created:
                     </div>
                     <div className="column">
-                      {new Date(
-                        reference2.attributes.createdAt
-                      ).toLocaleDateString()}
+                      {new Date(reference2.createdAt).toLocaleDateString()}
                     </div>
                   </div>
                   <hr />
@@ -590,15 +587,9 @@ export default function ApplicationAdminView({ application, token, user }) {
                     answers2.map((answer) => (
                       <>
                         <p className="has-text-weight-bold">
-                          {
-                            answer.data.attributes.question.data.attributes
-                              .question
-                          }
-                          :
+                          {answer.question.question}:
                         </p>
-                        <p className="column">
-                          {answer.data.attributes.answer}
-                        </p>
+                        <p className="column">{answer.answer}</p>
                         <br />
                       </>
                     ))}
@@ -612,32 +603,48 @@ export default function ApplicationAdminView({ application, token, user }) {
   );
 }
 
-ApplicationAdminView.getLayout = function getLayout(page) {
+ApplicationAdminView.getLayout = function getLayout(page: any) {
   return <DashboardLayout>{page}</DashboardLayout>;
 };
 
 export const getServerSideProps: GetServerSideProps = async ({
   req,
-  params: { id },
+  params,
 }) => {
   const { token } = parseCookie(req);
+  let id = params?.id;
+  if (!id) {
+    return {
+      props: {
+        application: undefined,
+        user: undefined,
+        token,
+      },
+    };
+  }
   if (typeof id !== "string") {
     id = id[0];
   }
-  const application = await getApplicationDetails(id, token, [
-    "answers",
-    "school",
-    "reference1",
-    "reference2",
-    "user",
-  ]);
-
-  const user = await getUser(application.data.attributes.user.data.id, token, [
-    "address",
-    "picture",
-    "emergency_address",
-    "schools",
-  ]);
+  const application = await getApplicationDetails(id, token, {
+    populate: {
+      answers: {
+        populate: "question",
+      },
+      school: {
+        populate: "",
+      },
+      reference1: {
+        populate: "",
+      },
+      reference2: {
+        populate: "",
+      },
+      user: {
+        populate: ["address", "picture", "emergency_address", "schools"],
+      },
+    },
+  });
+  const user = application.data?.user;
 
   return {
     props: {

@@ -8,6 +8,11 @@ export default function DashboardLayout({
   keywords,
   description,
   children,
+}: {
+  title: string;
+  keywords: string;
+  description: string;
+  children?: any;
 }) {
   return (
     <div className="content-wrapper">

@@ -3,12 +3,22 @@ import { useMemo, useState } from "react";
 import axios from "axios";
 import { useRouter } from "next/router";
 import { API_URL } from "@/config/index";
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import { toast } from "react-toastify";
 import qs from "qs";
 import NotAuthorized from "@/components/auth/NotAuthorized";
+import {
+  ArrayDataResponse,
+  SingleDataResponse,
+} from "api-definitions/strapiBaseTypes";
+import { Question, StaffApplicationSetting } from "api-definitions/backend";
+import { GetServerSideProps } from "next";
 
-export default function CreateStaffApplicationPage({ token }) {
+export default function CreateStaffApplicationPage({
+  token,
+}: {
+  token: string;
+}) {
   const [state, setState] = useState("Preparing...");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
@@ -23,29 +33,27 @@ export default function CreateStaffApplicationPage({ token }) {
         const query = qs.stringify({
           populate: ["questions"],
         });
-        const staffAppDetails = await axios.get(
-          `${API_URL}/api/staff-application-setting?${query}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        const questionCollection =
-          staffAppDetails.data.data.attributes.questions.data;
+        const staffAppDetails = await axios.get<
+          SingleDataResponse<StaffApplicationSetting>
+        >(`${API_URL}/api/staff-application-setting?${query}`, {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const questionCollection = staffAppDetails.data.data?.questions;
 
         const questionQuery = qs.stringify({
           populate: ["type"],
           filters: {
             collection: {
               id: {
-                $eq: questionCollection.id,
+                $eq: questionCollection?.id,
               },
             },
           },
         });
-        const questions = await axios.get(
+        const questions = await axios.get<ArrayDataResponse<Question>>(
           `${API_URL}/api/questions?${questionQuery}`,
           {
             headers: {
@@ -56,7 +64,8 @@ export default function CreateStaffApplicationPage({ token }) {
         );
         setState("Creating Questions for Application...");
 
-        const questionIds = questions.data.data.map((question) => question.id);
+        const questionIds =
+          questions.data.data?.map((question) => question.id) ?? [];
 
         const answers = await Promise.all(
           questionIds.map(async (questionId) => {
@@ -97,7 +106,7 @@ export default function CreateStaffApplicationPage({ token }) {
         );
         toast.success("Application Successfully created!");
         router.push(`/staff-application/${staffApplication.data.data.id}`);
-      } catch (error) {
+      } catch (error: any) {
         setState("Application creation failed");
         toast.error(
           "Staff Application creation failed because " + error.message ?? error
@@ -127,8 +136,8 @@ export default function CreateStaffApplicationPage({ token }) {
   );
 }
 
-export async function getServerSideProps({ req }) {
+export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const { token } = parseCookie(req);
 
   return { props: { token: token ?? null } };
-}
+};

@@ -4,28 +4,24 @@ import { useContext, useEffect, useState } from "react";
 import AuthContext from "@/context/AuthContext";
 import PageContentContext from "@/context/PageContentContext";
 import { header } from "@/i18n";
-import { useRouter } from "next/router";
+import { useLocale } from "i18n/useLocale";
 
 export default function Header() {
   const { user, logout } = useContext(AuthContext);
   const { pageContent } = useContext(PageContentContext);
-  const [brandImage, setBrandImage] = useState(null);
+  const [brandImage, setBrandImage] = useState<string | null>(null);
   const [brandWidth, setBrandWidth] = useState("112");
   const [brandHeight, setBrandHeight] = useState("112");
-  const { locale } = useRouter();
+  const locale = useLocale();
+  const isSchoolAdmin = user?.role?.name.toLowerCase() === "schooladmin";
+  const isAdmin = user?.role?.name.toLowerCase() === "admin";
+  const showAdminMenu = isSchoolAdmin || isAdmin;
 
   useEffect(() => {
-    setBrandImage(
-      pageContent?.navbar_brand?.data?.attributes?.formats.thumbnail.url ??
-        pageContent?.brandImage
-    );
-    setBrandWidth(
-      pageContent?.navbar_brand?.data?.attributes?.formats.thumbnail.width ??
-        "112"
-    );
+    setBrandImage(pageContent?.navbar_brand?.formats.thumbnail.url ?? null);
+    setBrandWidth(pageContent?.navbar_brand?.formats.thumbnail.width ?? "112");
     setBrandHeight(
-      pageContent?.navbar_brand?.data?.attributes?.formats.thumbnail.height ??
-        "112"
+      pageContent?.navbar_brand?.formats.thumbnail.height ?? "112"
     );
   }, [pageContent]);
 
@@ -77,10 +73,9 @@ export default function Header() {
           className={`navbar-menu ml-4 ${isActive ? "is-active" : ""}`}
         >
           <div className="navbar-end">
-            {user &&
-              (user.role?.name.toLowerCase() === "schooladmin" ||
-                user.role?.name.toLowerCase() === "admin") && (
-                <Link href="/admin/dashboard">
+            {showAdminMenu && (
+              <div className="navbar-item mx-4 has-dropdown is-hoverable">
+                <Link href="/admin/schools/dashboard">
                   <a
                     className="navbar-item mx-2"
                     onClick={() => setIsActive(false)}
@@ -88,7 +83,29 @@ export default function Header() {
                     {header[locale].admin}
                   </a>
                 </Link>
-              )}
+
+                <div className="navbar-dropdown">
+                  <Link href="/admin/schools/dashboard">
+                    <a
+                      className="navbar-item mx-2"
+                      onClick={() => setIsActive(false)}
+                    >
+                      {header[locale].adminSchools}
+                    </a>
+                  </Link>
+                  {isAdmin && (
+                    <Link href="/admin/staff/dashboard">
+                      <a
+                        className="navbar-item mx-2"
+                        onClick={() => setIsActive(false)}
+                      >
+                        {header[locale].adminStaff}
+                      </a>
+                    </Link>
+                  )}
+                </div>
+              </div>
+            )}
             <Link href="/">
               <a
                 className="navbar-item mx-2"

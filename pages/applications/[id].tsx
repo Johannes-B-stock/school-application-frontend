@@ -2,9 +2,9 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import qs from "qs";
 import { API_URL } from "@/config/index";
-import { useState, useEffect, useContext, useRef } from "react";
+import { useState, useEffect, useContext, ChangeEvent } from "react";
 import styles from "@/styles/Application.module.css";
-import { parseCookie } from "@/helpers/index";
+import { formatCurrency, parseCookie } from "lib/utils";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { toast } from "react-toastify";
 import { faAddressCard } from "@fortawesome/free-regular-svg-icons";
@@ -28,14 +28,22 @@ import GenderSelect from "@/components/common/GenderSelect";
 import UserDetailsEdit from "@/components/user/UserDetailsEdit";
 import { faStripe } from "@fortawesome/free-brands-svg-icons";
 import { general, profile, schoolApplicationDetails } from "@/i18n";
+import { ApiError, SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import { SchoolApplication } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
+import { GetServerSideProps } from "next";
 
-export default function ApplicationPage({ application, error, token }) {
+export default function ApplicationPage({
+  application,
+  error,
+  token,
+}: {
+  application: SchoolApplication;
+  error?: ApiError;
+  token: string;
+}) {
   const router = useRouter();
-  useEffect(() => {
-    if (error) {
-      toast.error(`${error.status} - ${error.message}`);
-    }
-  }, [router, error]);
+  const locale = useLocale();
   const { user } = useContext(AuthContext);
   const [applicationEdit, setApplicationEdit] = useState(application);
   const [isLoadingNext, setIsLoadingNext] = useState(false);
@@ -43,35 +51,41 @@ export default function ApplicationPage({ application, error, token }) {
   const [userEdit, setUserEdit] = useState(user);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [reference1Send, setReference1Send] = useState<boolean>(
-    application?.reference1?.data?.attributes.emailSend ?? false
+    application?.reference1?.emailSend ?? false
   );
   const [reference2Send, setReference2Send] = useState<boolean>(
-    application?.reference2?.data?.attributes.emailSend ?? false
+    application?.reference2?.emailSend ?? false
   );
+
+  useEffect(() => {
+    if (error) {
+      toast.error(`${error.status} - ${error.message}`);
+    }
+  }, [router, error]);
 
   if (!application) {
     router.push("/404");
     return;
   }
-  if (application.user.data.id !== user?.id) {
+  if (application?.user && application.user.id !== user?.id) {
     return <NotAuthorized />;
   }
 
-  let addressSaveFunction = undefined;
+  let addressSaveFunction: (() => Promise<void>) | undefined = undefined;
 
-  function bindAddressSave(saveFunction) {
+  function bindAddressSave(saveFunction: () => Promise<void>) {
     addressSaveFunction = saveFunction;
   }
-  let questionSaveFunction: () => Promise<void> = undefined;
+  let questionSaveFunction: (() => Promise<void>) | undefined = undefined;
   function bindQuestionSave(saveFunction: () => Promise<void>) {
     questionSaveFunction = saveFunction;
   }
-  let userDetailsSaveFunction: () => Promise<void> = undefined;
+  let userDetailsSaveFunction: (() => Promise<void>) | undefined = undefined;
   function bindUserDetailsSave(saveFunction: () => Promise<void>) {
     userDetailsSaveFunction = saveFunction;
   }
 
-  const goToStep = async (step) => {
+  const goToStep = async (step: number) => {
     if (step == null || application.step < step || step < 0) {
       return;
     }
@@ -114,7 +128,6 @@ export default function ApplicationPage({ application, error, token }) {
             throw new Error("can not save user details!");
           }
           await userDetailsSaveFunction();
-          toast.success("User data successfully updated");
         }
         if (applicationEdit.step === 1) {
           if (!questionSaveFunction) {
@@ -135,14 +148,14 @@ export default function ApplicationPage({ application, error, token }) {
       if (nextStep > application.step) {
         application.step = nextStep;
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message ?? error);
     } finally {
       setIsLoadingNext(false);
     }
   };
 
-  async function handleStepUpdate(nextStep) {
+  async function handleStepUpdate(nextStep: number) {
     if (nextStep > applicationEdit.step) {
       const updateStepResult = await updateStep(
         application.id,
@@ -155,7 +168,7 @@ export default function ApplicationPage({ application, error, token }) {
           step: nextStep,
         });
       } else {
-        toast.error(updateStepResult.errorMessage);
+        throw new Error(updateStepResult.errorMessage);
       }
     } else {
       setApplicationEdit({
@@ -165,22 +178,24 @@ export default function ApplicationPage({ application, error, token }) {
     }
   }
 
-  const handleUserInputChange = (e) => {
+  const handleUserInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setUserEdit({ ...userEdit, [name]: value });
+    if (userEdit) {
+      setUserEdit({ ...userEdit, [name]: value });
+    }
   };
 
   async function saveUserEdit() {
-    if (!userEdit.firstname) {
+    if (!userEdit?.firstname) {
       throw new Error("Please fill in your first name");
     }
-    if (!userEdit.lastname) {
+    if (!userEdit?.lastname) {
       throw new Error("Please fill in your last name");
     }
-    if (!userEdit.gender) {
+    if (!userEdit?.gender) {
       throw new Error("Please fill in your gender");
     }
-    if (!userEdit.birthday) {
+    if (!userEdit?.birthday) {
       throw new Error("Please fill in your birthday");
     }
     await updateMe(userEdit, token);
@@ -196,7 +211,7 @@ export default function ApplicationPage({ application, error, token }) {
       setApplicationEdit({ ...applicationEdit, state: "submitted" });
 
       toast.success("Successfully submitted!");
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message);
     } finally {
       setSubmitLoading(false);
@@ -204,7 +219,7 @@ export default function ApplicationPage({ application, error, token }) {
   };
 
   const handlePayment = async () => {
-    const productId = application?.school.data.attributes.stripeAppFeeId;
+    const productId = application?.school.stripeAppFeeId;
     const getProductApi = API_URL + "/strapi-stripe/getProduct/" + productId;
     const checkoutSessionUrl =
       API_URL + "/strapi-stripe/createCheckoutSession/";
@@ -243,36 +258,39 @@ export default function ApplicationPage({ application, error, token }) {
   return (
     <div className="content has-text-centered">
       <h1>
-        {schoolApplicationDetails[router.locale].title.replace(
+        {schoolApplicationDetails[locale].title.replace(
           "{0}",
-          application?.school.data.attributes.name
+          application?.school.name
         )}
       </h1>
       <p>
-        {schoolApplicationDetails[router.locale].subtitle1.replace(
+        {schoolApplicationDetails[locale].subtitle1.replace(
           "{0}",
-          application?.school.data.attributes.name
+          application?.school.name
         )}
       </p>
       <p>
-        {schoolApplicationDetails[router.locale].subtitle2.replace(
+        {schoolApplicationDetails[locale].subtitle2.replace(
           "{0}",
-          application?.school.data.attributes.applicationFee
+          formatCurrency(
+            locale,
+            application.school.currency,
+            +application?.school.applicationFee
+          )
         )}
       </p>
-      {application?.school.data.attributes.stripeAppFeeId && (
+      {application?.school.stripeAppFeeId && (
         <div className="button is-link mb-2" onClick={handlePayment}>
           <FontAwesomeIcon icon={faStripe} className="icon mr-3" />
-          {schoolApplicationDetails[router.locale].feeButton}
+          {schoolApplicationDetails[locale].feeButton}
         </div>
       )}
       <div>
-        {schoolApplicationDetails[router.locale].subtitle3.split("{0}")[0]}
-        <Link href={`/schools/${application?.school.data.id}`}>
-          <a>{schoolApplicationDetails[router.locale].here}</a>
+        {schoolApplicationDetails[locale].subtitle3.split("{0}")[0]}
+        <Link href={`/schools/${application?.school.id}`}>
+          <a>{schoolApplicationDetails[locale].here}</a>
         </Link>
-        {schoolApplicationDetails[router.locale].subtitle3.split("{0}")[1] ??
-          ""}
+        {schoolApplicationDetails[locale].subtitle3.split("{0}")[1] ?? ""}
       </div>
       <br />
       <br />
@@ -293,10 +311,10 @@ export default function ApplicationPage({ application, error, token }) {
           </div>
           <div className="step-details">
             <p className="step-title is-hidden-mobile">
-              {schoolApplicationDetails[router.locale].step1Title}
+              {schoolApplicationDetails[locale].step1Title}
             </p>
             <p className="is-hidden-mobile">
-              {schoolApplicationDetails[router.locale].step1Desc}
+              {schoolApplicationDetails[locale].step1Desc}
             </p>
           </div>
         </div>
@@ -313,10 +331,10 @@ export default function ApplicationPage({ application, error, token }) {
           </div>
           <div className="step-details">
             <p className="step-title is-hidden-mobile">
-              {schoolApplicationDetails[router.locale].step2Title}
+              {schoolApplicationDetails[locale].step2Title}
             </p>
             <p className="is-hidden-mobile">
-              {schoolApplicationDetails[router.locale].step2Desc}
+              {schoolApplicationDetails[locale].step2Desc}
             </p>
           </div>
         </div>
@@ -333,11 +351,11 @@ export default function ApplicationPage({ application, error, token }) {
           </div>
           <div className="step-details">
             <p className="step-title is-hidden-mobile">
-              {schoolApplicationDetails[router.locale].step3Title}
+              {schoolApplicationDetails[locale].step3Title}
             </p>
 
             <p className="is-hidden-mobile">
-              {schoolApplicationDetails[router.locale].step3Desc}
+              {schoolApplicationDetails[locale].step3Desc}
             </p>
           </div>
         </div>
@@ -358,10 +376,10 @@ export default function ApplicationPage({ application, error, token }) {
           </div>
           <div className="step-details">
             <p className="step-title is-hidden-mobile">
-              {schoolApplicationDetails[router.locale].step4Title}
+              {schoolApplicationDetails[locale].step4Title}
             </p>
             <p className="is-hidden-mobile">
-              {schoolApplicationDetails[router.locale].step4Desc}
+              {schoolApplicationDetails[locale].step4Desc}
             </p>
           </div>
         </div>
@@ -382,14 +400,12 @@ export default function ApplicationPage({ application, error, token }) {
             }`}
           >
             <h1 className="title is-4 has-text-left">
-              {profile[router.locale].personal}
+              {profile[locale].personal}
             </h1>
             <form className="has-text-left longer-form-labels">
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">
-                    {profile[router.locale].name}*:
-                  </label>
+                  <label className="label">{profile[locale].name}*:</label>
                 </div>
                 <div className="field-body">
                   <div className="field">
@@ -438,25 +454,21 @@ export default function ApplicationPage({ application, error, token }) {
               </div>
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">
-                    {profile[router.locale].gender}*:
-                  </label>
+                  <label className="label">{profile[locale].gender}*:</label>
                 </div>
                 <div className="field-body">
                   <div className="field">
                     <GenderSelect
                       value={userEdit?.gender}
                       onInputChange={handleUserInputChange}
-                      locale={router.locale}
+                      locale={locale}
                     />
                   </div>
                 </div>
               </div>
               <div className="field is-horizontal">
                 <div className="field-label is-normal">
-                  <label className="label">
-                    {profile[router.locale].birthdate}*:
-                  </label>
+                  <label className="label">{profile[locale].birthdate}*:</label>
                 </div>
                 <div className="field-body">
                   <div className="field">
@@ -478,23 +490,26 @@ export default function ApplicationPage({ application, error, token }) {
             </form>
             <br />
             <UserDetailsEdit
-              userDetails={user.details}
+              userDetails={user?.details}
               token={token}
               allowEdit={true}
               showSave={false}
               setSaveFunction={bindUserDetailsSave}
             />
             <h1 className="title is-4 has-text-left my-6">
-              {profile[router.locale].address}
+              {profile[locale].address}
             </h1>
-            <AddressEdit
-              token={token}
-              user={userEdit}
-              address={application.user.data.attributes.address.data}
-              alwaysEdit={true}
-              noButtons={true}
-              bindSave={bindAddressSave}
-            />
+            {userEdit && (
+              <AddressEdit
+                token={token}
+                user={userEdit}
+                address={application?.user?.address}
+                addressId={application?.user?.address?.id}
+                alwaysEdit={true}
+                noButtons={true}
+                bindSave={bindAddressSave}
+              />
+            )}
           </div>
           <div
             className={`step-content has-text-centered ${
@@ -504,7 +519,7 @@ export default function ApplicationPage({ application, error, token }) {
             }`}
           >
             <ApplicationQuestions
-              answerDetails={application.answers.data}
+              answerDetails={application.answers ?? []}
               bindSave={bindQuestionSave}
               disabled={applicationEdit.state !== "created"}
               token={token}
@@ -518,16 +533,14 @@ export default function ApplicationPage({ application, error, token }) {
             }`}
           >
             <h1 className="title is-4">
-              {schoolApplicationDetails[router.locale].pickReferences}
+              {schoolApplicationDetails[locale].pickReferences}
             </h1>
             <br />
             <ReferenceForm
               application={application}
               user={user}
-              token={token}
               reference1Send={setReference1Send}
               reference2Send={setReference2Send}
-              schoolReference={true}
             />
           </div>
           <div
@@ -550,7 +563,7 @@ export default function ApplicationPage({ application, error, token }) {
               className={`button is-light ${isLoadingBack ? "is-loading" : ""}`}
               disabled={applicationEdit.step === 0 ? true : false}
             >
-              {general.buttons[router.locale].previous}
+              {general.buttons[locale].previous}
             </button>
           </div>
           <div className="steps-action">
@@ -562,7 +575,7 @@ export default function ApplicationPage({ application, error, token }) {
               }`}
               disabled={applicationEdit.step > 2 ? true : false}
             >
-              {general.buttons[router.locale].next}
+              {general.buttons[locale].next}
             </button>
           </div>
         </div>
@@ -571,8 +584,17 @@ export default function ApplicationPage({ application, error, token }) {
   );
 }
 
-export async function getServerSideProps({ params: { id }, req }) {
-  let query = qs.stringify({
+export const getServerSideProps: GetServerSideProps = async ({
+  params,
+  req,
+}) => {
+  const paramsId = params?.id;
+  if (!paramsId) {
+    throw new Error("No Id given!");
+  }
+  const id = typeof paramsId !== "string" ? paramsId[0] : paramsId;
+
+  const query = qs.stringify({
     populate: {
       answers: {
         populate: {
@@ -598,23 +620,19 @@ export async function getServerSideProps({ params: { id }, req }) {
       Authorization: `Bearer ${token}`,
     },
   });
-  const result = await res.json();
-  if (!res.ok) {
+  const result = (await res.json()) as SingleDataResponse<SchoolApplication>;
+  if (!res.ok || !result.data) {
     return {
       props: {
         error: result.error,
       },
     };
   }
-  let application = {
-    id: result.data.id,
-    ...result.data.attributes,
-  };
 
   return {
     props: {
-      application,
+      application: result.data,
       token,
     },
   };
-}
+};

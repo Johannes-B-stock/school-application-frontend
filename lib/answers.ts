@@ -1,20 +1,16 @@
 import { API_URL } from "../config";
-import axios from "axios";
-import qs from "qs";
-import { Answer, Data } from "definitions/backend";
+import { Answer } from "api-definitions/backend";
 
-export async function submitAnswers(answers: Data<Answer>[], token: string) {
+export async function submitAnswers(answers: Answer[], token: string) {
   const requiredNotAnswered = answers.some(
-    (answer) =>
-      answer.attributes.question.data.attributes.required &&
-      !answer.attributes.answer
+    (answer) => answer.question.required && !answer.answer
   );
 
   if (requiredNotAnswered) {
     throw new Error("Please answer all required questions before continuing");
   }
 
-  return Promise.all(
+  await Promise.all(
     answers.map(async (answer) => {
       const answerRes = await fetch(`${API_URL}/api/answers/${answer.id}`, {
         method: "PUT",
@@ -24,7 +20,7 @@ export async function submitAnswers(answers: Data<Answer>[], token: string) {
         },
         body: JSON.stringify({
           data: {
-            answer: answer.attributes.answer,
+            answer: answer.answer,
           },
         }),
       });
@@ -36,33 +32,4 @@ export async function submitAnswers(answers: Data<Answer>[], token: string) {
       }
     })
   );
-}
-
-export async function getSchoolApplicationAnswerDetails(
-  answers: Data<Answer>[],
-  token: string
-) {
-  const query = qs.stringify({
-    populate: ["question"],
-  });
-
-  if (!answers) {
-    throw new Error("Answers not defined!");
-  }
-
-  const questions = await Promise.all(
-    answers.map(async (answer) => {
-      const answerDetails = await axios.get(
-        `${API_URL}/api/answers/${answer.id}?${query}`,
-        {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return answerDetails.data;
-    })
-  );
-  return questions;
 }

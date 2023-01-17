@@ -1,4 +1,4 @@
-import { parseCookie } from "@/helpers/index";
+import { parseCookie } from "lib/utils";
 import { getMyDetails } from "lib/user";
 import { NextApiRequest, NextApiResponse } from "next";
 

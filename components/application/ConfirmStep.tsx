@@ -1,12 +1,17 @@
 import { applicationDetails, general } from "@/i18n";
-import { useRouter } from "next/router";
+import { ApplicationState } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 
 export default function ConfirmStep({
   applicationState,
   submitApplication,
   submitLoading,
+}: {
+  applicationState: ApplicationState;
+  submitApplication: () => Promise<void>;
+  submitLoading: boolean;
 }) {
-  const { locale } = useRouter();
+  const locale = useLocale();
   return (
     <>
       {applicationState === "created" && (

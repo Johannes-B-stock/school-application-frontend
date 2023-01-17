@@ -1,3 +1,4 @@
+import { Locales } from "@/config/index";
 import { profile } from "@/i18n";
 import {
   faMars,
@@ -6,7 +7,15 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export default function GenderSelect({ value, onInputChange, locale }) {
+export default function GenderSelect({
+  value,
+  onInputChange,
+  locale,
+}: {
+  value?: string;
+  onInputChange: (e: any) => void;
+  locale: Locales;
+}) {
   return (
     <div className="control is-expanded has-icons-left">
       <div className="select">

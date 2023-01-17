@@ -1,14 +1,16 @@
 import { profileSidebar } from "@/i18n";
+import { useLocale } from "i18n/useLocale";
 import Link from "next/link";
 import { useRouter } from "next/router";
 
 export default function ProfileSidebar() {
   const router = useRouter();
+  const locale = useLocale();
 
   return (
     <aside className="menu">
       <ul className="menu-list">
-        <p className="menu-label">{profileSidebar[router.locale].general}</p>
+        <p className="menu-label">{profileSidebar[locale].general}</p>
         <li>
           <Link href="/user/profile">
             <a
@@ -16,7 +18,7 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/profile" ? "is-active" : ""
               }`}
             >
-              {profileSidebar[router.locale].profile}
+              {profileSidebar[locale].profile}
             </a>
           </Link>
         </li>
@@ -27,7 +29,7 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/address" ? "is-active" : ""
               }`}
             >
-              {profileSidebar[router.locale].addresses}
+              {profileSidebar[locale].addresses}
             </a>
           </Link>
         </li>
@@ -38,11 +40,11 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/settings" ? "is-active" : ""
               }`}
             >
-              {profileSidebar[router.locale].settings}
+              {profileSidebar[locale].settings}
             </a>
           </Link>
         </li>
-        <p className="menu-label">{profileSidebar[router.locale].schools}</p>
+        <p className="menu-label">{profileSidebar[locale].schools}</p>
         <li>
           <Link href="/user/applications">
             <a
@@ -50,7 +52,7 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/applications" ? "is-active" : ""
               }`}
             >
-              {profileSidebar[router.locale].applications}
+              {profileSidebar[locale].applications}
             </a>
           </Link>
         </li>
@@ -61,7 +63,7 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/schools" ? "is-active" : ""
               }`}
             >
-              {profileSidebar[router.locale].mySchools}
+              {profileSidebar[locale].mySchools}
             </a>
           </Link>
         </li>

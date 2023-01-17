@@ -1,6 +1,7 @@
-import { API_URL } from "@/config/index";
+import { API_URL, COOKIE_NAME } from "@/config/index";
 import cookie from "cookie";
 import { getMyDetails } from "lib/user";
+import { parseCookie } from "lib/utils";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function googleCallback(
@@ -17,15 +18,15 @@ export default async function googleCallback(
       const data = await strapiRes.json();
 
       if (strapiRes.ok) {
-        // if (parseCookie(req).CookieConsent !== "true") {
-        //   throw new Error("Can not set cookie because cookies are not allowed");
-        // }
+        if (parseCookie(req).CookieConsent !== "true") {
+          throw new Error("Can not set cookie because cookies are not allowed");
+        }
         res.setHeader(
           "Set-Cookie",
-          cookie.serialize("token", data.jwt, {
+          cookie.serialize(COOKIE_NAME, data.jwt, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== "development",
-            maxAge: 60 * 60 * 24 * 7, // 1 week
+            maxAge: 60 * 60 * 24, // 1 day
             sameSite: "strict",
             path: "/",
           })
@@ -35,7 +36,7 @@ export default async function googleCallback(
       } else {
         res.status(strapiRes.status).json({ message: data.error.message });
       }
-    } catch (error) {
+    } catch (error: any) {
       res.status(405).json({
         message:
           error?.message ?? error ?? "already registered with another provider",

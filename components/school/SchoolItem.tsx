@@ -3,18 +3,20 @@ import Image from "next/image";
 import styles from "@/styles/SchoolItem.module.css";
 import { useRouter } from "next/router";
 import { general, home } from "@/i18n";
+import { School } from "api-definitions/backend";
+import { useLocale } from "i18n/useLocale";
 
-export default function SchoolItem({ school }) {
+export default function SchoolItem({ school }: { school: School }) {
   const router = useRouter();
-  const locale = router.locale.split("-")[0];
-  const useLocale = router.locale !== router.defaultLocale;
+  const locale = useLocale();
+  const useLocalized = router.locale !== router.defaultLocale;
   let schoolInfo = school;
-  if (useLocale) {
-    const localizedSchool = school.localizations.data.find(
-      (schoolLocalization) => schoolLocalization.attributes.locale === locale
+  if (useLocalized) {
+    const localizedSchool = school.localizations?.find(
+      (schoolLocalization) => schoolLocalization.locale === locale
     );
     if (localizedSchool) {
-      schoolInfo = localizedSchool.attributes;
+      schoolInfo = localizedSchool;
     }
   }
 

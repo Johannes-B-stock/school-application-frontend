@@ -1,10 +1,8 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 import AuthContext from "@/context/AuthContext";
-import { useContext, useState, useMemo } from "react";
-import { useRouter } from "next/router";
+import { useContext, useState, ChangeEvent, MouseEvent } from "react";
 import { API_URL } from "@/config/index";
 import { toast } from "react-toastify";
-import countries from "i18n-iso-countries";
-import Select from "react-select";
 import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -16,65 +14,70 @@ import {
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { address as addressi18n, general } from "@/i18n";
-
-countries.registerLocale(require("i18n-iso-countries/langs/en.json"));
-countries.registerLocale(require("i18n-iso-countries/langs/fr.json"));
-countries.registerLocale(require("i18n-iso-countries/langs/de.json"));
+import { Address, User } from "api-definitions/backend";
+import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import { useLocale } from "i18n/useLocale";
+import CountrySelect, { allCountries } from "../common/CountrySelect";
 
 export default function AddressEdit({
   token,
   user,
   address,
+  addressId,
   alwaysEdit = false,
   noButtons = false,
-  bindSave = null,
+  bindSave = undefined,
   isEmergencyAddress = false,
+}: {
+  token: string;
+  user: User;
+  address?: Address;
+  addressId?: number;
+  alwaysEdit?: boolean;
+  noButtons?: boolean;
+  bindSave?: (save: any) => any;
+  isEmergencyAddress?: boolean;
 }) {
-  const router = useRouter();
+  const locale = useLocale();
 
   const { setUser } = useContext(AuthContext);
-  const [addressEdit, setAddressEdit] = useState(
-    address?.attributes ?? address
+  const [updatedAddress, setUpdatedAddress] = useState<Address | undefined>(
+    address
+  );
+  const defaultName = isEmergencyAddress
+    ? undefined
+    : { firstname: user.firstname, lastname: user.lastname };
+  const [addressEdit, setAddressEdit] = useState<Partial<Address> | undefined>(
+    updatedAddress ?? defaultName
   );
 
-  const [countryEdit, setCountryEdit] = useState({
-    value: addressEdit?.country,
-    label: countries.getName(addressEdit?.country, router.locale.split("-")[0]),
-  });
   const [allowAddressEdit, setAllowAddressEdit] = useState(alwaysEdit ?? false);
-  const countryList = useMemo(
-    () =>
-      Object.keys(countries.getNames(router.locale ?? "en")).map((key) => ({
-        value: key,
-        label: countries.getName(key, router.locale ?? "en"),
-      })),
-    [router.locale]
-  );
 
-  const handleAddressInputChange = (e) => {
+  const handleAddressInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setAddressEdit({ ...addressEdit, [name]: value });
+    if (addressEdit) {
+      setAddressEdit({ ...addressEdit, [name]: value });
+    } else {
+      setAddressEdit({ [name]: value });
+    }
   };
 
-  const handleCountryInputChange = (country) => {
-    setCountryEdit(country);
-    setAddressEdit({ ...addressEdit, country: country.value });
+  const handleCountryInputChange = (country: string | undefined) => {
+    setAddressEdit({ ...addressEdit, country });
   };
 
-  const onSaveAddress = async (e) => {
+  const onSaveAddress = async (e: MouseEvent<HTMLDivElement>) => {
     e?.preventDefault();
 
     const newAddress = {
       ...addressEdit,
-      firstname: addressEdit.firstname || user.firstname,
-      lastname: addressEdit.lastname || user.lastname,
+      firstname: addressEdit?.firstname || user.firstname,
+      lastname: addressEdit?.lastname || user.lastname,
     };
 
-    const hasSomeEmptyValues = Object.values(newAddress).some(
-      (value) => value === ""
-    );
+    const addressComplete = checkIfAddressComplete(newAddress);
 
-    if (hasSomeEmptyValues) {
+    if (!addressComplete) {
       if (noButtons) {
         throw new Error("Please fill in all fields!");
       } else {
@@ -82,42 +85,43 @@ export default function AddressEdit({
         return;
       }
     }
-    if (!address) {
+    if (!address || !addressId) {
       const addressResult = await createNewAddress(addressEdit);
+      setUpdatedAddress(addressResult);
       !alwaysEdit && setAllowAddressEdit(false);
-      setUser({ ...user, address: addressResult.data.attributes });
+      if (isEmergencyAddress) {
+        setUser({ ...user, emergency_address: addressResult });
+      } else {
+        setUser({ ...user, address: addressResult });
+      }
     } else {
       // Update existing address
-      const res = await updateAddress(
-        address.id,
-        token,
-        addressEdit,
-        countryEdit
-      );
-      const addressResult = await res.json();
-
-      if (!res.ok) {
-        toast.error(res.statusText ?? "Something went wrong.");
-        if (noButtons) {
-          throw new Error(addressResult.error?.message ?? res.statusText);
-        }
-      } else {
+      try {
+        const addressResult = await updateAddress(
+          addressId,
+          token,
+          addressEdit
+        );
+        setUpdatedAddress(addressResult);
         !alwaysEdit && setAllowAddressEdit(false);
-        setUser({ ...user, address: addressResult.data.attributes });
+        if (isEmergencyAddress) {
+          setUser({ ...user, emergency_address: addressResult });
+        } else {
+          setUser({ ...user, address: addressResult });
+        }
+      } catch (reason: any) {
+        if (noButtons) {
+          throw new Error(reason);
+        }
+        toast.error(reason?.message ?? reason);
       }
     }
   };
 
-  async function createNewAddress(newAddress) {
+  async function createNewAddress(newAddress?: Partial<Address>) {
     const body = {
-      data: {
-        ...newAddress,
-        country: countryEdit.value ?? null,
-      },
+      data: getData(newAddress),
     };
-    if (!isEmergencyAddress) {
-      body.data.user = user.id;
-    }
     // Create new address
     const res = await fetch(`${API_URL}/api/addresses`, {
       method: "POST",
@@ -127,11 +131,13 @@ export default function AddressEdit({
       },
       body: JSON.stringify(body),
     });
-    const addressResult = await res.json();
+    const addressResult = (await res.json()) as SingleDataResponse<Address>;
 
     if (!res.ok) {
       toast.error(
-        addressResult.error.message ?? res.statusText ?? "Something went wrong."
+        addressResult.error?.message ??
+          res.statusText ??
+          "Something went wrong."
       );
       if (noButtons) {
         throw new Error(addressResult.error?.message ?? res.statusText);
@@ -144,7 +150,7 @@ export default function AddressEdit({
           `${API_URL}/api/users/me`,
           {
             data: {
-              emergency_address: addressResult.data.id,
+              emergency_address: addressResult.data?.id,
             },
           },
           {
@@ -156,21 +162,21 @@ export default function AddressEdit({
         )
         .catch((reason) => toast.error(reason.message ?? reason));
     }
-    return addressResult;
+    return addressResult.data;
   }
 
   bindSave && bindSave(onSaveAddress);
 
   const handleAddressEditCancel = () => {
     setAllowAddressEdit(false);
-    setAddressEdit(address);
+    setAddressEdit(updatedAddress ?? defaultName);
   };
 
   return allowAddressEdit ? (
     <form>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">{addressi18n[router.locale].name}*:</label>
+          <label className="label">{addressi18n[locale].name}*:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -178,10 +184,10 @@ export default function AddressEdit({
               <input
                 className={`input ${addressEdit?.firstname ? "" : "is-danger"}`}
                 type="text"
-                placeholder={addressi18n[router.locale].firstName}
+                placeholder={addressi18n[locale].firstName}
                 name="firstname"
                 id="firstname"
-                value={addressEdit?.firstname}
+                value={addressEdit?.firstname ?? ""}
                 onChange={handleAddressInputChange}
               />
               <div className="icon is-small is-left">
@@ -194,10 +200,10 @@ export default function AddressEdit({
               <input
                 className={`input ${addressEdit?.lastname ? "" : "is-danger"}`}
                 type="text"
-                placeholder={addressi18n[router.locale].lastName}
+                placeholder={addressi18n[locale].lastName}
                 name="lastname"
                 id="lastname"
-                value={addressEdit?.lastname}
+                value={addressEdit?.lastname ?? ""}
                 onChange={handleAddressInputChange}
               />
               <div className="icon is-small is-left">
@@ -209,7 +215,7 @@ export default function AddressEdit({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">{addressi18n[router.locale].street}*:</label>
+          <label className="label">{addressi18n[locale].street}*:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -217,10 +223,10 @@ export default function AddressEdit({
               <input
                 className={`input ${addressEdit?.street ? "" : "is-danger"}`}
                 type="text"
-                placeholder={addressi18n[router.locale].street}
+                placeholder={addressi18n[locale].street}
                 name="street"
                 id="street"
-                value={addressEdit?.street}
+                value={addressEdit?.street ?? ""}
                 onChange={handleAddressInputChange}
               />
               <div className="icon is-small is-left">
@@ -233,10 +239,10 @@ export default function AddressEdit({
               <input
                 className={`input ${addressEdit?.number ? "" : "is-danger"}`}
                 type="text"
-                placeholder="#"
+                placeholder={addressi18n[locale].number}
                 name="number"
                 id="number"
-                value={addressEdit?.number}
+                value={addressEdit?.number ?? ""}
                 onChange={handleAddressInputChange}
               />
               <div className="icon is-small is-left">
@@ -248,7 +254,7 @@ export default function AddressEdit({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">{addressi18n[router.locale].city}*:</label>
+          <label className="label">{addressi18n[locale].city}*:</label>
         </div>
         <div className="field-body">
           <div className="field">
@@ -258,8 +264,8 @@ export default function AddressEdit({
                 type="text"
                 id="city"
                 name="city"
-                placeholder={addressi18n[router.locale].city}
-                value={addressEdit?.city}
+                placeholder={addressi18n[locale].city}
+                value={addressEdit?.city ?? ""}
                 onChange={handleAddressInputChange}
               />
               <div className="icon is-small is-left">
@@ -276,8 +282,8 @@ export default function AddressEdit({
                 type="text"
                 id="postalCode"
                 name="postalCode"
-                placeholder={addressi18n[router.locale].postal}
-                value={addressEdit?.postalCode}
+                placeholder={addressi18n[locale].postal}
+                value={addressEdit?.postalCode ?? ""}
                 onChange={handleAddressInputChange}
               />
               <div className="icon is-small is-left">
@@ -289,19 +295,15 @@ export default function AddressEdit({
       </div>
       <div className="field is-horizontal">
         <div className="field-label is-normal">
-          <label className="label">
-            {addressi18n[router.locale].country}*:
-          </label>
+          <label className="label">{addressi18n[locale].country}*:</label>
         </div>
         <div className="field-body">
           <div className="field">
             <div className="control is-expanded has-icons-left">
-              <Select
-                classNamePrefix="select"
-                name="country"
-                value={countryEdit}
-                onChange={handleCountryInputChange}
-                options={countryList}
+              <CountrySelect
+                country={addressEdit?.country}
+                countryChanged={handleCountryInputChange}
+                locale={locale}
               />
               <div className="icon is-small is-left">
                 <FontAwesomeIcon icon={faGlobe} />
@@ -315,13 +317,13 @@ export default function AddressEdit({
         <div className="field is-grouped">
           <div className="control">
             <div className="button is-primary" onClick={onSaveAddress}>
-              {general.buttons[router.locale].save}
+              {general.buttons[locale].save}
             </div>
           </div>
           <div className="control">
             {" "}
             <div className="button" onClick={handleAddressEditCancel}>
-              {general.buttons[router.locale].cancel}
+              {general.buttons[locale].cancel}
             </div>
           </div>
         </div>
@@ -331,37 +333,38 @@ export default function AddressEdit({
     <>
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          {addressi18n[router.locale].name}:
+          {addressi18n[locale].name}:
         </div>
-        <div className="column is-narrow">{addressEdit?.firstname}</div>
-        <div className="column">{addressEdit?.lastname}</div>
+        <div className="column is-narrow">{updatedAddress?.firstname}</div>
+        <div className="column">{updatedAddress?.lastname}</div>
       </div>
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          {addressi18n[router.locale].street}:
+          {addressi18n[locale].street}:
         </div>
-        <div className="column is-narrow">{addressEdit?.street}</div>
-        <div className="column">{addressEdit?.number}</div>
+        <div className="column is-narrow">{updatedAddress?.street}</div>
+        <div className="column">{updatedAddress?.number}</div>
       </div>
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          {addressi18n[router.locale].city}:
+          {addressi18n[locale].city}:
         </div>
-        <div className="column">{addressEdit?.city}</div>
+        <div className="column">{updatedAddress?.city}</div>
       </div>
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          {addressi18n[router.locale].postal}:
+          {addressi18n[locale].postal}:
         </div>
-        <div className="column">{addressEdit?.postalCode}</div>
+        <div className="column">{updatedAddress?.postalCode}</div>
       </div>
 
       <div className="columns">
         <div className="column is-3 has-text-weight-semibold">
-          {addressi18n[router.locale].country}:
+          {addressi18n[locale].country}:
         </div>
         <div className="column">
-          {countries.getName(addressEdit?.country, router.locale.split("-")[0])}
+          {updatedAddress?.country &&
+            allCountries.getName(updatedAddress?.country, locale)}
         </div>
       </div>
       {!noButtons && (
@@ -369,24 +372,58 @@ export default function AddressEdit({
           className="button is-primary"
           onClick={() => setAllowAddressEdit(true)}
         >
-          {general.buttons[router.locale].edit}
+          {general.buttons[locale].edit}
         </div>
       )}
     </>
   );
+
+  function getData(newAddress?: Partial<Address>) {
+    if (!isEmergencyAddress) {
+      return {
+        ...newAddress,
+        user: user.id,
+      };
+    } else {
+      return {
+        ...newAddress,
+      };
+    }
+  }
 }
-async function updateAddress(id, token, addressEdit, countryEdit) {
-  return await fetch(`${API_URL}/api/addresses/${id}`, {
+function checkIfAddressComplete(address: Partial<Address>): boolean {
+  return (
+    address.city != undefined &&
+    address.country != undefined &&
+    address.firstname != undefined &&
+    address.lastname != undefined &&
+    address.number != undefined &&
+    address.postalCode != undefined &&
+    address.street != undefined
+  );
+}
+
+async function updateAddress(
+  id: number,
+  token: string,
+  addressEdit?: Partial<Address>
+) {
+  const fetchResult = await fetch(`${API_URL}/api/addresses/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${token}`,
     },
     body: JSON.stringify({
-      data: {
-        ...addressEdit,
-        country: countryEdit.value ?? null,
-      },
+      data: addressEdit,
     }),
   });
+  if (!fetchResult.ok) {
+    throw new Error(`${fetchResult.status} - ${fetchResult.statusText}`);
+  }
+  const result = (await fetchResult.json()) as SingleDataResponse<Address>;
+  if (result.error) {
+    throw new Error(result.error.message);
+  }
+  return result.data;
 }

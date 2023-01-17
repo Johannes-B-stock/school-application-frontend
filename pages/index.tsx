@@ -1,12 +1,24 @@
 import SchoolItem from "@/components/school/SchoolItem";
 import ApplyForStaffCard from "@/components/application/ApplyForStaffCard";
-import { API_URL } from "@/config/index";
+import { API_URL, Locales } from "@/config/index";
 import qs from "qs";
 import { GetServerSideProps } from "next";
-import { SchoolsResponse } from "definitions/backend";
+import { School, StaffApplicationSetting } from "api-definitions/backend";
 import { home } from "@/i18n";
+import {
+  ArrayDataResponse,
+  SingleDataResponse,
+} from "api-definitions/strapiBaseTypes";
 
-export default function HomePage({ schools, staffApplicationDetails, locale }) {
+export default function HomePage({
+  schools,
+  staffApplicationDetails,
+  locale,
+}: {
+  schools: School[];
+  staffApplicationDetails: StaffApplicationSetting;
+  locale: Locales;
+}) {
   return (
     <div className="content">
       <h1>{home[locale].upcomingSchools}</h1>
@@ -23,20 +35,19 @@ export default function HomePage({ schools, staffApplicationDetails, locale }) {
           </div>
         ))}
       </div>
-      {staffApplicationDetails &&
-        staffApplicationDetails.attributes.allowApplications && (
-          <div>
-            <hr />
-            <h2>{home[locale].others}</h2>
-            <div className="columns is-multiline is-variable">
-              <div className={`column`}>
-                <ApplyForStaffCard
-                  staffApplicationDetails={staffApplicationDetails}
-                />
-              </div>
+      {staffApplicationDetails && staffApplicationDetails.allowApplications && (
+        <div>
+          <hr />
+          <h2>{home[locale].others}</h2>
+          <div className="columns is-multiline is-variable">
+            <div className={`column`}>
+              <ApplyForStaffCard
+                staffApplicationDetails={staffApplicationDetails}
+              />
             </div>
           </div>
-        )}
+        </div>
+      )}
     </div>
   );
 }
@@ -52,12 +63,8 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
     sort: ["startDate", "name"],
   });
   const res = await fetch(`${API_URL}/api/schools?${query}`);
-  const result = (await res.json()) as SchoolsResponse;
-  const schools = result.data.map((data) => ({
-    id: data.id,
-    ...data.attributes,
-    image: data.attributes.image?.data?.attributes.formats.small ?? null,
-  }));
+  const result = (await res.json()) as ArrayDataResponse<School>;
+  const schools = result.data;
 
   const staffQuery = qs.stringify({
     populate: ["cardImage", "localizations"],
@@ -66,9 +73,10 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
   const fetchRes = await fetch(
     `${API_URL}/api/staff-application-setting?${staffQuery}`
   );
-  const staffResult = await fetchRes.json();
+  const staffResult =
+    (await fetchRes.json()) as SingleDataResponse<StaffApplicationSetting>;
 
-  const staffApplicationDetails = staffResult.data ?? null;
+  const staffApplicationDetails = staffResult.data;
 
   return {
     props: { schools, staffApplicationDetails, locale },

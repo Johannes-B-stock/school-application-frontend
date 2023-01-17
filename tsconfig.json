@@ -1,10 +1,11 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "ESNext",
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,
     "skipLibCheck": true,
-    "strict": false,
+    "strict": true,
+    "strictNullChecks": true,
     "forceConsistentCasingInFileNames": true,
     "noEmit": true,
     "incremental": true,
@@ -29,8 +30,9 @@
     "**/*.ts",
     "**/*.tsx",
     "components/admin/ApplicationsTable.jsx",
-    "config/index.js",
-    "scripts/create-ico.js"
+    "config/index.ts",
+    "scripts/create-ico.ts",
+    "scripts/create-ico.mjs"
   ],
   "exclude": ["node_modules"]
 }
