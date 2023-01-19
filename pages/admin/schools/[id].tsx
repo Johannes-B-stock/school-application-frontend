@@ -21,8 +21,8 @@ import UserAvatar from "@/components/user/UserAvatar";
 import _ from "lodash";
 import { School, SchoolApplication, User } from "api-definitions/backend";
 import { Pagination } from "api-definitions/strapiBaseTypes";
-import { UserThumbnail } from "./dashboard";
 import { GetServerSideProps } from "next";
+import Currency from "@/components/common/Currency";
 
 export default function SchoolAdmin({
   school,
@@ -208,13 +208,23 @@ export default function SchoolAdmin({
                 <div className="column is-3 has-text-weight-bold">
                   Application Fee:
                 </div>
-                <div className="column">{school.applicationFee}</div>
+                <div className="column">
+                  <Currency
+                    currency={school.currency}
+                    value={+school.applicationFee}
+                  />
+                </div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   School Fee:
                 </div>
-                <div className="column">{school.schoolFee}</div>
+                <div className="column">
+                  <Currency
+                    currency={school.currency}
+                    value={+school.schoolFee}
+                  />
+                </div>
               </div>
               <div
                 className="button is-primary"
@@ -242,13 +252,7 @@ export default function SchoolAdmin({
                       className="column is-narrow has-text-centered"
                       key={student.id}
                     >
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href={`/user/${student.id}`}
-                      >
-                        <UserAvatar user={student} />
-                      </a>
+                      <UserAvatar user={student} />
                     </div>
                   ))}
                 </div>

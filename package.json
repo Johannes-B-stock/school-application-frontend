@@ -23,6 +23,7 @@
     "bulma-steps": "^2.2.1",
     "bulma-switch": "^2.0.4",
     "cookie": "^0.4.2",
+    "currency-list": "^1.0.8",
     "currency-symbol-map": "^5.1.0",
     "i18n-iso-countries": "^7.4.0",
     "lodash": "^4.17.21",

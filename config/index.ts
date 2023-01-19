@@ -12,6 +12,8 @@ export const defaultLocale = fallbackLocale;
 
 export const defaultCurrency = "USD";
 
+export const supportedCurrencies = ["USD", "GBP", "EUR"];
+
 export const LOCALES = ["en", "de"] as const;
 
 type LocalesTuple = typeof LOCALES;

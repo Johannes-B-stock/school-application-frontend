@@ -1,7 +1,7 @@
 import { useState, useContext, FormEvent, ChangeEvent } from "react";
 import styles from "@/styles/Form.module.css";
 import { toast } from "react-toastify";
-import { API_URL } from "@/config/index";
+import { API_URL, defaultCurrency, supportedCurrencies } from "@/config/index";
 import qs from "qs";
 import Image from "next/image";
 import AuthContext from "@/context/AuthContext";
@@ -10,6 +10,9 @@ import { parseCookie } from "lib/utils";
 import { School } from "api-definitions/backend";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
 import { GetServerSideProps } from "next";
+import CurrencyList from "currency-list";
+import currencyToSymbolMap from "currency-symbol-map";
+import { useLocale } from "i18n/useLocale";
 
 export default function EditSchoolPage({
   school,
@@ -19,14 +22,14 @@ export default function EditSchoolPage({
   token: string;
 }) {
   const { user } = useContext(AuthContext);
-
+  const locale = useLocale();
   const [values, setValues] = useState({
     name: school.name,
     description: school.description,
     schoolFee: school.schoolFee,
     applicationFee: school.applicationFee,
     startDate: school.startDate,
-    currency: school.currency ?? "&euro;",
+    currency: school.currency ?? defaultCurrency,
     endDate: school.endDate,
     isPublic: school.isPublic,
     acceptingStudents: school.acceptingStudents,
@@ -35,6 +38,15 @@ export default function EditSchoolPage({
   const [imagePreview, setImagePreview] = useState(
     school.image ? school.image.formats.thumbnail : null
   );
+
+  const currencyOptions = supportedCurrencies.map((code) => {
+    const currencyInfo = CurrencyList.get(code);
+    return {
+      code: currencyInfo.code,
+      symbol: currencyInfo.symbol,
+    };
+  });
+
   const handleUpdate = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -76,7 +88,12 @@ export default function EditSchoolPage({
     setValues({ ...values, [name]: checked });
   };
 
-  return user && user.role?.name === "SchoolAdmin" ? (
+  const isAdmin =
+    user &&
+    (user.role?.name.toLowerCase() === "schooladmin" ||
+      user.role?.name.toLowerCase() === "admin");
+
+  return isAdmin ? (
     <div className="content">
       <h1>Edit School</h1>
       <form
@@ -177,11 +194,12 @@ export default function EditSchoolPage({
                     name="currency"
                     value={values.currency}
                     onChange={handleInputChange}
-                    defaultValue="euro"
                   >
-                    <option value="dollar">$</option>
-                    <option value="pound">&pound;</option>
-                    <option value="euro">&euro;</option>
+                    {currencyOptions.map((option, index) => (
+                      <option key={index} value={option.code}>
+                        {option.symbol}
+                      </option>
+                    ))}
                   </select>
                 </span>
               </p>
@@ -214,9 +232,11 @@ export default function EditSchoolPage({
                     value={values.currency}
                     onChange={handleInputChange}
                   >
-                    <option value="dollar">$</option>
-                    <option value="pound">£</option>
-                    <option value="euro">€</option>
+                    {currencyOptions.map((option, index) => (
+                      <option key={index} value={option.code}>
+                        {option.symbol}
+                      </option>
+                    ))}
                   </select>
                 </span>
               </p>

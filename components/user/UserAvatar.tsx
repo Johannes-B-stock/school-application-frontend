@@ -26,19 +26,22 @@ export default function UserAvatar({
           <FontAwesomeIcon icon={faXmark} />
         </a>
       )}
-      <figure className="image is-50x50 is-rounded">
-        <Image
-          className="image is-50x50 is-rounded"
-          alt={user.username}
-          src={
-            user.picture?.formats.thumbnail?.url ?? "/images/defaultAvatar.png"
-          }
-          objectFit="cover"
-          width="50"
-          height="50"
-        />
-      </figure>
-      <span className="is-size-7">{user.username}</span>
+      <a target="_blank" rel="noreferrer" href={`/user/${user.id}`}>
+        <figure className="image is-50x50 is-rounded">
+          <Image
+            className="image is-50x50 is-rounded"
+            alt={user.username}
+            src={
+              user.picture?.formats.thumbnail?.url ??
+              "/images/defaultAvatar.png"
+            }
+            objectFit="cover"
+            width="50"
+            height="50"
+          />
+        </figure>
+        <span className="is-size-7">{user.username}</span>
+      </a>
     </div>
   );
 }

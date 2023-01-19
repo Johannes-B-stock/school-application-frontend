@@ -25,7 +25,7 @@ export const general = {
       submit: "Absenden",
       delete: "Löschen",
       previous: "Zurück",
-      next: "Nächstes",
+      next: "Weiter",
       yes: "Ja",
       no: "Nein",
       back: "Zurück",

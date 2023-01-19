@@ -73,8 +73,16 @@ export default function Header() {
           className={`navbar-menu ml-4 ${isActive ? "is-active" : ""}`}
         >
           <div className="navbar-end">
+            <Link href="/">
+              <a
+                className="navbar-item mx-2"
+                onClick={() => setIsActive(false)}
+              >
+                {header[locale].home}
+              </a>
+            </Link>
             {showAdminMenu && (
-              <div className="navbar-item mx-4 has-dropdown is-hoverable">
+              <div className="navbar-item mx-2 has-dropdown is-hoverable">
                 <Link href="/admin/schools/dashboard">
                   <a
                     className="navbar-item mx-2"
@@ -106,14 +114,6 @@ export default function Header() {
                 </div>
               </div>
             )}
-            <Link href="/">
-              <a
-                className="navbar-item mx-2"
-                onClick={() => setIsActive(false)}
-              >
-                {header[locale].home}
-              </a>
-            </Link>
             {user && (
               <>
                 <Link href="/user/schools">
@@ -124,7 +124,7 @@ export default function Header() {
                     {header[locale].schools}
                   </a>
                 </Link>
-                <div className="navbar-item mx-4 has-dropdown is-hoverable">
+                <div className="navbar-item mx-2 has-dropdown is-hoverable">
                   <div className="image avatarOuter is-38x38 is-rounded">
                     <Image
                       className="image avatarInner is-38x38 is-rounded "
