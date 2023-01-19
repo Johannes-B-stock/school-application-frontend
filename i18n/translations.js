@@ -602,11 +602,11 @@ export const userSchool = {
 
 export const cookieBanner = {
   en: {
-    text: "By clicking Accept, you agree to the storing of cookies on your device to enhance site navigation.",
+    text: "By clicking Accept, you agree to the storing of mandatory cookies on your device to enhance site navigation.",
     accept: "Accept",
   },
   de: {
-    text: "Durch klicken auf Akzeptieren stimmst du dem Speichern von Cookies zu um die Seitennavigation zu verbessern.",
+    text: "Durch klicken auf Akzeptieren stimmst du dem Speichern von erforderlichen Cookies zu um die Seitennavigation zu verbessern.",
     accept: "Akzeptieren",
   },
 };

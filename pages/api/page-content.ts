@@ -26,6 +26,7 @@ export default async function pageContent(
 
 const pageContentDefault: PageContentData = {
   id: 1,
+  locale: "en",
   createdAt: "01-01-1999",
   updatedAt: "01-01-1999",
   showcaseTitle: "Welcome to the school application page",

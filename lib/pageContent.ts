@@ -6,7 +6,9 @@ import { toUpper } from "lodash";
 import { PageContentData } from "api-definitions/backend";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
 
-const CONTENT_CACHE_PATH = path.resolve(path.join(__dirname, ".pageContent"));
+const CONTENT_CACHE_PATH = path.resolve(
+  path.join(__dirname, "..", "..", "..", "cache", ".pageContent")
+);
 
 export default async function getPageContent(
   locale: string
@@ -24,11 +26,7 @@ export default async function getPageContent(
       const data = await fetchPageContentDataFromDb(locale);
 
       try {
-        fs.writeFileSync(
-          CONTENT_CACHE_PATH + toUpper(locale),
-          JSON.stringify(data),
-          "utf8"
-        );
+        fs.writeFileSync(filePath, JSON.stringify(data), "utf8");
         console.log("Wrote to page content cache");
       } catch (error) {
         console.log("ERROR WRITING PAGE CONTENT CACHE TO FILE");
@@ -50,12 +48,24 @@ async function fetchPageContentDataFromDb(
 ): Promise<PageContentData | undefined> {
   const query = qs.stringify({
     populate: "*",
-    locale: locale,
   });
   const res = await fetch(`${API_URL}/api/page-content?${query}`);
   const jsonResult = (await res.json()) as SingleDataResponse<PageContentData>;
+
+  const localizedResult = jsonResult.data?.localizations?.find(
+    (localization) => localization.locale === locale
+  );
   if (res.ok) {
-    return jsonResult.data;
+    return jsonResult.data
+      ? {
+          ...jsonResult.data,
+          showcaseTitle:
+            localizedResult?.showcaseTitle ?? jsonResult.data.showcaseTitle,
+          showcaseSubtitle:
+            localizedResult?.showcaseSubtitle ??
+            jsonResult.data.showcaseSubtitle,
+        }
+      : undefined;
   } else {
     throw new Error(
       "Couldn't fetch content page data! Reason " + res.statusText

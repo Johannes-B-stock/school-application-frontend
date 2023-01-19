@@ -18,6 +18,8 @@ import { AppProps } from "next/app";
 import { Page } from "types/page";
 import { cookieBanner } from "@/i18n";
 import { useLocale } from "i18n/useLocale";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCookie, faCookieBite } from "@fortawesome/free-solid-svg-icons";
 
 config.autoAddCss = false;
 
@@ -69,13 +71,19 @@ export default function MyApp({ Component, pageProps }: Props) {
       <CookieConsent
         location="bottom"
         buttonText={cookieBanner[locale].accept}
-        style={{ background: "#2B373B", opacity: 0.9 }}
+        style={{
+          background: "#2B373B",
+          opacity: 0.87,
+          width: "auto",
+          right: "0px",
+          minHeight: "100px",
+        }}
         disableButtonStyles={true}
         cookieName="CookieConsent"
-        buttonClasses="button is-primary"
-        containerClasses="is-fixed is-bottom-0 is-right-0 p-8"
-        contentClasses="ml-5"
-        buttonWrapperClasses="buttons is-flex-grow-1 is-left mt-6 mt-0-tablet mr-6 mb-6"
+        buttonClasses="button is-secondary mx-4 mb-4"
+        containerClasses="columns is-vcentered mt-6-tablet"
+        contentClasses="column is-8"
+        buttonWrapperClasses="column is-2 is-offset-5-mobile"
       >
         {cookieBanner[locale].text}
       </CookieConsent>

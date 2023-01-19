@@ -5,3 +5,8 @@
 .dropdownItem {
   padding-right: 1rem !important;
 }
+
+.socials {
+  max-width: 170px;
+  margin: auto;
+}

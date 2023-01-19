@@ -158,7 +158,9 @@ export interface StaffApplicationSetting
   referenceQuestions: QuestionCollection;
 }
 
-export interface PageContentData extends BaseData {
+export interface PageContentData
+  extends BaseData,
+    Localization<PageContentData> {
   showcaseTitle?: string;
   showcaseSubtitle?: string;
   showcase?: Image;
