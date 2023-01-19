@@ -468,6 +468,7 @@ export const login = {
     noAccount: "Don't have an account? ",
     or: "or",
     loginWithGoogle: "Login with Google",
+    loginWithFacebook: "Login with Facebook",
     email: "Email",
     password: "Password",
   },
@@ -480,6 +481,7 @@ export const login = {
     noAccount: "Du hast noch keinen Account? ",
     or: "oder",
     loginWithGoogle: "Mit Google einloggen",
+    loginWithFacebook: "Mit Facebook einloggen",
     email: "Email",
     password: "Passwort",
   },
@@ -533,6 +535,7 @@ export const register = {
     confirmPassword: "Confirm Password",
     alreadyAccount: "Already have an account? ",
     registerWithGoogle: "Register with Google",
+    registerWithFacebook: "Register with Facebook",
   },
   de: {
     title: "Registrieren",
@@ -545,6 +548,7 @@ export const register = {
     confirmPassword: "Passwort bestätigen",
     alreadyAccount: "Du hast schon einen Account? ",
     registerWithGoogle: "Mit Google registrieren",
+    registerWithFacebook: "Mit Facebook registrieren",
   },
 };
 

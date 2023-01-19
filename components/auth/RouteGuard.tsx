@@ -17,6 +17,7 @@ export default function RouteGuard({ children }: { children: any }) {
       "/",
       "/account/register",
       "/account/googleCallback",
+      "/account/facebookCallback",
       "/about",
       "/contact",
       "/references/",

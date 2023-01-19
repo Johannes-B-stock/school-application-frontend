@@ -16,12 +16,13 @@ export default async function register(
     });
     try {
       const data = await strapiRes.json();
-      if (parseCookie(req).CookieConsent !== "true") {
-        throw new Error("Can not set cookie because cookies are not allowed.");
-      }
-      const encryptedToken = encryptToken(data.jwt);
-
       if (strapiRes.ok) {
+        if (parseCookie(req).CookieConsent !== "true") {
+          throw new Error(
+            "Can not set cookie because cookies are not allowed."
+          );
+        }
+        const encryptedToken = encryptToken(data.jwt);
         res.setHeader(
           "Set-Cookie",
           cookie.serialize(COOKIE_NAME, encryptedToken, {

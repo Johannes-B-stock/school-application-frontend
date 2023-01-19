@@ -4,7 +4,7 @@ import { getMyDetails } from "lib/user";
 import { encryptToken, parseCookie } from "lib/utils";
 import { NextApiRequest, NextApiResponse } from "next";
 
-export default async function googleCallback(
+export default async function facebookCallback(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
@@ -12,11 +12,10 @@ export default async function googleCallback(
     try {
       const body = JSON.parse(req.body);
       const strapiRes = await fetch(
-        `${API_URL}/api/auth/google/callback?access_token=${body.access_token}`
+        `${API_URL}/api/auth/facebook/callback?access_token=${body.access_token}`
       );
 
       const data = await strapiRes.json();
-
       if (strapiRes.ok) {
         if (parseCookie(req).CookieConsent !== "true") {
           throw new Error("Can not set cookie because cookies are not allowed");

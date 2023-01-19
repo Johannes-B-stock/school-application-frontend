@@ -16,6 +16,7 @@ export interface IAuthContext {
   setUser: Dispatch<SetStateAction<User | undefined>>;
   error?: string;
   googleCallback: (values: any) => Promise<void>;
+  facebookCallback: (values: any) => Promise<void>;
   register: (user: any) => Promise<void>;
   login: ({
     email,
@@ -90,6 +91,27 @@ export const AuthProvider = ({ children }: { children: any }) => {
   const googleCallback = async (values: object) => {
     try {
       const res = await fetch(`${NEXT_URL}/api/google-callback`, {
+        method: "POST",
+        body: JSON.stringify(values),
+      });
+      const resultData = await res.json();
+      if (res.ok && resultData.user) {
+        setUser(resultData.user);
+        let returnUrl = router.query?.returnUrl ?? "/";
+        if (typeof returnUrl !== "string") returnUrl = returnUrl[0];
+        router.push(returnUrl);
+      } else {
+        setError(resultData?.message);
+      }
+    } catch (error: any) {
+      setError(error?.message ?? error);
+    }
+  };
+
+  // Callback for facebook login
+  const facebookCallback = async (values: object) => {
+    try {
+      const res = await fetch(`${NEXT_URL}/api/auth/facebook-callback`, {
         method: "POST",
         body: JSON.stringify(values),
       });
@@ -202,6 +224,7 @@ export const AuthProvider = ({ children }: { children: any }) => {
         setUser,
         error,
         googleCallback,
+        facebookCallback,
         register,
         login,
         logout,

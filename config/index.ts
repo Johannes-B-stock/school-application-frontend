@@ -13,7 +13,7 @@ export const JWT_CRYPT_KEY =
 
 export const defaultLocale = fallbackLocale;
 
-export const defaultCurrency = "USD";
+export const defaultCurrency = process.env.DEFAULT_CURRENCY || "USD";
 
 export const supportedCurrencies = ["USD", "GBP", "EUR"];
 
