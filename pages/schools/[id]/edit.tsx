@@ -11,7 +11,6 @@ import { School } from "api-definitions/backend";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
 import { GetServerSideProps } from "next";
 import CurrencyList from "currency-list";
-import currencyToSymbolMap from "currency-symbol-map";
 import { useLocale } from "i18n/useLocale";
 
 export default function EditSchoolPage({
@@ -22,7 +21,6 @@ export default function EditSchoolPage({
   token: string;
 }) {
   const { user } = useContext(AuthContext);
-  const locale = useLocale();
   const [values, setValues] = useState({
     name: school.name,
     description: school.description,

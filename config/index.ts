@@ -8,6 +8,9 @@ export const NEXT_URL =
 
 export const COOKIE_NAME = process.env.COOKIE_NAME || "Y-Apply";
 
+export const JWT_CRYPT_KEY =
+  process.env.JWT_CRYPT_KEY || "a87sdzq38greazs87coaosyasd";
+
 export const defaultLocale = fallbackLocale;
 
 export const defaultCurrency = "USD";

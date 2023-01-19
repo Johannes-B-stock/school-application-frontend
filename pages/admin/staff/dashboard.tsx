@@ -74,7 +74,6 @@ export default function StaffDashboardPage({
           token,
           query
         );
-        console.log(allStaffApplications.data);
         if (allStaffApplications.error) {
           toast.error(allStaffApplications.error.message);
           return;

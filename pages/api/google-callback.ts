@@ -1,7 +1,7 @@
 import { API_URL, COOKIE_NAME } from "@/config/index";
 import cookie from "cookie";
 import { getMyDetails } from "lib/user";
-import { parseCookie } from "lib/utils";
+import { encryptToken, parseCookie } from "lib/utils";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export default async function googleCallback(
@@ -21,9 +21,10 @@ export default async function googleCallback(
         if (parseCookie(req).CookieConsent !== "true") {
           throw new Error("Can not set cookie because cookies are not allowed");
         }
+        const encryptedToken = encryptToken(data.jwt);
         res.setHeader(
           "Set-Cookie",
-          cookie.serialize(COOKIE_NAME, data.jwt, {
+          cookie.serialize(COOKIE_NAME, encryptedToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== "development",
             maxAge: 60 * 60 * 24, // 1 day

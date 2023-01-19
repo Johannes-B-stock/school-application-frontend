@@ -13,7 +13,6 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import GoogleSpinner from "@/components/common/GoogleSpinner";
 import { getReferenceAnswers } from "lib/references";
-import { getUser } from "lib/user";
 import Image from "next/image";
 import countries from "i18n-iso-countries";
 import Link from "next/link";
@@ -36,7 +35,7 @@ export default function ApplicationAdminView({
   user,
 }: {
   application: SchoolApplication;
-  token: string;
+  token?: string;
   user: User;
 }) {
   const [showReference1, setShowReference1] = useState(false);
@@ -77,7 +76,10 @@ export default function ApplicationAdminView({
   const reference1 = application.reference1;
   const reference2 = application.reference2;
 
-  const loadAnswers = async (referenceId: number, token: string) => {
+  const loadAnswers = async (referenceId: number) => {
+    if (!token) {
+      return;
+    }
     try {
       referenceId === reference1?.id && setLoadReference1Answers(true);
       referenceId === reference2?.id && setLoadReference2Answers(true);
@@ -94,6 +96,7 @@ export default function ApplicationAdminView({
 
   const deleteApplication = async (id: number) => {
     if (
+      !token ||
       !confirm(
         "Do you really want to delete this application? There is no going back..."
       )
@@ -128,7 +131,7 @@ export default function ApplicationAdminView({
 
   const approveApplication = async (application: SchoolApplication) => {
     try {
-      if (application.state === "approved") {
+      if (!token || application.state === "approved") {
         return;
       }
       await changeState(application, "approved");
@@ -141,6 +144,9 @@ export default function ApplicationAdminView({
     application: Application,
     desiredState: ApplicationState
   ) {
+    if (!token) {
+      return;
+    }
     try {
       await updateState(application.id, token, desiredState);
       toast.success(`Application was successful ${desiredState}`);
@@ -463,7 +469,7 @@ export default function ApplicationAdminView({
                   {!answers1 && (
                     <div
                       className="button is-primary mb-5"
-                      onClick={() => loadAnswers(reference1.id, token)}
+                      onClick={() => loadAnswers(reference1.id)}
                     >
                       Show Questionary
                     </div>
@@ -577,7 +583,7 @@ export default function ApplicationAdminView({
                   {!answers2 && (
                     <div
                       className="button is-primary mb-5"
-                      onClick={() => loadAnswers(reference2.id, token)}
+                      onClick={() => loadAnswers(reference2.id)}
                     >
                       Show Questionary
                     </div>
@@ -613,7 +619,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 }) => {
   const { token } = parseCookie(req);
   let id = params?.id;
-  if (!id) {
+  if (!id || !token) {
     return {
       props: {
         application: undefined,

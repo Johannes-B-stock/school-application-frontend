@@ -94,7 +94,6 @@ export const AuthProvider = ({ children }: { children: any }) => {
         body: JSON.stringify(values),
       });
       const resultData = await res.json();
-
       if (res.ok && resultData.user) {
         setUser(resultData.user);
         let returnUrl = router.query?.returnUrl ?? "/";

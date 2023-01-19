@@ -608,7 +608,7 @@ export const getServerSideProps: GetServerSideProps = async ({
 }) => {
   const { token } = parseCookie(req);
   let id = params?.id;
-  if (!id) {
+  if (!id || !token) {
     return {
       props: {
         application: undefined,

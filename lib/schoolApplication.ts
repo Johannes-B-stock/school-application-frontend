@@ -10,7 +10,6 @@ export async function getApplicationDetails(
   queryObject: object
 ) {
   const query = qs.stringify(queryObject, { encodeValuesOnly: true });
-  console.log(query);
 
   const result = await axios.get<SingleDataResponse<SchoolApplication>>(
     `${API_URL}/api/school-applications/${id}?${query}`,

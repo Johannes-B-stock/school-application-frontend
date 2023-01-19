@@ -150,8 +150,12 @@ export const getServerSideProps: GetServerSideProps = async ({
   if (!id) {
     throw new Error("No school id given");
   }
-
   const { token } = parseCookie(req);
+
+  if (!token) {
+    throw new Error("Not logged in");
+  }
+
   const schoolDetails = await getSchoolDetails(id, token, {
     students: {
       populate: ["picture"],

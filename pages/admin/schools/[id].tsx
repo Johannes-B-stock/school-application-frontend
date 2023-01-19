@@ -12,7 +12,7 @@ import {
   getSchoolDetails,
   removeStaffFromSchool,
 } from "lib/school";
-import { getAllUsers, getUser } from "lib/user";
+import { getAllUsers } from "lib/user";
 import { useContext, useEffect, useState } from "react";
 import { toast } from "react-toastify";
 import { useRouter } from "next/router";
@@ -417,7 +417,7 @@ export const getServerSideProps: GetServerSideProps = async ({
   const id = params?.id;
   const { token } = parseCookie(req);
 
-  if (!id) {
+  if (!id || !token) {
     return {
       props: {
         school: null,

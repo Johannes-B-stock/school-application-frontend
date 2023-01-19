@@ -1,5 +1,5 @@
 import { API_URL, COOKIE_NAME } from "@/config/index";
-import { parseCookie } from "lib/utils";
+import { encryptToken, parseCookie } from "lib/utils";
 import cookie from "cookie";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -19,10 +19,12 @@ export default async function register(
       if (parseCookie(req).CookieConsent !== "true") {
         throw new Error("Can not set cookie because cookies are not allowed.");
       }
+      const encryptedToken = encryptToken(data.jwt);
+
       if (strapiRes.ok) {
         res.setHeader(
           "Set-Cookie",
-          cookie.serialize(COOKIE_NAME, data.jwt, {
+          cookie.serialize(COOKIE_NAME, encryptedToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== "development",
             maxAge: 60 * 60 * 24, // 1 day

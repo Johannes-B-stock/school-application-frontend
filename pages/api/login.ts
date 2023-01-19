@@ -1,5 +1,5 @@
 import { API_URL, COOKIE_NAME } from "@/config/index";
-import { parseCookie } from "lib/utils";
+import { encryptToken, parseCookie } from "lib/utils";
 import cookie from "cookie";
 import { getMyDetails } from "lib/user";
 import { NextApiRequest, NextApiResponse } from "next";
@@ -7,7 +7,6 @@ import { NextApiRequest, NextApiResponse } from "next";
 export default async function login(req: NextApiRequest, res: NextApiResponse) {
   if (req.method === "POST") {
     const { identifier, password } = req.body;
-
     const strapiRes = await fetch(`${API_URL}/api/auth/local`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -21,10 +20,11 @@ export default async function login(req: NextApiRequest, res: NextApiResponse) {
           "Can not store cookie because cookies are not accepted."
         );
       }
+      const encryptedToken = encryptToken(data.jwt);
       if (strapiRes.ok) {
         res.setHeader(
           "Set-Cookie",
-          cookie.serialize(COOKIE_NAME, data.jwt, {
+          cookie.serialize(COOKIE_NAME, encryptedToken, {
             httpOnly: true,
             secure: process.env.NODE_ENV !== "development",
             maxAge: 60 * 60 * 24, // 1 day

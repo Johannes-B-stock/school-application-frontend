@@ -52,6 +52,9 @@ export const getServerSideProps: GetServerSideProps = async ({
   if (!id) {
     throw new Error("No user id given");
   }
+  if (!token) {
+    throw new Error("Not logged in");
+  }
 
   try {
     const user = await getUser(+id, token, ["picture", "role"]);

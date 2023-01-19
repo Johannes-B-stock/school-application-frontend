@@ -44,7 +44,6 @@ export default function ApplicationsTable<
   const hasSchoolApplications = applications.some((app) => "school" in app);
 
   const applicationLink = (application: T) => {
-    console.log(application);
     return application.school !== undefined
       ? "/admin/school-applications"
       : "/admin/staff-applications";
