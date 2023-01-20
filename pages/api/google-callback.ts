@@ -12,7 +12,7 @@ export default async function googleCallback(
     try {
       const body = JSON.parse(req.body);
       const strapiRes = await fetch(
-        `${API_URL}/api/auth/google/callback?access_token=${body.access_token}`
+        `${API_URL}/api/auth/google/callback?access_token=${body.access_token}&id_token=${body.id_token}`
       );
 
       const data = await strapiRes.json();

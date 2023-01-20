@@ -19,6 +19,7 @@ export default function GoogleCallback() {
     if (router.query.access_token) {
       googleCallback({
         access_token: router.query.access_token,
+        id_token: router.query.id_token,
       });
     }
   }, [router.query, googleCallback]);

@@ -132,7 +132,6 @@ export default async function sendReference(
     });
     const result =
       (await updateEmailSendFetch.json()) as SingleDataResponse<Reference>;
-    console.log(result);
 
     if (!updateEmailSendFetch.ok || result.error) {
       res.status(400);
