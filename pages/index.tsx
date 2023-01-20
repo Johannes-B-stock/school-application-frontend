@@ -2,7 +2,7 @@ import SchoolItem from "@/components/school/SchoolItem";
 import ApplyForStaffCard from "@/components/application/ApplyForStaffCard";
 import { API_URL, Locales } from "@/config/index";
 import qs from "qs";
-import { GetServerSideProps } from "next";
+import { GetStaticProps } from "next";
 import { School, StaffApplicationSetting } from "api-definitions/backend";
 import { home } from "@/i18n";
 import {
@@ -52,7 +52,7 @@ export default function HomePage({
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
+export const getStaticProps: GetStaticProps = async ({ locale }) => {
   const query = qs.stringify({
     filters: {
       isPublic: {
@@ -80,5 +80,6 @@ export const getServerSideProps: GetServerSideProps = async ({ locale }) => {
 
   return {
     props: { schools, staffApplicationDetails, locale },
+    revalidate: 10,
   };
 };

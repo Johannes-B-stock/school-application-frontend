@@ -2,13 +2,14 @@ import Layout from "@/components/Layout/Layout";
 import Link from "next/link";
 import { useEffect, useState, useContext, ChangeEvent, FormEvent } from "react";
 import { toast } from "react-toastify";
+import styles from "@/styles/Login.module.css";
 import AuthContext from "@/context/AuthContext";
 import { useRouter } from "next/router";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { API_URL } from "@/config/index";
 import { general, register as t } from "@/i18n";
 import { useLocale } from "i18n/useLocale";
+import { getEnabledProviders } from "lib/auth";
+import SocialButton from "@/components/common/SocialButton";
 
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
@@ -19,9 +20,16 @@ export default function Register() {
     confirmPassword: "",
   });
   const { user, register, error } = useContext(AuthContext);
+  const [providers, setProviders] = useState<string[]>([]);
 
   const router = useRouter();
   const locale = useLocale();
+
+  useEffect(() => {
+    getEnabledProviders()
+      .then((providers) => setProviders(providers))
+      .catch((err) => console.log(err));
+  }, []);
 
   if (user) {
     router.push("/");
@@ -58,7 +66,7 @@ export default function Register() {
   };
   return (
     <div className="columns is-centered has-text-centered ">
-      <div className="column is-5 box p-5">
+      <div className={`column is-5 box p-5 ${styles.registerBox}`}>
         <h1 className="title is-4">{t[locale].title}</h1>
         <p className="description mb-5">{t[locale].description}</p>
         <form onSubmit={onSubmit}>
@@ -133,18 +141,27 @@ export default function Register() {
             </em>
           </small>
         </form>
-        <br />
-        <div className="separator has-text-grey is-italic">{t[locale].or}</div>
-        <br />
-        <button
-          className="button is-light is-fullwidth is-medium"
-          onClick={() => router.push(`${API_URL}/api/connect/google`)}
-        >
-          <span className="icon">
-            <FontAwesomeIcon icon={faGoogle} />
-          </span>
-          <span>{t[locale].registerWithGoogle}</span>
-        </button>
+        <div className="separator has-text-grey is-italic mt-4 mb-5">
+          {t[locale].or}
+        </div>
+
+        {providers.includes("google") && (
+          <>
+            <SocialButton
+              imgSrc="/images/google.png"
+              link={`${API_URL}/api/connect/google`}
+              text={t[locale].registerWithGoogle}
+            />
+            <div className="my-3"></div>
+          </>
+        )}
+        {providers.includes("facebook") && (
+          <SocialButton
+            imgSrc="/images/facebook.png"
+            link={`${API_URL}/api/connect/facebook`}
+            text={t[locale].registerWithFacebook}
+          />
+        )}
       </div>
     </div>
   );

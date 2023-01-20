@@ -7,8 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "yarn gen-ico",
-    "gen-ico": "ts-node -O '{\"module\":\"commonjs\"}' scripts/create-ico.ts"
+    "postbuild": "yarn gen-ico && yarn generate-content-cache",
+    "gen-ico": "ts-node -O '{\"module\":\"commonjs\"}' scripts/create-ico.ts",
+    "generate-content-cache": "ts-node -O '{\"module\":\"commonjs\"}' scripts/generatePageContentCache.ts"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.1",

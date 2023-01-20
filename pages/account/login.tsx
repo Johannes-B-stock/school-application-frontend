@@ -5,13 +5,14 @@ import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
 import { useRouter } from "next/router";
 import { API_URL } from "@/config/index";
+import styles from "@/styles/Login.module.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFacebook, faGoogle } from "@fortawesome/free-brands-svg-icons";
 import { faEnvelope } from "@fortawesome/free-regular-svg-icons";
 import { faLock } from "@fortawesome/free-solid-svg-icons";
 import { general, login as t } from "@/i18n";
 import { useLocale } from "i18n/useLocale";
 import { getEnabledProviders } from "lib/auth";
+import SocialButton from "@/components/common/SocialButton";
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -32,7 +33,7 @@ export default function Login() {
     getEnabledProviders()
       .then((providers) => setProviders(providers))
       .catch((err) => console.log(err));
-  });
+  }, []);
 
   const isRedirecting = router.query["returnUrl"] != undefined;
 
@@ -55,7 +56,7 @@ export default function Login() {
 
   return (
     <div className="columns is-centered has-text-centered ">
-      <div className="column is-5 box p-5">
+      <div className={`column is-5 box p-5 ${styles.loginBox}`}>
         <h1 className="title is-4">{t[locale].title}</h1>
         <p className="description mb-5">
           {isRedirecting
@@ -107,7 +108,7 @@ export default function Login() {
           </div>
           <button
             className={`button is-block is-primary is-fullwidth is-medium ${
-              isLoading && "is-loading"
+              isLoading ? "is-loading" : ""
             }`}
             type="submit"
           >
@@ -123,31 +124,26 @@ export default function Login() {
             </em>
           </small>
         </form>
-        <br />
-        <div className="separator has-text-grey is-italic">{t[locale].or}</div>
-        <br />
+        <div className="separator has-text-grey is-italic mt-4 mb-5">
+          {t[locale].or}
+        </div>
+
         {providers.includes("google") && (
-          <button
-            className="button is-light is-fullwidth is-medium"
-            onClick={() => router.push(`${API_URL}/api/connect/google`)}
-          >
-            <span className="icon">
-              <FontAwesomeIcon icon={faGoogle} />
-            </span>
-            <span>{t[locale].loginWithGoogle}</span>
-          </button>
+          <>
+            <SocialButton
+              imgSrc="/images/google.png"
+              link={`${API_URL}/api/connect/google`}
+              text={t[locale].loginWithGoogle}
+            />
+            <div className="my-3"></div>
+          </>
         )}
-        <div className="my-3"></div>
         {providers.includes("facebook") && (
-          <button
-            className="button is-light is-fullwidth is-medium"
-            onClick={() => router.push(`${API_URL}/api/connect/facebook`)}
-          >
-            <span className="icon">
-              <FontAwesomeIcon icon={faFacebook} />
-            </span>
-            <span>{t[locale].loginWithFacebook}</span>
-          </button>
+          <SocialButton
+            imgSrc="/images/facebook.png"
+            link={`${API_URL}/api/connect/facebook`}
+            text={t[locale].loginWithFacebook}
+          />
         )}
       </div>
     </div>

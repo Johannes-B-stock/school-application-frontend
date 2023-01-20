@@ -5,12 +5,15 @@ import qs from "qs";
 import { toUpper } from "lodash";
 import { PageContentData } from "api-definitions/backend";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import axios from "axios";
 
-const CONTENT_CACHE_PATH = path.resolve(
-  path.join(__dirname, "..", "..", "..", "cache", ".pageContent")
+export const contentFileName = ".pageContent";
+
+export const CONTENT_CACHE_PATH = path.resolve(
+  path.join(__dirname, contentFileName)
 );
 
-export default async function getPageContent(
+export default async function getAndCachePageContent(
   locale: string
 ): Promise<PageContentData | undefined> {
   let cachedData: PageContentData | undefined;
@@ -49,13 +52,15 @@ async function fetchPageContentDataFromDb(
   const query = qs.stringify({
     populate: "*",
   });
-  const res = await fetch(`${API_URL}/api/page-content?${query}`);
-  const jsonResult = (await res.json()) as SingleDataResponse<PageContentData>;
+  const res = await axios.get<SingleDataResponse<PageContentData>>(
+    `${API_URL}/api/page-content?${query}`
+  );
+  const jsonResult = res.data;
 
   const localizedResult = jsonResult.data?.localizations?.find(
     (localization) => localization.locale === locale
   );
-  if (res.ok) {
+  if (res.status === 200) {
     return jsonResult.data
       ? {
           ...jsonResult.data,

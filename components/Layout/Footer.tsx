@@ -7,13 +7,13 @@ import { footer } from "@/i18n";
 import AnimatedModeSwitch from "./AnimatedModeSwitch";
 import { useLocale } from "i18n/useLocale";
 import { LOCALES } from "@/config/index";
-import Image from "next/image";
+import Socials from "./Socials";
 
 export default function Footer() {
   const router = useRouter();
   const locale = useLocale();
   const [langActive, setLangActive] = useState(false);
-  const { triggerSetPageContent, pageContent } = useContext(PageContentContext);
+  const { triggerSetPageContent } = useContext(PageContentContext);
 
   const changeLocale = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -89,62 +89,7 @@ export default function Footer() {
               </div>
             </div>
           </nav>
-          <div className="columns is-centered">
-            <div className="column is-4 is-mobile">
-              <div className={`${styles.socials}`}>
-                <nav className="level">
-                  {pageContent?.facebookLink && (
-                    <span className="level-item has-text-centered">
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href={pageContent.facebookLink}
-                      >
-                        <Image
-                          src="/images/facebook.png"
-                          alt=""
-                          width="27px"
-                          height="27px"
-                        />
-                      </a>
-                    </span>
-                  )}
-                  {pageContent?.twitterLink && (
-                    <span className="level-item has-text-centered">
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href={pageContent?.twitterLink}
-                      >
-                        <Image
-                          src="/images/twitter.png"
-                          alt=""
-                          width="27px"
-                          height="27px"
-                        />
-                      </a>
-                    </span>
-                  )}
-                  {pageContent?.instagramLink && (
-                    <span className="level-item has-text-centered">
-                      <a
-                        target="_blank"
-                        rel="noreferrer"
-                        href={pageContent?.instagramLink}
-                      >
-                        <Image
-                          src="/images/instagram.png"
-                          alt=""
-                          width="27px"
-                          height="27px"
-                        />
-                      </a>
-                    </span>
-                  )}
-                </nav>
-              </div>
-            </div>
-          </div>
+          <Socials />
           <AnimatedModeSwitch size={30} />
 
           <p className="has-text-grey is-size-6">&copy; Johannes Birkenstock</p>

@@ -5,8 +5,8 @@ import fs from "fs";
 import icongen from "icon-gen";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
 import { PageContentData } from "api-definitions/backend";
+import { API_URL } from "../config";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:1337";
 const query = qs.stringify({
   populate: "*",
 });

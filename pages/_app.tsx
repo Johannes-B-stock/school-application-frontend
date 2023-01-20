@@ -18,8 +18,6 @@ import { AppProps } from "next/app";
 import { Page } from "types/page";
 import { cookieBanner } from "@/i18n";
 import { useLocale } from "i18n/useLocale";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCookie, faCookieBite } from "@fortawesome/free-solid-svg-icons";
 
 config.autoAddCss = false;
 

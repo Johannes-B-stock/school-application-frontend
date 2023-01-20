@@ -1,6 +1,6 @@
 import { PageContentData } from "api-definitions/backend";
 import { Image } from "api-definitions/strapiBaseTypes";
-import getPageContent from "lib/pageContent";
+import getAndCachePageContent from "lib/pageContent";
 import { parseCookie } from "lib/utils";
 import { NextApiRequest, NextApiResponse } from "next";
 
@@ -16,7 +16,8 @@ export default async function pageContent(
     if (!locale) {
       locale = parseCookie(req).NEXT_LOCALE ?? "en";
     }
-    const pageContent = (await getPageContent(locale)) ?? pageContentDefault;
+    const pageContent =
+      (await getAndCachePageContent(locale)) ?? pageContentDefault;
     res.status(200).json({ pageContent });
   } else {
     res.setHeader("Allow", ["GET"]);
