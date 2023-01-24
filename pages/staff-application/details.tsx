@@ -1,14 +1,11 @@
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import styles from "@/styles/Showcase.module.css";
-import { API_URL } from "@/config/index";
 import { parseCookie } from "lib/utils";
-import axios from "axios";
 import qs from "qs";
 import ReactMarkdown from "react-markdown";
 import { useRouter } from "next/router";
 import { toast } from "react-toastify";
 import { StaffApplicationSetting } from "api-definitions/backend";
-import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
 import { GetServerSideProps } from "next";
 import { getStaffApplicationSettings } from "lib/staffApplication";
 

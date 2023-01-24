@@ -61,14 +61,19 @@ export default function ReferenceForm({
     }
 
     const allInfoSet =
-      reference1?.email && reference1.relation && reference1.name;
+      reference1?.email != undefined &&
+      reference1.relation != undefined &&
+      reference1.name != undefined;
 
     if (!allInfoSet) {
       toast.error("Please fill in all fields for reference 1.");
       return;
     }
-
-    EmailValidator.validate(reference1.email!);
+    const emailValid = EmailValidator.validate(reference1.email!);
+    if (!emailValid) {
+      toast.error("Email is not valid. Please provide a valid email");
+      return;
+    }
 
     try {
       setSendingReference1(true);

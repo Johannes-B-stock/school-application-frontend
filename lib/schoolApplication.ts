@@ -2,9 +2,7 @@ import { API_URL, NEXT_URL } from "../config";
 import axios from "axios";
 import qs from "qs";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
-import { Question, School, SchoolApplication } from "api-definitions/backend";
-import { getQuestionsFromAPI } from "./questions";
-import { createAnswer } from "./answers";
+import { School, SchoolApplication } from "api-definitions/backend";
 
 export async function getApplicationDetails(
   id: string,

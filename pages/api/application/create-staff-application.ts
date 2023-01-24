@@ -1,9 +1,5 @@
 import { API_URL } from "@/config/index";
-import {
-  Question,
-  SchoolApplication,
-  StaffApplication,
-} from "api-definitions/backend";
+import { Question, StaffApplication } from "api-definitions/backend";
 import {
   ArrayDataResponse,
   SingleDataResponse,

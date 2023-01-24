@@ -53,38 +53,6 @@ export async function sendReference(
   return newReference.data;
 }
 
-export async function addReferenceToApplication(
-  application: SchoolApplication | StaffApplication,
-  token: string,
-  referenceId: number
-) {
-  const table = "school" in application ? "school" : "staff";
-  const addReferenceToApplicationFetch = await fetch(
-    `${API_URL}/api/${table}-applications/${application.id}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        data: {
-          references: [
-            ...(application.references?.map((ref) => ref.id) ?? []),
-            referenceId,
-          ],
-        },
-      }),
-    }
-  );
-  if (!addReferenceToApplicationFetch.ok) {
-    const errorResult = await addReferenceToApplicationFetch.json();
-    throw new Error(
-      errorResult.error?.message ?? addReferenceToApplicationFetch.statusText
-    );
-  }
-}
-
 export async function getQuestionCollectionIdFromSchool(
   application: SchoolApplication,
   token: string

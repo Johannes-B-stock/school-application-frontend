@@ -52,11 +52,11 @@ export default function ApplicationPage({
   const [userEdit, setUserEdit] = useState(user);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [reference1Send, setReference1Send] = useState<boolean>(
-    application?.references?.find(() => true)?.emailSend ?? false
+    applicationEdit?.references?.find(() => true)?.emailSend ?? false
   );
   const [reference2Send, setReference2Send] = useState<boolean>(
-    application?.references?.find((_ref, index) => index === 1)?.emailSend ??
-      false
+    applicationEdit?.references?.find((_ref, index) => index === 1)
+      ?.emailSend ?? false
   );
 
   // eslint-disable-next-line react-hooks/rules-of-hooks
@@ -552,7 +552,7 @@ export default function ApplicationPage({
             </h1>
             <br />
             <ReferenceForm
-              application={application}
+              application={applicationEdit}
               user={user}
               reference1Send={setReference1Send}
               reference2Send={setReference2Send}
