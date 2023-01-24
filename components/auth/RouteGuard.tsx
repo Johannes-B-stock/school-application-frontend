@@ -23,6 +23,8 @@ export default function RouteGuard({ children }: { children: any }) {
       "/references/",
       "/impressum",
       "/privacy",
+      "/schools/:id",
+      "/staff-application/details",
       "/404",
     ];
     const path = router.asPath.split("?")[0];
@@ -33,7 +35,8 @@ export default function RouteGuard({ children }: { children: any }) {
           publicPath.toLowerCase() === path.toLowerCase() ||
           (publicPath.length > 1 &&
             publicPath.endsWith("/") &&
-            path.includes(publicPath))
+            path.includes(publicPath)) ||
+          hasIdInIt(publicPath, path)
       )
     ) {
       setAuthorized(false);
@@ -47,4 +50,30 @@ export default function RouteGuard({ children }: { children: any }) {
   }, [user, router, router.asPath]);
 
   return authorized && children ? children : <></>;
+}
+
+function hasIdInIt(publicPath: string, path: string): boolean {
+  const splitPublicPath = publicPath.split("/");
+  const idIndex = splitPublicPath.indexOf(":id");
+  const splitPath = path.split("/");
+
+  if (idIndex === -1) return false;
+
+  const pathId = parseInt(splitPath[idIndex]);
+
+  if (isNaN(pathId)) {
+    return false;
+  }
+
+  const pathWithoutId = [
+    ...splitPath.slice(0, idIndex),
+    ...splitPath.slice(idIndex + 1),
+  ].join("/");
+
+  const publicPathWithoutId = [
+    ...splitPublicPath.slice(0, idIndex),
+    ...splitPublicPath.slice(idIndex + 1),
+  ].join("/");
+
+  return pathWithoutId === publicPathWithoutId;
 }

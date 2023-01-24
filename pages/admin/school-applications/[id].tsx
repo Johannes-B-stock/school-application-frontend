@@ -15,7 +15,6 @@ import GoogleSpinner from "@/components/common/GoogleSpinner";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { addStudentToSchool } from "lib/school";
 import { GetServerSideProps } from "next";
 import {
   Answer,
@@ -104,7 +103,6 @@ export default function ApplicationAdminView({
         return;
       }
       await changeState(application, "approved", token);
-      await addStudentToSchool(application, token);
     } catch (error: any) {
       toast.error(error.message ?? error);
     }
@@ -154,6 +152,20 @@ export default function ApplicationAdminView({
                 <div className="column is-3 has-text-weight-bold">Status:</div>
                 <div className="column">{application.state}</div>
               </div>
+              {application.state === "submitted" && (
+                <div className="columns is-mobile">
+                  <div className="column is-3 has-text-weight-bold">
+                    Submitted at:
+                  </div>
+                  <div className="column">
+                    {application.submittedAt
+                      ? new Date(application.submittedAt).toLocaleDateString(
+                          locale
+                        )
+                      : ""}
+                  </div>
+                </div>
+              )}
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   Progress:
@@ -209,7 +221,7 @@ export default function ApplicationAdminView({
             </header>
             <div className="card-content">
               <div className="columns is-mobile">
-                <div className="column is-6 has-text-centered is-centered">
+                <div className="column has-text-left is-centered">
                   <figure className="image is-128x128 is-rounded">
                     <Image
                       className="image is-128x128 is-rounded"
@@ -222,6 +234,7 @@ export default function ApplicationAdminView({
                       objectFit="cover"
                     />
                   </figure>
+                  <span className="is-italic">{user.role?.name}</span>
                 </div>
               </div>
               <div className="columns is-mobile">
@@ -304,13 +317,12 @@ export default function ApplicationAdminView({
         </div>
         <div className="column">
           <div className="card my-5">
-            <header className="card-header background-gradient-success-link">
+            <header
+              className="card-header pointer background-gradient-success-link"
+              onClick={toggleShowQuestionary}
+            >
               <p className="card-header-title">Questionary</p>
-              <button
-                className="card-header-icon"
-                aria-label="show"
-                onClick={toggleShowQuestionary}
-              >
+              <button className="card-header-icon" aria-label="show">
                 <span className="icon">
                   {showQuestionary ? (
                     <FontAwesomeIcon icon={faAngleUp} />
@@ -345,13 +357,12 @@ export default function ApplicationAdminView({
             </div>
           </div>
           <div className="card my-5">
-            <header className="card-header background-gradient-info-right">
+            <header
+              className="card-header pointer background-gradient-info-right"
+              onClick={toggleShowReference1}
+            >
               <p className="card-header-title">Reference 1</p>
-              <button
-                className="card-header-icon"
-                aria-label="more options"
-                onClick={toggleShowReference1}
-              >
+              <button className="card-header-icon" aria-label="more options">
                 <span className="icon">
                   {showReference1 ? (
                     <FontAwesomeIcon icon={faAngleUp} />
@@ -376,7 +387,7 @@ export default function ApplicationAdminView({
           </div>
           <div className="card my-5">
             <header
-              className="card-header background-gradient-info-right"
+              className="card-header pointer background-gradient-info-right"
               onClick={toggleShowReference2}
             >
               <p className="card-header-title">Reference 2</p>
@@ -443,7 +454,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         populate: "",
       },
       user: {
-        populate: ["addresses", "picture"],
+        populate: ["addresses", "picture", "role"],
       },
     },
   });

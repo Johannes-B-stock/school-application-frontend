@@ -1,7 +1,11 @@
 .loginBox {
+  min-width: 370px;
   max-width: 450px;
+  margin: auto;
 }
 
 .registerBox {
   max-width: 450px;
+  min-width: 370px;
+  margin: auto;
 }
