@@ -38,3 +38,7 @@ body {
 .page-content {
   flex: 1;
 }
+
+.pointer {
+  cursor: pointer;
+}

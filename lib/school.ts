@@ -199,33 +199,3 @@ export async function getSchoolDetails(
 
   return schoolData.data;
 }
-
-export async function addStudentToSchool(
-  application: SchoolApplication,
-  token: string
-) {
-  if (application.state !== "approved") {
-    return;
-  }
-  const userId = application.user.id;
-  const schoolId = application.school.id;
-
-  const students = await getSchoolStudents(schoolId, token);
-  const result = await axios.put(
-    `${API_URL}/api/schools/${schoolId}`,
-    {
-      data: {
-        students: [...students, userId],
-      },
-    },
-    {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  if (result.status > 400) {
-    throw new Error(result.statusText);
-  }
-}

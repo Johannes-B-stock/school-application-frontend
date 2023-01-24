@@ -11,7 +11,6 @@ import { School } from "api-definitions/backend";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
 import { GetServerSideProps } from "next";
 import CurrencyList from "currency-list";
-import { useLocale } from "i18n/useLocale";
 
 export default function EditSchoolPage({
   school,
@@ -328,6 +327,11 @@ export const getServerSideProps: GetServerSideProps = async ({
 }) => {
   const id = params?.id;
   const { token } = parseCookie(req);
+
+  if (!token) {
+    return { notFound: true };
+  }
+
   const query = qs.stringify({
     populate: "image",
   });

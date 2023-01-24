@@ -28,6 +28,7 @@ export default function CreateStaffApplicationPage({
         return;
       }
       try {
+        setIsLoading(true);
         setState("Creating new staff application...");
         const query = qs.stringify({
           populate: ["applicationQuestions"],
@@ -54,12 +55,12 @@ export default function CreateStaffApplicationPage({
           "Staff Application creation failed because " + error.message ?? error
         );
         setTimeout(() => router.push("/"), 3000);
+      } finally {
+        setIsLoading(false);
       }
     };
     if (router && token) {
-      setIsLoading(true);
       createApplicationAsync();
-      setIsLoading(false);
     } else {
       setState("Creation Not Possible");
     }

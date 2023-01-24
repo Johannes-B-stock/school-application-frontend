@@ -103,6 +103,7 @@ export interface Application extends BaseData {
   answers: Answer[];
   step: number;
   state: ApplicationState;
+  submittedAt?: string;
 }
 
 export type ApplicationState =

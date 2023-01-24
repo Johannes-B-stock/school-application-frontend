@@ -148,9 +148,33 @@ export default function ApplicationAdminView({
                 </div>
               </div>
               <div className="columns is-mobile">
+                <div className="column is-3 has-text-weight-bold">
+                  Wants to stay until:
+                </div>
+                <div className="column">
+                  {application.stayUntil
+                    ? new Date(application.stayUntil).toLocaleDateString(locale)
+                    : "unknown"}
+                </div>
+              </div>
+              <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">Status:</div>
                 <div className="column">{application.state}</div>
               </div>
+              {application.state === "submitted" && (
+                <div className="columns is-mobile">
+                  <div className="column is-3 has-text-weight-bold">
+                    Submitted at:
+                  </div>
+                  <div className="column">
+                    {application.submittedAt
+                      ? new Date(application.submittedAt).toLocaleDateString(
+                          locale
+                        )
+                      : ""}
+                  </div>
+                </div>
+              )}
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-bold">
                   Progress:

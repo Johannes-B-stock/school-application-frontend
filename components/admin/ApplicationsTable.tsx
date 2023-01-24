@@ -10,7 +10,6 @@ import Pagination from "@/components/common/Pagination";
 import Link from "next/link";
 import _ from "lodash";
 import { toast } from "react-toastify";
-import { addStudentToSchool } from "lib/school";
 import { API_URL } from "@/config/index";
 import { useRouter } from "next/router";
 import {
@@ -85,9 +84,6 @@ export default function ApplicationsTable<
   ) => {
     try {
       await changeState(application, "approved");
-      if ("school" in application) {
-        await addStudentToSchool(application, token);
-      }
     } catch (error: any) {
       toast.error(error.message ?? error);
     }
