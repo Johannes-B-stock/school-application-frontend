@@ -10,9 +10,8 @@ export async function getMyDetails(token: string): Promise<User> {
       "schools",
       "school_applications",
       "picture",
-      "address",
+      "addresses",
       "details",
-      "emergency_address",
     ],
   });
   const strapiRes = await axios.get<User>(`${API_URL}/api/users/me?${query}`, {

@@ -1,14 +1,8 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
-import { defaultLocale, LOCALES, Locales } from "@/config/index";
+import { defaultLocale, Locales } from "@/config/index";
+import { allCountries } from "lib/countries";
 import { useMemo, useState } from "react";
 import Select, { SingleValue } from "react-select";
-import countries from "i18n-iso-countries";
-
-LOCALES.forEach((locale) => {
-  countries.registerLocale(require(`i18n-iso-countries/langs/${locale}.json`));
-});
-
-export const allCountries = countries;
 
 export interface CountryEdit {
   value: string;
@@ -19,25 +13,29 @@ export default function CountrySelect({
   country,
   locale,
   countryChanged,
+  required = false,
 }: {
   country?: string;
   locale?: Locales;
   countryChanged: (country: string | undefined) => any;
+  required?: boolean;
 }) {
   const [countryEdit, setCountryEdit] = useState<CountryEdit | undefined>(
     country
       ? {
           value: country,
-          label: countries.getName(country, locale ?? defaultLocale),
+          label: allCountries.getName(country, locale ?? defaultLocale),
         }
       : undefined
   );
   const countryList = useMemo(
     () =>
-      Object.keys(countries.getNames(locale ?? defaultLocale)).map((key) => ({
-        value: key,
-        label: countries.getName(key, locale ?? defaultLocale),
-      })),
+      Object.keys(allCountries.getNames(locale ?? defaultLocale)).map(
+        (key) => ({
+          value: key,
+          label: allCountries.getName(key, locale ?? defaultLocale),
+        })
+      ),
     [locale]
   );
 
@@ -55,11 +53,12 @@ export default function CountrySelect({
     <Select
       classNamePrefix="select"
       name="country"
+      className="has-text-centered"
       value={countryEdit}
       onChange={handleCountryInputChange}
       options={countryList}
-      styles={{
-        control: (styles) => ({ ...styles, paddingLeft: "30px" }),
+      classNames={{
+        control: () => (required && !country ? "border-red" : ""),
       }}
     />
   );

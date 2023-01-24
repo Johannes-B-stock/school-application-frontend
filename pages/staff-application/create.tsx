@@ -1,18 +1,16 @@
 import GoogleSpinner from "@/components/common/GoogleSpinner";
-import { useMemo, useState } from "react";
-import axios from "axios";
+import { useContext, useMemo, useState } from "react";
 import { useRouter } from "next/router";
-import { API_URL } from "@/config/index";
 import { parseCookie } from "lib/utils";
 import { toast } from "react-toastify";
 import qs from "qs";
 import NotAuthorized from "@/components/auth/NotAuthorized";
-import {
-  ArrayDataResponse,
-  SingleDataResponse,
-} from "api-definitions/strapiBaseTypes";
-import { Question, StaffApplicationSetting } from "api-definitions/backend";
 import { GetServerSideProps } from "next";
+import {
+  createApplication,
+  getStaffApplicationSettings,
+} from "lib/staffApplication";
+import AuthContext from "@/context/AuthContext";
 
 export default function CreateStaffApplicationPage({
   token,
@@ -21,91 +19,35 @@ export default function CreateStaffApplicationPage({
 }) {
   const [state, setState] = useState("Preparing...");
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useContext(AuthContext);
   const router = useRouter();
 
   useMemo(() => {
     const createApplicationAsync = async () => {
-      if (!token) {
+      if (!token || !user) {
         return;
       }
       try {
-        setState("Load questions");
+        setState("Creating new staff application...");
         const query = qs.stringify({
-          populate: ["questions"],
+          populate: ["applicationQuestions"],
         });
-        const staffAppDetails = await axios.get<
-          SingleDataResponse<StaffApplicationSetting>
-        >(`${API_URL}/api/staff-application-setting?${query}`, {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
+        const staffAppDetails = await getStaffApplicationSettings({
+          token,
+          query,
         });
-        const questionCollection = staffAppDetails.data.data?.questions;
-
-        const questionQuery = qs.stringify({
-          populate: ["type"],
-          filters: {
-            collection: {
-              id: {
-                $eq: questionCollection?.id,
-              },
-            },
-          },
-        });
-        const questions = await axios.get<ArrayDataResponse<Question>>(
-          `${API_URL}/api/questions?${questionQuery}`,
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
+        console.log(staffAppDetails);
+        const questionCollection = staffAppDetails.data?.applicationQuestions;
+        if (!questionCollection) {
+          throw new Error(
+            "Question collection could not be found for staff applications"
+          );
+        }
+        const staffApplication = await createApplication(
+          user?.id,
+          questionCollection?.id
         );
-        setState("Creating Questions for Application...");
-
-        const questionIds =
-          questions.data.data?.map((question) => question.id) ?? [];
-
-        const answers = await Promise.all(
-          questionIds.map(async (questionId) => {
-            const answerRes = await axios.post(
-              `${API_URL}/api/answers`,
-              {
-                data: {
-                  question: questionId,
-                  answer: "",
-                },
-              },
-              {
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-              }
-            );
-            return answerRes.data;
-          })
-        );
-
-        const answerIds = answers.map((answer) => answer.data.id);
-        setState("Creating basic Application...");
-        const staffApplication = await axios.post(
-          `${API_URL}/api/staff-applications`,
-          {
-            data: {
-              answers: answerIds,
-            },
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        toast.success("Application Successfully created!");
-        router.push(`/staff-application/${staffApplication.data.data.id}`);
+        router.push(`/staff-application/${staffApplication.id}`);
       } catch (error: any) {
         setState("Application creation failed");
         toast.error(
@@ -121,7 +63,7 @@ export default function CreateStaffApplicationPage({
     } else {
       setState("Creation Not Possible");
     }
-  }, [token, router]);
+  }, [router, token, user]);
 
   if (!token) {
     return <NotAuthorized />;

@@ -6,6 +6,8 @@ import { general, references } from "@/i18n";
 import { Answer, Reference } from "api-definitions/backend";
 import { ArrayDataResponse } from "api-definitions/strapiBaseTypes";
 import { useLocale } from "i18n/useLocale";
+import { updateAnswers } from "lib/answers";
+import { submitReference } from "lib/references";
 import { GetServerSideProps } from "next";
 import qs from "qs";
 import { ChangeEvent, MouseEvent, useState } from "react";
@@ -50,32 +52,7 @@ export default function ReferencePage({
     }
 
     setIsLoading(true);
-    await Promise.all(
-      answers.map(async (answer) => {
-        const updateAnswerFetch = await fetch(
-          `${API_URL}/api/answers/${answer.id}`,
-          {
-            method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              data: {
-                answer: answer.answer,
-              },
-            }),
-          }
-        );
-
-        const updateResult = await updateAnswerFetch.json();
-
-        if (!updateAnswerFetch.ok) {
-          throw new Error(
-            updateResult.error?.message ?? updateAnswerFetch.statusText
-          );
-        }
-      })
-    )
+    await updateAnswers(answers, undefined, reference)
       .then(() => toast.success("All questions successfully saved!"))
       .catch((err) => toast.error(err.message))
       .finally(() => setIsLoading(false));
@@ -94,55 +71,10 @@ export default function ReferencePage({
         toast.error(references[locale].answerRequired);
         return;
       }
-      await Promise.all(
-        answers.map(async (answer) => {
-          const updateAnswerFetch = await fetch(
-            `${API_URL}/api/answers/${answer.id}`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                data: {
-                  answer: answer.answer,
-                },
-              }),
-            }
-          );
-
-          const updateResult = await updateAnswerFetch.json();
-
-          if (!updateAnswerFetch.ok) {
-            throw new Error(
-              updateResult.error?.message ?? updateAnswerFetch.statusText
-            );
-          }
-        })
-      );
-      const updateAnswerFetch = await fetch(
-        `${API_URL}/api/references/${reference.id}`,
-        {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            data: {
-              submitted: true,
-            },
-          }),
-        }
-      );
-      if (updateAnswerFetch.ok) {
-        setReferenceEdit({ ...referenceEdit, submitted: true });
-        toast.success("Reference sucessfully submitted");
-      } else {
-        toast.error(
-          "There was an error when trying to submit reference: " +
-            updateAnswerFetch.statusText
-        );
-      }
+      await updateAnswers(answers, undefined, reference);
+      await submitReference(reference.id, reference.uid);
+      setReferenceEdit({ ...referenceEdit, submitted: true });
+      toast.success("Reference sucessfully submitted");
     } catch (err: any) {
       toast.error(
         "There was an error when trying to submit reference: " + err.message ??
@@ -173,6 +105,7 @@ export default function ReferencePage({
       <form className="form">
         {answers?.map((answer) => (
           <QuestionItem
+            question={answer.question}
             key={answer.id}
             answer={answer}
             disabled={referenceEdit.submitted}
@@ -213,7 +146,7 @@ export default function ReferencePage({
 
 export const getServerSideProps: GetServerSideProps = async ({ params }) => {
   const uid = params?.uid;
-  const query = qs.stringify({
+  const apiQuery = qs.stringify({
     populate: {
       answers: {
         populate: {
@@ -230,7 +163,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       },
     },
   });
-  const referenceFetch = await fetch(`${API_URL}/api/references?${query}`, {
+  const referenceFetch = await fetch(`${API_URL}/api/references?${apiQuery}`, {
     method: "GET",
   });
   const referenceJson =
@@ -247,6 +180,7 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
     },
   };
 };
+
 function notAllRequiredQuestionsHaveBeenAnswered(answers: Answer[]) {
   return answers.some(
     (answer) =>

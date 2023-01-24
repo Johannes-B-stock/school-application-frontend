@@ -1,16 +1,26 @@
-import { Answer, QuestionType } from "api-definitions/backend";
+import {
+  Answer,
+  Question,
+  QuestionType,
+  SchoolApplication,
+  StaffApplication,
+} from "api-definitions/backend";
 import { useLocale } from "i18n/useLocale";
-import { submitAnswers } from "lib/answers";
+import { createAnswer, updateAnswers } from "lib/answers";
 import { ChangeEvent, useState } from "react";
 import { toast } from "react-toastify";
 import QuestionItem from "./QuestionItem";
 
 export default function ApplicationQuestions({
+  application,
+  questionCollection,
   answerDetails,
   token,
   disabled = false,
   bindSave,
 }: {
+  application: SchoolApplication | StaffApplication;
+  questionCollection: Question[];
   answerDetails: Answer[];
   token: string;
   disabled: boolean;
@@ -19,24 +29,38 @@ export default function ApplicationQuestions({
   const [answers, setAnswers] = useState(answerDetails);
   const locale = useLocale();
 
-  const onAnswered = (
-    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  const onAnswered = async (
+    e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+    question: Question,
+    answer?: Answer
   ) => {
-    const updatedAnswer = answers.find(
-      (answer) => answer.id.toString() === e.target.name
-    );
-    if (!updatedAnswer) {
-      return;
+    try {
+      const answerText = e.target.value;
+      let updatedAnswer = answers.find((a) => a.id === answer?.id);
+      const newAnswers = [...answers];
+
+      if (!updatedAnswer) {
+        updatedAnswer = await createAnswer(
+          question,
+          application,
+          answerText,
+          token
+        );
+        newAnswers.push(updatedAnswer);
+        return;
+      } else {
+        updatedAnswer.answer = answerText;
+      }
+      const index = answers.indexOf(updatedAnswer);
+      newAnswers[index] = updatedAnswer;
+      setAnswers(newAnswers);
+    } catch (error: any) {
+      toast.error(error?.message ?? error);
     }
-    const index = answers.indexOf(updatedAnswer);
-    updatedAnswer.answer = e.target.value;
-    const newAnswers = [...answers];
-    newAnswers[index] = updatedAnswer;
-    setAnswers(newAnswers);
   };
 
   const handleSubmitAnswers = async () => {
-    await submitAnswers(answers, token);
+    await updateAnswers(answers, token);
     toast.success("Updated answers successfully");
   };
 
@@ -44,26 +68,27 @@ export default function ApplicationQuestions({
 
   return (
     <form className={`form`}>
-      {Object.entries(groupByQuestionType(answers, locale))
+      {Object.entries(groupByQuestionType(questionCollection ?? [], locale))
         .sort()
-        .map(([type, answers]) => {
+        .map(([type, questions]) => {
           return {
             type,
-            answers: answers.sort(
-              (a1, a2) => a1.question.order - a2.question.order
-            ),
+            questions: questions.sort((a1, a2) => a1.order - a2.order),
           };
         })
         .map((value) => (
           <div key={value.type}>
             <h3 className="title">{value.type}</h3>
             <h6 className="subtitle is-6">
-              {extractLocalizedType(value.answers, locale)?.description}
+              {extractLocalizedType(value.questions, locale)?.description}
             </h6>
-            {value.answers.map((answer) => (
+            {value.questions.map((question) => (
               <QuestionItem
-                key={answer.id}
-                answer={answer}
+                key={question.id}
+                question={question}
+                answer={answers.find(
+                  (answer) => answer.question.id === question.id
+                )}
                 disabled={disabled}
                 onAnswered={onAnswered}
               />
@@ -76,10 +101,10 @@ export default function ApplicationQuestions({
 }
 
 function extractLocalizedType(
-  answers: Answer[],
+  answers: Question[],
   locale: string
 ): QuestionType | undefined {
-  const type = answers[0].question.type;
+  const type = answers[0]?.type;
 
   if (!locale || !type || type?.locale === locale) {
     return type;
@@ -91,23 +116,26 @@ function extractLocalizedType(
 }
 
 function groupByQuestionType(
-  answers: Answer[],
+  questions: Question[],
   locale: string
 ): {
-  [key: string]: Answer[];
+  [key: string]: Question[];
 } {
-  return answers.reduce((prev: { [key: string]: Answer[] }, curr: Answer) => {
-    const questionType = curr.question.type;
-    const key =
-      (questionType?.locale !== locale
-        ? questionType?.localizations?.find(
-            (localized) => localized.locale === locale
-          )?.name ?? questionType?.name
-        : questionType?.name) ?? "";
-    if (!prev[key]) {
-      prev[key] = [];
-    }
-    prev[key].push(curr);
-    return prev;
-  }, {});
+  return questions.reduce(
+    (prev: { [key: string]: Question[] }, curr: Question) => {
+      const questionType = curr.type;
+      const key =
+        (questionType?.locale !== locale
+          ? questionType?.localizations?.find(
+              (localized) => localized.locale === locale
+            )?.name ?? questionType?.name
+          : questionType?.name) ?? "";
+      if (!prev[key]) {
+        prev[key] = [];
+      }
+      prev[key].push(curr);
+      return prev;
+    },
+    {}
+  );
 }

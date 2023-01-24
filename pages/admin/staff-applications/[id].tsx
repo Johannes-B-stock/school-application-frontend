@@ -8,15 +8,11 @@ import {
   faXmark,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { updateState } from "lib/schoolApplication";
 import { useState } from "react";
 import { toast } from "react-toastify";
 import GoogleSpinner from "@/components/common/GoogleSpinner";
-import { getReferenceAnswers } from "lib/references";
 import Image from "next/image";
-import countries from "i18n-iso-countries";
 import { useRouter } from "next/router";
-import { API_URL } from "@/config/index";
 import { GetServerSideProps } from "next";
 import {
   Answer,
@@ -27,6 +23,10 @@ import {
 } from "api-definitions/backend";
 import { useLocale } from "i18n/useLocale";
 import { getStaffApplicationDetails } from "lib/staffApplication";
+import { getMainAddress } from "lib/address";
+import { allCountries } from "lib/countries";
+import AdminReference from "@/components/admin/AdminReference";
+import { deleteApplicationRequest, updateState } from "lib/applications";
 
 export default function ApplicationAdminView({
   application,
@@ -39,13 +39,11 @@ export default function ApplicationAdminView({
 }) {
   const [showReference1, setShowReference1] = useState(false);
   const [showReference2, setShowReference2] = useState(false);
-  const [loadReference1Answers, setLoadReference1Answers] = useState(false);
-  const [loadReference2Answers, setLoadReference2Answers] = useState(false);
   const [isLoadingAppAnswers, setIsLoadingAppAnswers] = useState(false);
-  const [answers1, setAnswers1] = useState<Answer[] | undefined>(undefined);
-  const [answers2, setAnswers2] = useState<Answer[] | undefined>(undefined);
   const [showQuestionary, setShowQuestionary] = useState(false);
   const [applicationAnswers, setApplicationAnswers] = useState<Answer[]>([]);
+
+  const mainAddress = getMainAddress(user);
 
   const toggleShowQuestionary = async () => {
     setShowQuestionary(!showQuestionary);
@@ -72,23 +70,8 @@ export default function ApplicationAdminView({
 
   const router = useRouter();
   const locale = useLocale();
-  const reference1 = application.reference1;
-  const reference2 = application.reference2;
-
-  const loadAnswers = async (referenceId: number, token: string) => {
-    try {
-      referenceId === reference1?.id && setLoadReference1Answers(true);
-      referenceId === reference2?.id && setLoadReference2Answers(true);
-      const answerDetails = await getReferenceAnswers(referenceId, token);
-      referenceId === reference1?.id && setAnswers1(answerDetails);
-      referenceId === reference2?.id && setAnswers2(answerDetails);
-    } catch (error: any) {
-      toast.error(error.message ?? error);
-    } finally {
-      referenceId === reference1?.id && setLoadReference1Answers(false);
-      referenceId === reference2?.id && setLoadReference2Answers(false);
-    }
-  };
+  const reference1 = application.references?.find(() => true);
+  const reference2 = application.references?.find((_ref, index) => index === 1);
 
   const deleteApplication = async (id: number) => {
     if (
@@ -97,23 +80,15 @@ export default function ApplicationAdminView({
       )
     )
       return;
-    const deleteFetch = await fetch(
-      `${API_URL}/api/school-applications/${id}`,
-      {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+    try {
+      await deleteApplicationRequest(id, token, "staff");
 
-    if (deleteFetch.ok) {
       toast.success("Application was successful deleted");
       router.push("/admin/dashboard");
-    } else {
-      const result = await deleteFetch.json();
-      toast.error("Error while deleting application: " + result.error.message);
+    } catch (error: any) {
+      toast.error(
+        "Error while deleting application: " + error?.message ?? error
+      );
     }
   };
 
@@ -134,6 +109,7 @@ export default function ApplicationAdminView({
       toast.error(error.message ?? error);
     }
   };
+
   async function changeState(
     application: Application,
     desiredState: ApplicationState
@@ -192,8 +168,8 @@ export default function ApplicationAdminView({
               <div className="columns-is-mobile">
                 <div className="column">
                   <button
-                    className={`button mx-1 is-success`}
-                    title="Approve"
+                    className={`button mx-1 is-success tooltip-bottom`}
+                    data-tooltip="Approve"
                     disabled={application.state === "approved"}
                     onClick={() => approveApplication(application)}
                   >
@@ -202,8 +178,8 @@ export default function ApplicationAdminView({
                     </span>
                   </button>
                   <button
-                    className="button mx-1 is-warning"
-                    title="Revoke"
+                    className="button mx-1 is-warning tooltip-bottom"
+                    data-tooltip="Revoke"
                     disabled={application.state === "revoked"}
                     onClick={() => revokeApplication(application)}
                   >
@@ -211,8 +187,8 @@ export default function ApplicationAdminView({
                   </button>
 
                   <div
-                    className="button mx-1 is-danger"
-                    title="Delete"
+                    className="button mx-1 is-danger tooltip-bottom"
+                    data-tooltip="Delete"
                     onClick={() => deleteApplication(application.id)}
                   >
                     <FontAwesomeIcon icon={faTrash} />
@@ -295,20 +271,20 @@ export default function ApplicationAdminView({
                 <div className="column is-3 has-text-weight-semibold">
                   Street:
                 </div>
-                <div className="column is-5">{user.address?.street}</div>
-                <div className="column is-2">{user.address?.number}</div>
+                <div className="column is-5">{mainAddress?.street}</div>
+                <div className="column is-2">{mainAddress?.number}</div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-semibold">
                   City:
                 </div>
-                <div className="column">{user.address?.city}</div>
+                <div className="column">{mainAddress?.city}</div>
               </div>
               <div className="columns is-mobile">
                 <div className="column is-3 has-text-weight-semibold">
                   Postal Code:
                 </div>
-                <div className="column">{user.address?.postalCode}</div>
+                <div className="column">{mainAddress?.postalCode}</div>
               </div>
 
               <div className="columns is-mobile">
@@ -316,8 +292,8 @@ export default function ApplicationAdminView({
                   Country:
                 </div>
                 <div className="column">
-                  {user.address?.country &&
-                    countries.getName(user.address?.country, locale)}
+                  {mainAddress?.country &&
+                    allCountries.getName(mainAddress?.country, locale)}
                 </div>
               </div>
             </div>
@@ -391,91 +367,7 @@ export default function ApplicationAdminView({
               {reference1 == undefined ? (
                 <p>Reference has not been created yet</p>
               ) : (
-                <>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Name:
-                    </div>
-                    <div className="column">{reference1.name}</div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Relation:
-                    </div>
-                    <div className="column">{reference1.relation}</div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Email:
-                    </div>
-                    <div className="column">{reference1.email}</div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Email send:
-                    </div>
-                    <div className="column">
-                      {reference1.emailSend ? (
-                        <span className="has-text-success">
-                          <FontAwesomeIcon icon={faCheck} />
-                        </span>
-                      ) : (
-                        <span className="has-text-danger">
-                          <FontAwesomeIcon icon={faXmark} />
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Submitted:
-                    </div>
-                    <div className="column">
-                      {reference1.submitted ? (
-                        <span className="has-text-success">
-                          <FontAwesomeIcon icon={faCheck} />
-                        </span>
-                      ) : (
-                        <span className="has-text-danger">
-                          <FontAwesomeIcon icon={faXmark} />
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Created:
-                    </div>
-                    <div className="column">
-                      {new Date(
-                        reference1.createdAt ?? ""
-                      ).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <hr />
-                  <h3 className="subtitle is-4">Questionary</h3>
-
-                  {!answers1 && (
-                    <div
-                      className="button is-primary mb-5"
-                      onClick={() => loadAnswers(reference1.id, token)}
-                    >
-                      Show Questionary
-                    </div>
-                  )}
-                  {loadReference1Answers && <GoogleSpinner />}
-                  {answers1 &&
-                    answers1.map((answer) => (
-                      <>
-                        {" "}
-                        <p className="has-text-weight-bold">
-                          {answer.question.question}:
-                        </p>
-                        <p className="column">{answer.answer}</p>
-                        <br />
-                      </>
-                    ))}
-                </>
+                <AdminReference reference={reference1} token={token} />
               )}
             </div>
           </div>
@@ -508,87 +400,7 @@ export default function ApplicationAdminView({
               {reference2 == undefined ? (
                 <p>Reference has not been created yet</p>
               ) : (
-                <>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Name:
-                    </div>
-                    <div className="column">{reference2.name}</div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Relation:
-                    </div>
-                    <div className="column">{reference2.relation}</div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Email:
-                    </div>
-                    <div className="column">{reference2.email}</div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Email send:
-                    </div>
-                    <div className="column">
-                      {reference2.emailSend ? (
-                        <span className="has-text-success">
-                          <FontAwesomeIcon icon={faCheck} />
-                        </span>
-                      ) : (
-                        <span className="has-text-danger">
-                          <FontAwesomeIcon icon={faXmark} />
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Submitted:
-                    </div>
-                    <div className="column">
-                      {reference2.submitted ? (
-                        <span className="has-text-success">
-                          <FontAwesomeIcon icon={faCheck} />
-                        </span>
-                      ) : (
-                        <span className="has-text-danger">
-                          <FontAwesomeIcon icon={faXmark} />
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                  <div className="columns is-mobile">
-                    <div className="column is-4 has-text-weight-bold">
-                      Created:
-                    </div>
-                    <div className="column">
-                      {new Date(reference2.createdAt).toLocaleDateString()}
-                    </div>
-                  </div>
-                  <hr />
-                  <h3 className="subtitle is-4">Questionary</h3>
-                  {!answers2 && (
-                    <div
-                      className="button is-primary mb-5"
-                      onClick={() => loadAnswers(reference2.id, token)}
-                    >
-                      Show Questionary
-                    </div>
-                  )}
-                  {loadReference2Answers && <GoogleSpinner />}
-                  {answers2 &&
-                    answers2.map((answer) => (
-                      <>
-                        <p className="has-text-weight-bold">
-                          {answer.question.question}:
-                        </p>
-                        <p className="column">{answer.answer}</p>
-                        <br />
-                      </>
-                    ))}
-                </>
+                <AdminReference reference={reference2} token={token} />
               )}
             </div>
           </div>
@@ -623,19 +435,13 @@ export const getServerSideProps: GetServerSideProps = async ({
   const application = await getStaffApplicationDetails(id, token, {
     populate: {
       answers: {
-        populate: "question",
+        populate: "*",
       },
-      school: {
-        populate: "",
-      },
-      reference1: {
-        populate: "",
-      },
-      reference2: {
+      references: {
         populate: "",
       },
       user: {
-        populate: ["address", "picture", "emergency_address", "schools"],
+        populate: ["addresses", "picture", "schools"],
       },
     },
     sort: "createdAt:asc",

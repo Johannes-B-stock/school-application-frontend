@@ -11,6 +11,8 @@ import {
 import { general, profile } from "@/i18n";
 import { UserDetails } from "api-definitions/backend";
 import { useLocale } from "i18n/useLocale";
+import CountrySelect from "../common/CountrySelect";
+import { allCountries } from "lib/countries";
 
 export default function UserDetailsEdit({
   allowEdit = false,
@@ -41,6 +43,14 @@ export default function UserDetailsEdit({
       setUserEdit({ ...userEdit, [name]: value });
     } else {
       setUserEdit({ [name]: value });
+    }
+  };
+
+  const handleNationalityChange = (country?: string) => {
+    if (userEdit) {
+      setUserEdit({ ...userEdit, nationality: country });
+    } else {
+      setUserEdit({ nationality: country });
     }
   };
 
@@ -147,20 +157,17 @@ export default function UserDetailsEdit({
         </div>
         <div className="field-body">
           <div className="field">
-            <p className="control is-expanded has-icons-left">
-              <input
-                className="input"
-                type="text"
-                id="nationality"
-                name="nationality"
-                placeholder="Nationality"
-                value={userEdit?.nationality ?? ""}
-                onChange={handleInputChange}
+            <div className="control is-expanded has-icons-left">
+              <CountrySelect
+                country={userEdit?.nationality}
+                countryChanged={handleNationalityChange}
+                locale={locale}
+                required={true}
               />
               <span className="icon is-small is-left">
                 <FontAwesomeIcon icon={faFlag} />
               </span>
-            </p>
+            </div>
           </div>
         </div>
       </div>
@@ -269,7 +276,11 @@ export default function UserDetailsEdit({
         <div className="column is-3 has-text-weight-semibold">
           {profile[locale].nationality}:
         </div>
-        <div className="column">{updatedUser?.nationality}</div>
+        <div className="column">
+          {updatedUser?.nationality
+            ? allCountries.getName(updatedUser?.nationality, locale)
+            : ""}
+        </div>
       </div>
       <hr />
       <div className="columns">

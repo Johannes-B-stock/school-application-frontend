@@ -3,7 +3,6 @@ import AuthContext from "@/context/AuthContext";
 import { useContext, useState, ChangeEvent, MouseEvent } from "react";
 import { API_URL } from "@/config/index";
 import { toast } from "react-toastify";
-import axios from "axios";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
   faCity,
@@ -17,7 +16,8 @@ import { address as addressi18n, general } from "@/i18n";
 import { Address, User } from "api-definitions/backend";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
 import { useLocale } from "i18n/useLocale";
-import CountrySelect, { allCountries } from "../common/CountrySelect";
+import CountrySelect from "../common/CountrySelect";
+import { allCountries } from "lib/countries";
 
 export default function AddressEdit({
   token,
@@ -44,9 +44,9 @@ export default function AddressEdit({
   const [updatedAddress, setUpdatedAddress] = useState<Address | undefined>(
     address
   );
-  const defaultName = isEmergencyAddress
-    ? undefined
-    : { firstname: user.firstname, lastname: user.lastname };
+  const defaultName: Partial<Address> = isEmergencyAddress
+    ? { type: "emergency" }
+    : { firstname: user.firstname, lastname: user.lastname, type: "main" };
   const [addressEdit, setAddressEdit] = useState<Partial<Address> | undefined>(
     updatedAddress ?? defaultName
   );
@@ -68,59 +68,67 @@ export default function AddressEdit({
 
   const onSaveAddress = async (e: MouseEvent<HTMLDivElement>) => {
     e?.preventDefault();
-
-    const newAddress = {
+    const newAddress: Partial<Address> = {
       ...addressEdit,
       firstname: addressEdit?.firstname || user.firstname,
       lastname: addressEdit?.lastname || user.lastname,
+      type: isEmergencyAddress ? "emergency" : "main",
     };
 
     const addressComplete = checkIfAddressComplete(newAddress);
 
     if (!addressComplete) {
       if (noButtons) {
-        throw new Error("Please fill in all fields!");
+        throw new Error("Please fill in all required fields!");
       } else {
-        toast.error("Please fill in all fields!");
+        toast.error("Please fill in all required fields!");
         return;
       }
     }
-    if (!address || !addressId) {
-      const addressResult = await createNewAddress(addressEdit);
-      setUpdatedAddress(addressResult);
-      !alwaysEdit && setAllowAddressEdit(false);
-      if (isEmergencyAddress) {
-        setUser({ ...user, emergency_address: addressResult });
+
+    try {
+      if (!address || !addressId) {
+        const addressResult = await createNewAddress(newAddress);
+        if (!addressResult) {
+          throw new Error("Address could not be created!");
+        }
+
+        setUpdatedAddress(addressResult);
+        !alwaysEdit && setAllowAddressEdit(false);
+
+        setUser({
+          ...user,
+          addresses: [...(user.addresses ?? []), addressResult],
+        });
       } else {
-        setUser({ ...user, address: addressResult });
-      }
-    } else {
-      // Update existing address
-      try {
+        // Update existing address
         const addressResult = await updateAddress(
           addressId,
           token,
           addressEdit
         );
+        if (!addressResult) {
+          throw new Error("Address could not be updated!");
+        }
         setUpdatedAddress(addressResult);
         !alwaysEdit && setAllowAddressEdit(false);
-        if (isEmergencyAddress) {
-          setUser({ ...user, emergency_address: addressResult });
-        } else {
-          setUser({ ...user, address: addressResult });
-        }
-      } catch (reason: any) {
-        if (noButtons) {
-          throw new Error(reason);
-        }
-        toast.error(reason?.message ?? reason);
+
+        setUser({
+          ...user,
+          addresses: [...(user.addresses ?? []), addressResult],
+        });
       }
+    } catch (reason: any) {
+      if (noButtons) {
+        throw new Error(reason);
+      }
+      toast.error(reason?.message ?? reason);
     }
   };
 
   async function createNewAddress(newAddress?: Partial<Address>) {
     const body = {
-      data: getData(newAddress),
+      data: populateWithUser(newAddress),
     };
     // Create new address
     const res = await fetch(`${API_URL}/api/addresses`, {
@@ -131,37 +139,42 @@ export default function AddressEdit({
       },
       body: JSON.stringify(body),
     });
-    const addressResult = (await res.json()) as SingleDataResponse<Address>;
 
+    const addressResult = (await res.json()) as SingleDataResponse<Address>;
     if (!res.ok) {
-      toast.error(
-        addressResult.error?.message ??
-          res.statusText ??
-          "Something went wrong."
-      );
       if (noButtons) {
         throw new Error(addressResult.error?.message ?? res.statusText);
+      } else {
+        toast.error(
+          addressResult.error?.message ??
+            res.statusText ??
+            "Something went wrong."
+        );
       }
       // return;
     }
-    if (isEmergencyAddress) {
-      await axios
-        .put(
-          `${API_URL}/api/users/me`,
-          {
-            data: {
-              emergency_address: addressResult.data?.id,
-            },
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        )
-        .catch((reason) => toast.error(reason.message ?? reason));
-    }
+    // await axios
+    //   .put(
+    //     `${API_URL}/api/users/me`,
+    //     {
+    //       data: {
+    //         [userField]: addressResult.data?.id,
+    //       },
+    //     },
+    //     {
+    //       headers: {
+    //         "Content-Type": "application/json",
+    //         Authorization: `Bearer ${token}`,
+    //       },
+    //     }
+    //   )
+    //   .catch((reason) => {
+    //     if (noButtons) {
+    //       throw reason;
+    //     }
+    //     toast.error(reason.message ?? reason);
+    //   });
+
     return addressResult.data;
   }
 
@@ -378,17 +391,11 @@ export default function AddressEdit({
     </>
   );
 
-  function getData(newAddress?: Partial<Address>) {
-    if (!isEmergencyAddress) {
-      return {
-        ...newAddress,
-        user: user.id,
-      };
-    } else {
-      return {
-        ...newAddress,
-      };
-    }
+  function populateWithUser(newAddress?: Partial<Address>) {
+    return {
+      ...newAddress,
+      user: user.id,
+    };
   }
 }
 function checkIfAddressComplete(address: Partial<Address>): boolean {

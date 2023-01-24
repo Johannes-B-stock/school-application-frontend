@@ -10,7 +10,6 @@ import Pagination from "@/components/common/Pagination";
 import Link from "next/link";
 import _ from "lodash";
 import { toast } from "react-toastify";
-import { updateState } from "lib/schoolApplication";
 import { addStudentToSchool } from "lib/school";
 import { API_URL } from "@/config/index";
 import { useRouter } from "next/router";
@@ -23,6 +22,7 @@ import {
 } from "api-definitions/backend";
 import { Pagination as ApiPagination } from "api-definitions/strapiBaseTypes";
 import { Dispatch, SetStateAction } from "react";
+import { updateState } from "lib/applications";
 
 export default function ApplicationsTable<
   T extends Application & { school?: School }
@@ -94,15 +94,21 @@ export default function ApplicationsTable<
   };
 
   async function changeState(
-    application: Application,
+    application: SchoolApplication | StaffApplication,
     desiredState: ApplicationState
   ) {
     try {
+      const isSchoolApplication = "school" in application;
       const currentState = application.state;
       if (currentState !== "submitted" && currentState !== "reviewed") {
         return;
       }
-      await updateState(application.id, token, desiredState);
+      await updateState(
+        application.id,
+        token,
+        desiredState,
+        isSchoolApplication ? "school" : "staff"
+      );
       toast.success(`Application was successful ${desiredState}`);
       application.state = desiredState;
       setApplications([...applications]);
@@ -182,43 +188,45 @@ export default function ApplicationsTable<
                 </span>
               </td>
               <td>
-                <button
-                  className={`button is-small mx-1 is-success`}
-                  title="Approve"
-                  disabled={application.state !== "submitted"}
-                  onClick={() => approveApplication(application)}
-                >
-                  <span className="icon">
-                    <FontAwesomeIcon icon={faCheck} />
-                  </span>
-                </button>
-                <button
-                  className="button is-small mx-1 is-warning"
-                  title="Revoke"
-                  disabled={application.state !== "submitted"}
-                  onClick={() => revokeApplication(application)}
-                >
-                  <FontAwesomeIcon icon={faXmark} />
-                </button>
-                <div
-                  className="button is-small mx-1 is-link"
-                  title="Show Details"
-                  onClick={() =>
-                    router.push(
-                      `${applicationLink(application)}/${application.id}`
-                    )
-                  }
-                >
-                  <span className="icon">
-                    <FontAwesomeIcon icon={faEye} />
-                  </span>
-                </div>
-                <div
-                  className="button is-small mx-1 is-danger"
-                  title="Delete"
-                  onClick={() => deleteApplication(application.id)}
-                >
-                  <FontAwesomeIcon icon={faTrash} />
+                <div className="field is-grouped">
+                  <button
+                    className={`button is-responsive is-small mx-1 is-success tooltip-bottom`}
+                    data-tooltip="Approve"
+                    disabled={application.state !== "submitted"}
+                    onClick={() => approveApplication(application)}
+                  >
+                    <span className="icon">
+                      <FontAwesomeIcon icon={faCheck} />
+                    </span>
+                  </button>{" "}
+                  <button
+                    className="button is-small mx-1 is-warning tooltip-bottom"
+                    data-tooltip="Revoke"
+                    disabled={application.state !== "submitted"}
+                    onClick={() => revokeApplication(application)}
+                  >
+                    <FontAwesomeIcon icon={faXmark} />
+                  </button>
+                  <div
+                    className="button is-small mx-1 is-link tooltip-bottom"
+                    data-tooltip="Show Details"
+                    onClick={() =>
+                      router.push(
+                        `${applicationLink(application)}/${application.id}`
+                      )
+                    }
+                  >
+                    <span className="icon">
+                      <FontAwesomeIcon icon={faEye} />
+                    </span>
+                  </div>
+                  <div
+                    className="button is-small mx-1 is-danger tooltip-bottom"
+                    data-tooltip="Delete"
+                    onClick={() => deleteApplication(application.id)}
+                  >
+                    <FontAwesomeIcon icon={faTrash} />
+                  </div>
                 </div>
               </td>
             </tr>

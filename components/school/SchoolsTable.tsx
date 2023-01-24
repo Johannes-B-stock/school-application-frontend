@@ -45,19 +45,21 @@ export default function SchoolsTable({ schools }: { schools: School[] }) {
               </td>
               <td>{school.students?.length ?? 0} Students</td>
               <td>
-                <div
-                  className="button is-small is-primary mx-1"
-                  title="View"
-                  onClick={() => router.push(`/admin/schools/${school.id}`)}
-                >
-                  <FontAwesomeIcon icon={faEye} />
-                </div>
-                <div
-                  className="button is-small is-link mx-1"
-                  title="Edit"
-                  onClick={() => router.push(`/schools/${school.id}/edit`)}
-                >
-                  <FontAwesomeIcon icon={faEdit} />
+                <div className="field is-grouped">
+                  <div
+                    className="button is-small is-primary mx-1 tooltip-bottom"
+                    data-tooltip="View School"
+                    onClick={() => router.push(`/admin/schools/${school.id}`)}
+                  >
+                    <FontAwesomeIcon icon={faEye} />
+                  </div>
+                  <div
+                    className="button is-small is-link mx-1 tooltip-bottom"
+                    data-tooltip="Edit School"
+                    onClick={() => router.push(`/schools/${school.id}/edit`)}
+                  >
+                    <FontAwesomeIcon icon={faEdit} />
+                  </div>
                 </div>
               </td>
             </tr>

@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import { StaffApplicationSetting } from "api-definitions/backend";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
 import { GetServerSideProps } from "next";
+import { getStaffApplicationSettings } from "lib/staffApplication";
 
 export default function StaffApplicationDetailsPage({
   staffAppDetails,
@@ -77,24 +78,17 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
     populate: ["cardImage", "localizations"],
   });
   try {
-    const staffAppDetails = await axios.get<
-      SingleDataResponse<StaffApplicationSetting>
-    >(`${API_URL}/api/staff-application-setting?${query}`, {
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (staffAppDetails.data.error) {
+    const staffAppDetails = await getStaffApplicationSettings({ token, query });
+    if (staffAppDetails.error) {
       return {
         props: {
-          error: staffAppDetails.data.error.message,
+          error: staffAppDetails.error.message,
         },
       };
     }
     return {
       props: {
-        staffAppDetails: staffAppDetails.data.data,
+        staffAppDetails: staffAppDetails.data,
       },
     };
   } catch (error: any) {

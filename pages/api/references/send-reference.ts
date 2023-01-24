@@ -17,8 +17,7 @@ import {
 import {
   getQuestionCollectionIdFromSchool,
   getQuestionCollectionIdFromStaffApplication,
-  updateReferenceInSchoolApplication,
-  updateReferenceInStaffApplication,
+  addReferenceToApplication,
 } from "lib/references";
 
 export default async function sendReference(
@@ -37,12 +36,10 @@ export default async function sendReference(
 
   if (req.method === "POST") {
     const {
-      referenceName,
       application,
       reference,
       user,
     }: {
-      referenceName: string;
       application: StaffApplication | SchoolApplication;
       reference: Partial<Reference>;
       user: Partial<User>;
@@ -145,21 +142,8 @@ export default async function sendReference(
       res.write("Not Found");
       return;
     }
-    if (isSchoolReference) {
-      await updateReferenceInSchoolApplication(
-        application,
-        token,
-        referenceName,
-        result
-      );
-    } else {
-      await updateReferenceInStaffApplication(
-        application,
-        token,
-        referenceName,
-        result
-      );
-    }
+    // Do this seperately so that references who can not be be send via email will not be added to application.
+    await addReferenceToApplication(application, token, result.data.id);
 
     res.status(200).json(result.data);
   }

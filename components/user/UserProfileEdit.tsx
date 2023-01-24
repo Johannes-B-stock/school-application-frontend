@@ -206,7 +206,7 @@ export default function UserProfileEdit({
             <div className="field">
               <p className="control is-expanded has-icons-left">
                 <input
-                  className="input"
+                  className={`input ${userEdit?.firstname ? "" : "is-danger"}`}
                   type="text"
                   id="firstname"
                   name="firstname"
@@ -252,7 +252,7 @@ export default function UserProfileEdit({
             <div className="field">
               <p className="control is-expanded has-icons-left">
                 <input
-                  className="input"
+                  className={`input ${userEdit?.lastname ? "" : "is-danger"}`}
                   type="text"
                   id="lastname"
                   name="lastname"
@@ -315,6 +315,7 @@ export default function UserProfileEdit({
                 value={userEdit?.gender ?? ""}
                 onInputChange={handleInputChange}
                 locale={locale}
+                required={true}
               />
             </div>
           </div>
@@ -327,7 +328,7 @@ export default function UserProfileEdit({
             <div className="field">
               <p className="control">
                 <input
-                  className="input"
+                  className={`input ${userEdit?.birthday ? "" : "is-danger"}`}
                   type="date"
                   name="birthday"
                   value={userEdit?.birthday ?? ""}

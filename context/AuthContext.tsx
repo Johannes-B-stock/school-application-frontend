@@ -3,7 +3,6 @@ import {
   createContext,
   useState,
   useEffect,
-  FC,
   Dispatch,
   SetStateAction,
 } from "react";

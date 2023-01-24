@@ -1396,6 +1396,11 @@ cryptr@^6.1.0:
   resolved "https://registry.yarnpkg.com/cryptr/-/cryptr-6.1.0.tgz#d53798c4986bab76aaf21cd822107e26eb8af4e5"
   integrity sha512-vJBrDcKAZ/OpMW4EptbGTD2EfNEywh6QtsPDX5kd2u1MNBmTLGC3IlOoRh8Ov7dmZhFfRjUJ07u4eCoJ8+oM9A==
 
+css-tooltip@^0.3.4:
+  version "0.3.4"
+  resolved "https://registry.yarnpkg.com/css-tooltip/-/css-tooltip-0.3.4.tgz#b7c247d5cd7e5954b9fe1e1b0908fd6e65a140f0"
+  integrity sha512-/CeS8jfkEkJvAPbV1SEkkuYoFdIxTJ4I/iQTEcdYGew7X76f+Wl0PXsyZ9tw2FGEZ21r2RJf3RX9Dv+11IdW8g==
+
 csstype@^3.0.2:
   version "3.0.11"
   resolved "https://registry.npmjs.org/csstype/-/csstype-3.0.11.tgz"

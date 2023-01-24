@@ -25,6 +25,7 @@
     "bulma-switch": "^2.0.4",
     "cookie": "^0.4.2",
     "cryptr": "^6.1.0",
+    "css-tooltip": "^0.3.4",
     "currency-list": "^1.0.8",
     "currency-symbol-map": "^5.1.0",
     "i18n-iso-countries": "^7.4.0",

@@ -19,7 +19,6 @@ import GoogleSpinner from "@/components/common/GoogleSpinner";
 import AddressEdit from "@/components/user/AddressEdit";
 import AuthContext from "@/context/AuthContext";
 import NotAuthorized from "@/components/auth/NotAuthorized";
-import { updateState, updateStep } from "lib/schoolApplication";
 import { updateMe } from "lib/user";
 import ApplicationQuestions from "@/components/application/ApplicationQuestions";
 import ReferenceForm from "@/components/application/ReferenceForm";
@@ -32,6 +31,8 @@ import { ApiError, SingleDataResponse } from "api-definitions/strapiBaseTypes";
 import { SchoolApplication } from "api-definitions/backend";
 import { useLocale } from "i18n/useLocale";
 import { GetServerSideProps } from "next";
+import { getMainAddress } from "lib/address";
+import { updateState, updateStep } from "lib/applications";
 
 export default function ApplicationPage({
   application,
@@ -51,12 +52,14 @@ export default function ApplicationPage({
   const [userEdit, setUserEdit] = useState(user);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [reference1Send, setReference1Send] = useState<boolean>(
-    application?.reference1?.emailSend ?? false
+    application?.references?.find(() => true)?.emailSend ?? false
   );
   const [reference2Send, setReference2Send] = useState<boolean>(
-    application?.reference2?.emailSend ?? false
+    application?.references?.find((_ref, index) => index === 1)?.emailSend ??
+      false
   );
 
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   useEffect(() => {
     if (error) {
       toast.error(`${error.status} - ${error.message}`);
@@ -114,16 +117,16 @@ export default function ApplicationPage({
     if (applicationEdit.step >= 3 || isLoadingBack || isLoadingNext) {
       return;
     }
-
     try {
       setIsLoadingNext(true);
       if (applicationEdit.state === "created") {
         if (applicationEdit.step === 0) {
-          await saveUserEdit();
           if (!addressSaveFunction) {
             throw new Error("can not save address!");
           }
           await addressSaveFunction();
+          await saveUserEdit();
+
           if (!userDetailsSaveFunction) {
             throw new Error("can not save user details!");
           }
@@ -160,7 +163,8 @@ export default function ApplicationPage({
       const updateStepResult = await updateStep(
         application.id,
         nextStep,
-        token
+        token,
+        "school"
       );
       if (updateStepResult.ok) {
         setApplicationEdit({
@@ -207,7 +211,7 @@ export default function ApplicationPage({
     }
     try {
       setSubmitLoading(true);
-      await updateState(application.id, token, "submitted");
+      await updateState(application.id, token, "submitted", "school");
       setApplicationEdit({ ...applicationEdit, state: "submitted" });
 
       toast.success("Successfully submitted!");
@@ -415,8 +419,10 @@ export default function ApplicationPage({
                         placeholder="First Name"
                         name="firstname"
                         id="firstname"
-                        className="input"
-                        value={userEdit?.firstname}
+                        className={`input ${
+                          userEdit?.firstname ? "" : "is-danger"
+                        }`}
+                        value={userEdit?.firstname ?? ""}
                         onChange={handleUserInputChange}
                       />
                       <span className="icon is-small is-left">
@@ -432,7 +438,7 @@ export default function ApplicationPage({
                         name="middle_names"
                         className="input"
                         id="middle_names"
-                        value={userEdit?.middle_names}
+                        value={userEdit?.middle_names ?? ""}
                         onChange={handleUserInputChange}
                       />
                     </div>
@@ -443,9 +449,11 @@ export default function ApplicationPage({
                         type="text"
                         placeholder="Last Name"
                         name="lastname"
-                        className="input"
+                        className={`input ${
+                          userEdit?.lastname ? "" : "is-danger"
+                        }`}
                         id="lastname"
-                        value={userEdit?.lastname}
+                        value={userEdit?.lastname ?? ""}
                         onChange={handleUserInputChange}
                       />
                     </div>
@@ -462,6 +470,7 @@ export default function ApplicationPage({
                       value={userEdit?.gender}
                       onInputChange={handleUserInputChange}
                       locale={locale}
+                      required={true}
                     />
                   </div>
                 </div>
@@ -474,10 +483,12 @@ export default function ApplicationPage({
                   <div className="field">
                     <div className="control has-icons-left">
                       <input
-                        className="input"
+                        className={`input ${
+                          userEdit?.birthday ? "" : "is-danger"
+                        }`}
                         type="date"
                         name="birthday"
-                        value={userEdit?.birthday}
+                        value={userEdit?.birthday ?? ""}
                         onChange={handleUserInputChange}
                       />
                       <span className="icon is-small is-left">
@@ -503,8 +514,8 @@ export default function ApplicationPage({
               <AddressEdit
                 token={token}
                 user={userEdit}
-                address={application?.user?.address}
-                addressId={application?.user?.address?.id}
+                address={getMainAddress(application?.user)}
+                addressId={getMainAddress(application?.user)?.id}
                 alwaysEdit={true}
                 noButtons={true}
                 bindSave={bindAddressSave}
@@ -519,7 +530,11 @@ export default function ApplicationPage({
             }`}
           >
             <ApplicationQuestions
-              answerDetails={application.answers ?? []}
+              application={applicationEdit}
+              questionCollection={
+                application.school.applicationQuestions?.questions ?? []
+              }
+              answerDetails={application.answers}
               bindSave={bindQuestionSave}
               disabled={applicationEdit.state !== "created"}
               token={token}
@@ -604,11 +619,16 @@ export const getServerSideProps: GetServerSideProps = async ({
         },
       },
       user: {
-        populate: ["address"],
+        populate: "addresses",
       },
-      school: { populate: "*" },
-      reference1: { populate: "*" },
-      reference2: { populate: "*" },
+      school: {
+        populate: {
+          applicationQuestions: {
+            populate: { questions: { populate: ["type", "localization"] } },
+          },
+        },
+      },
+      references: { populate: "*" },
     },
   });
 

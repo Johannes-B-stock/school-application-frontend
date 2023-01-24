@@ -48,10 +48,7 @@ export default function StaffDashboardPage({
         setIsLoadingApplications(true);
         const queryObject = {
           populate: {
-            reference1: {
-              populate: "",
-            },
-            reference2: {
+            references: {
               populate: "",
             },
             answers: {

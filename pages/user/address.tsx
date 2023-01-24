@@ -7,12 +7,22 @@ import { parseCookie } from "lib/utils";
 import { address } from "@/i18n";
 import styles from "@/styles/ProfilePage.module.css";
 import { GetServerSideProps } from "next";
-import { useContext } from "react";
+import { useContext, useMemo, useState } from "react";
 import { useLocale } from "i18n/useLocale";
+import { getEmergencyAddress, getMainAddress } from "lib/address";
 
 export default function AddressPage({ token }: { token: string }) {
   const { user } = useContext(AuthContext);
+  const [mainAddress, setMainAddress] = useState(getMainAddress(user));
+  const [emergencyAddress, setEmergencyAddress] = useState(
+    getEmergencyAddress(user)
+  );
   const locale = useLocale();
+
+  useMemo(() => {
+    setEmergencyAddress(getEmergencyAddress(user));
+    setMainAddress(getMainAddress(user));
+  }, [user]);
 
   if (!user) {
     return <GoogleSpinner />;
@@ -38,8 +48,8 @@ export default function AddressPage({ token }: { token: string }) {
                 <AddressEdit
                   token={token}
                   user={user}
-                  address={user.address}
-                  addressId={user.address?.id}
+                  address={mainAddress}
+                  addressId={mainAddress?.id}
                 />
               )}
             </div>
@@ -56,8 +66,8 @@ export default function AddressPage({ token }: { token: string }) {
                 <AddressEdit
                   token={token}
                   user={user}
-                  address={user.emergency_address}
-                  addressId={user.emergency_address?.id}
+                  address={emergencyAddress}
+                  addressId={emergencyAddress?.id}
                   isEmergencyAddress={true}
                 />
               )}

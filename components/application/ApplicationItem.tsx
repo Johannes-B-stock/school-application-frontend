@@ -137,8 +137,8 @@ export default function ApplicationItem({
           </a>
         ) : (
           <span
-            className="card-footer-item disabled"
-            title="You can only submit when the application is finished and not yet submitted"
+            className="card-footer-item disabled tooltip-bottom"
+            data-tooltip="You can only submit when the application is finished and not yet submitted"
           >
             {general.buttons[locale].submit}
           </span>

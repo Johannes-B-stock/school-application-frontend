@@ -4,25 +4,17 @@ import { API_URL } from "@/config/index";
 import { toast } from "react-toastify";
 import ReactMarkdown from "react-markdown";
 import { MouseEvent, useContext, useState } from "react";
-import { parseCookie } from "lib/utils";
-import NotAuthorized from "@/components/auth/NotAuthorized";
 import {
   ArrayDataResponse,
   SingleDataResponse,
 } from "api-definitions/strapiBaseTypes";
-import { Question, School } from "api-definitions/backend";
-import { GetServerSideProps } from "next";
+import { School } from "api-definitions/backend";
+import { GetStaticPaths, GetStaticProps } from "next";
 import AuthContext from "@/context/AuthContext";
+import { createApplication } from "lib/schoolApplication";
+import axios from "axios";
 
-export default function ApplyPage({
-  school,
-  questions,
-  token,
-}: {
-  school: School;
-  questions: Question[];
-  token: string;
-}) {
+export default function ApplyPage({ school }: { school: School }) {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useContext(AuthContext);
 
@@ -35,61 +27,18 @@ export default function ApplyPage({
         return;
       }
       setIsLoading(true);
-
-      const res = await fetch(`${API_URL}/api/school-applications`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          data: {
-            school: school.id,
-            user: user.id,
-          },
-        }),
-      });
-      const application = await res.json();
-      if (!res.ok) {
-        toast.error(
-          application.error?.message ??
-            res.statusText ??
-            "Something went wrong."
-        );
-      } else {
-        const answers = questions?.map((q) => ({ ...q, answer: "" }));
-        await Promise.all(
-          answers?.map(async (answer) => {
-            const answerRes = await fetch(`${API_URL}/api/answers`, {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: JSON.stringify({
-                data: {
-                  school_application: application.data.id,
-                  question: answer.id,
-                  answer: answer.answer,
-                },
-              }),
-            });
-            const answerResult = await answerRes.json();
-
-            if (!answerRes.ok) {
-              toast.error(answerResult.error?.message ?? answerRes.statusText);
-            }
-          })
-        );
-
-        router.push(`/applications/${application.data.id}`);
+      const application = await createApplication(school, user.id);
+      if (application) {
+        router.push(`/applications/${application.id}`);
       }
+    } catch (error: any) {
+      toast.error(error?.message ?? error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  return token ? (
+  return (
     <div className="content">
       <ReactMarkdown>{school?.preApplicationText}</ReactMarkdown>
       <div className="field is-grouped">
@@ -111,67 +60,70 @@ export default function ApplyPage({
         </div>
       </div>
     </div>
-  ) : (
-    <NotAuthorized />
   );
 }
 
-export const getServerSideProps: GetServerSideProps = async ({
-  params,
-  req,
-  res,
-}) => {
-  const id = params?.id;
-  if (!req.headers.cookie) {
-    res.statusCode = 403;
-    res.write(JSON.stringify({ message: "Not authorized" }));
-    return { props: { school: null } };
-  }
-  const query = qs.stringify({
-    populate: "applicationQuestions",
-  });
-
-  const { token } = parseCookie(req);
-  const resultFetch = await fetch(`${API_URL}/api/schools/${id}?${query}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  const result = (await resultFetch.json()) as SingleDataResponse<School>;
-  const school = result.data;
-
-  if (!resultFetch.ok) {
-    throw new Error("School could not be found");
-  }
-  const questionQuery = qs.stringify(
+export const getStaticPaths: GetStaticPaths = async () => {
+  const query = qs.stringify(
     {
+      populate: "applicationQuestions",
       filters: {
-        collection: {
-          id: {
-            $eq: result.data?.applicationQuestions?.id,
+        $and: [
+          {
+            isPublic: {
+              $eq: true,
+            },
+            acceptingStudents: {
+              $eq: true,
+            },
           },
-        },
+        ],
       },
     },
     {
       encodeValuesOnly: true,
     }
   );
-  const quesRes = await fetch(`${API_URL}/api/questions?${questionQuery}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
+
+  const schoolsResult = await axios.get<ArrayDataResponse<School>>(
+    `${API_URL}/api/schools?${query}`
+  );
+
+  const schools = schoolsResult.data?.data;
+
+  const paths =
+    schools?.map((school) => ({
+      params: { id: school.id.toString() },
+    })) ?? [];
+
+  // { fallback: blocking } means if path does not exists it behaves like ssr
+  return { paths, fallback: "blocking" };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
+  const id = params?.id;
+
+  // if (!req.headers.cookie) {
+  //   res.statusCode = 403;
+  //   res.write(JSON.stringify({ message: "Not authorized" }));
+  //   return { notFound: true };
+  // }
+  const query = qs.stringify({
+    populate: "applicationQuestions",
   });
-  const questionResult = (await quesRes.json()) as ArrayDataResponse<Question>;
-  const questions = questionResult.data;
+
+  const schoolResult = await axios.get<SingleDataResponse<School>>(
+    `${API_URL}/api/schools/${id}?${query}`
+  );
+
+  const school = schoolResult.data?.data;
+
+  if (!school) {
+    return { notFound: true };
+  }
   return {
     props: {
       school: school ?? null,
-      questions: questions ?? null,
-      token,
     },
   };
 };

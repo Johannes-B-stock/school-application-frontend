@@ -5,10 +5,8 @@ import qs from "qs";
 import { GetStaticProps } from "next";
 import { School, StaffApplicationSetting } from "api-definitions/backend";
 import { home } from "@/i18n";
-import {
-  ArrayDataResponse,
-  SingleDataResponse,
-} from "api-definitions/strapiBaseTypes";
+import { ArrayDataResponse } from "api-definitions/strapiBaseTypes";
+import { getStaffApplicationSettings } from "lib/staffApplication";
 
 export default function HomePage({
   schools,
@@ -70,16 +68,10 @@ export const getStaticProps: GetStaticProps = async ({ locale }) => {
     populate: ["cardImage", "localizations"],
   });
 
-  const fetchRes = await fetch(
-    `${API_URL}/api/staff-application-setting?${staffQuery}`
-  );
-  const staffResult =
-    (await fetchRes.json()) as SingleDataResponse<StaffApplicationSetting>;
-
-  const staffApplicationDetails = staffResult.data;
+  const fetchRes = await getStaffApplicationSettings({ query: staffQuery });
 
   return {
-    props: { schools, staffApplicationDetails, locale },
+    props: { schools, staffApplicationDetails: fetchRes.data, locale },
     revalidate: 10,
   };
 };

@@ -1,6 +1,5 @@
 import { useRouter } from "next/router";
 import qs from "qs";
-import { API_URL } from "@/config/index";
 import { useState, useEffect, useContext, ChangeEvent } from "react";
 import styles from "@/styles/Application.module.css";
 import { parseCookie } from "lib/utils";
@@ -19,9 +18,9 @@ import AddressEdit from "@/components/user/AddressEdit";
 import AuthContext from "@/context/AuthContext";
 import NotAuthorized from "@/components/auth/NotAuthorized";
 import {
-  updateApplication,
-  updateState,
-  updateStep,
+  getStaffApplicationDetails,
+  getStaffApplicationSettings,
+  updateApplicationDates,
 } from "lib/staffApplication";
 import { updateMe } from "lib/user";
 import ApplicationQuestions from "@/components/application/ApplicationQuestions";
@@ -31,16 +30,28 @@ import UserDetailsEdit from "@/components/user/UserDetailsEdit";
 import GenderSelect from "@/components/common/GenderSelect";
 import { GetServerSideProps } from "next";
 import { general, profile, staffApplicationDetails } from "@/i18n";
-import { ErrorResponse, StaffApplication } from "api-definitions/backend";
-import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import {
+  ErrorResponse,
+  Question,
+  StaffApplication,
+  StaffApplicationSetting,
+} from "api-definitions/backend";
 import { useLocale } from "i18n/useLocale";
+import { getMainAddress } from "lib/address";
+import { getQuestionsFromAPI } from "lib/questions";
+import NotFound from "@/components/common/NotFound";
+import { updateState, updateStep } from "lib/applications";
 
 export default function StaffApplicationPage({
   application,
+  applicationSettings,
+  questionCollection,
   error,
   token,
 }: {
-  application: StaffApplication;
+  application?: StaffApplication;
+  applicationSettings?: StaffApplicationSetting;
+  questionCollection?: Question[];
   error: ErrorResponse;
   token: string;
 }) {
@@ -53,10 +64,11 @@ export default function StaffApplicationPage({
   const [userEdit, setUserEdit] = useState(user);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [reference1Send, setReference1Send] = useState(
-    application.reference1?.emailSend ?? false
+    application?.references?.find(() => true)?.emailSend ?? false
   );
   const [reference2Send, setReference2Send] = useState(
-    application.reference2?.emailSend ?? false
+    application?.references?.find((_ref, index) => index === 1)?.emailSend ??
+      false
   );
 
   useEffect(() => {
@@ -88,7 +100,12 @@ export default function StaffApplicationPage({
   }
 
   const goToStep = async (step: number) => {
-    if (step == null || application.step < step || step < 0) {
+    if (
+      !applicationEdit ||
+      step == null ||
+      application.step < step ||
+      step < 0
+    ) {
       return;
     }
     if (applicationEdit.step < step) {
@@ -103,13 +120,19 @@ export default function StaffApplicationPage({
   };
 
   const saveApplicationEdit = async () => {
+    if (!applicationEdit) {
+      return;
+    }
     if (!applicationEdit.arriveAt) {
       throw new Error("Please provide the date when you want to arrive");
     }
-    await updateApplication(token, applicationEdit);
+    await updateApplicationDates(token, applicationEdit);
   };
 
   const goBack = async () => {
+    if (!applicationEdit) {
+      return;
+    }
     if (applicationEdit.step === 0 || isLoadingBack || isLoadingNext) {
       return;
     }
@@ -120,7 +143,12 @@ export default function StaffApplicationPage({
   };
 
   const goNext = async () => {
-    if (applicationEdit.step >= 3 || isLoadingBack || isLoadingNext) {
+    if (
+      !applicationEdit ||
+      applicationEdit.step >= 3 ||
+      isLoadingBack ||
+      isLoadingNext
+    ) {
       return;
     }
 
@@ -169,11 +197,15 @@ export default function StaffApplicationPage({
   };
 
   async function handleStepUpdate(nextStep: number) {
+    if (!applicationEdit || !application) {
+      return;
+    }
     if (nextStep > applicationEdit.step) {
       const updateStepResult = await updateStep(
         application.id,
         nextStep,
-        token
+        token,
+        "staff"
       );
       if (updateStepResult.ok) {
         setApplicationEdit({
@@ -200,6 +232,9 @@ export default function StaffApplicationPage({
   };
 
   const handleApplicationInputChange = (e: ChangeEvent<HTMLInputElement>) => {
+    if (!applicationEdit) {
+      return;
+    }
     const { name, value } = e.target;
     setApplicationEdit({ ...applicationEdit, [name]: value });
   };
@@ -221,12 +256,12 @@ export default function StaffApplicationPage({
   }
 
   const handleSubmitApplication = async () => {
-    if (submitLoading) {
+    if (submitLoading || !applicationEdit) {
       return;
     }
     try {
       setSubmitLoading(true);
-      await updateState(application.id, token, "submitted");
+      await updateState(application.id, token, "submitted", "staff");
       setApplicationEdit({ ...applicationEdit, state: "submitted" });
 
       toast.success("Successfully submitted!");
@@ -236,6 +271,10 @@ export default function StaffApplicationPage({
       setSubmitLoading(false);
     }
   };
+
+  if (!applicationEdit || !application) {
+    return <NotFound />;
+  }
 
   return (
     <div className="content has-text-centered">
@@ -270,7 +309,7 @@ export default function StaffApplicationPage({
         </div>
         <div
           className={`step-item ${
-            applicationEdit.step === 1 ? "is-active" : ""
+            applicationEdit?.step === 1 ? "is-active" : ""
           } ${application.step > 1 ? "is-completed" : ""} ${
             application.step >= 1 ? "is-clickable" : ""
           }`}
@@ -290,7 +329,7 @@ export default function StaffApplicationPage({
         </div>
         <div
           className={`step-item ${
-            applicationEdit.step === 2 ? "is-active" : ""
+            applicationEdit?.step === 2 ? "is-active" : ""
           } ${application.step > 2 ? "is-completed" : ""} ${
             application.step >= 2 ? "is-clickable" : ""
           }`}
@@ -311,9 +350,9 @@ export default function StaffApplicationPage({
         </div>
         <div
           className={`step-item ${
-            applicationEdit.step === 3 ? "is-active" : ""
+            applicationEdit?.step === 3 ? "is-active" : ""
           } ${
-            application.step >= 3 && applicationEdit.state !== "created"
+            application.step >= 3 && applicationEdit?.state !== "created"
               ? "is-completed"
               : ""
           } ${application.step >= 3 ? "is-clickable" : ""}`}
@@ -344,7 +383,7 @@ export default function StaffApplicationPage({
           </div>
           <div
             className={`step-content has-text-centered ${
-              applicationEdit.step === 0 && !(isLoadingBack || isLoadingNext)
+              applicationEdit?.step === 0 && !(isLoadingBack || isLoadingNext)
                 ? "is-active"
                 : ""
             }`}
@@ -423,7 +462,7 @@ export default function StaffApplicationPage({
                         name="firstname"
                         id="firstname"
                         className="input"
-                        value={userEdit?.firstname}
+                        value={userEdit?.firstname ?? ""}
                         onChange={handleUserInputChange}
                       />
                       <span className="icon is-small is-left">
@@ -452,7 +491,7 @@ export default function StaffApplicationPage({
                         name="lastname"
                         className="input"
                         id="lastname"
-                        value={userEdit?.lastname}
+                        value={userEdit?.lastname ?? ""}
                         onChange={handleUserInputChange}
                       />
                     </div>
@@ -510,8 +549,8 @@ export default function StaffApplicationPage({
               <AddressEdit
                 token={token}
                 user={userEdit}
-                address={application.user.address}
-                addressId={application.user.address?.id}
+                address={getMainAddress(application.user)}
+                addressId={getMainAddress(application.user)?.id}
                 alwaysEdit={true}
                 noButtons={true}
                 bindSave={bindAddressSave}
@@ -520,21 +559,25 @@ export default function StaffApplicationPage({
           </div>
           <div
             className={`step-content has-text-centered ${
-              applicationEdit.step === 1 && !(isLoadingBack || isLoadingNext)
+              applicationEdit?.step === 1 && !(isLoadingBack || isLoadingNext)
                 ? "is-active"
                 : ""
             }`}
           >
-            <ApplicationQuestions
-              answerDetails={application.answers}
-              bindSave={bindQuestionSave}
-              disabled={applicationEdit.state !== "created"}
-              token={token}
-            />
+            {questionCollection && (
+              <ApplicationQuestions
+                application={application}
+                questionCollection={questionCollection}
+                answerDetails={application.answers}
+                bindSave={bindQuestionSave}
+                disabled={applicationEdit?.state !== "created"}
+                token={token}
+              />
+            )}
           </div>
           <div
             className={`step-content has-text-centered ${
-              applicationEdit.step === 2 && !(isLoadingBack || isLoadingNext)
+              applicationEdit?.step === 2 && !(isLoadingBack || isLoadingNext)
                 ? "is-active"
                 : ""
             }`}
@@ -552,11 +595,11 @@ export default function StaffApplicationPage({
           </div>
           <div
             className={`step-content has-text-centered ${
-              applicationEdit.step === 3 ? "is-active" : ""
+              applicationEdit?.step === 3 ? "is-active" : ""
             }`}
           >
             <ConfirmStep
-              applicationState={applicationEdit.state}
+              applicationState={applicationEdit?.state}
               submitApplication={handleSubmitApplication}
               submitLoading={submitLoading}
             />
@@ -568,7 +611,7 @@ export default function StaffApplicationPage({
               data-nav="previous"
               onClick={goBack}
               className={`button is-light ${isLoadingBack ? "is-loading" : ""}`}
-              disabled={applicationEdit.step === 0 ? true : false}
+              disabled={applicationEdit?.step === 0 ? true : false}
             >
               {general.buttons[locale].previous}
             </button>
@@ -580,7 +623,7 @@ export default function StaffApplicationPage({
               className={`button is-primary ${
                 isLoadingNext ? "is-loading" : ""
               }`}
-              disabled={applicationEdit.step > 2 ? true : false}
+              disabled={applicationEdit?.step > 2 ? true : false}
             >
               {general.buttons[locale].next}
             </button>
@@ -595,7 +638,10 @@ export const getServerSideProps: GetServerSideProps = async ({
   req,
   params,
 }) => {
-  const id = params?.id;
+  const id = typeof params?.id === "string" ? params.id : params?.id?.[0];
+  if (!id) {
+    throw new Error("id params is missing");
+  }
   const query = qs.stringify({
     populate: {
       answers: {
@@ -606,34 +652,80 @@ export const getServerSideProps: GetServerSideProps = async ({
         },
       },
       user: {
-        populate: ["address"],
+        populate: ["addresses"],
       },
-      reference1: { populate: "*" },
-      reference2: { populate: "*" },
+      references: { populate: "*" },
     },
   });
 
   const { token } = parseCookie(req);
+  if (!token) {
+    throw new Error("Not logged in!");
+  }
 
-  const res = await fetch(`${API_URL}/api/staff-applications/${id}?${query}`, {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  });
-  const result = (await res.json()) as SingleDataResponse<StaffApplication>;
-  if (!res.ok) {
+  try {
+    const application = await getStaffApplicationDetails(id, token, query);
+
+    if (application.error) {
+      return {
+        props: {
+          error: application.error,
+        },
+      };
+    }
+    if (!application.data) {
+      return { notFound: true };
+    }
+    const settingsQuery = qs.stringify(
+      {
+        populate: "applicationQuestions",
+      },
+      { encodeValuesOnly: true }
+    );
+    const applicationSettings = await getStaffApplicationSettings({
+      token,
+      query: settingsQuery,
+    });
+
+    if (applicationSettings.error) {
+      return {
+        props: {
+          error: applicationSettings.error,
+        },
+      };
+    }
+
+    const questionsQuery = qs.stringify({
+      filters: {
+        collection: {
+          id: { $eq: applicationSettings.data?.applicationQuestions.id },
+        },
+      },
+      populate: ["type", "localizations"],
+    });
+
+    const questions = await getQuestionsFromAPI(token, questionsQuery);
+
+    if (questions.error) {
+      return {
+        props: {
+          error: questions.error,
+        },
+      };
+    }
     return {
       props: {
-        error: result.error,
+        application: application.data,
+        applicationSettings: applicationSettings.data,
+        questionCollection: questions.data,
+        token,
+      },
+    };
+  } catch (error: any) {
+    return {
+      props: {
+        error: error.message ?? error,
       },
     };
   }
-
-  return {
-    props: {
-      application: result.data,
-      token,
-    },
-  };
 };

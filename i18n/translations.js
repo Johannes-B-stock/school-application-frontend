@@ -332,7 +332,7 @@ export const home = {
 export const applications = {
   en: {
     applications: "My Applications",
-    noApplications: "You don&apos;t have any open applications yet",
+    noApplications: "You don't have any open applications yet",
     applicationFeePaid: "Fee paid",
     schoolStarts: "School starts",
     schoolEnds: "School ends",
@@ -380,7 +380,7 @@ export const references = {
     referenceDescription:
       "{1} has chosen you as his/her {0} to be his/her reference. Please answer all questions honestly.",
     hello: "Hello",
-    reference1Title: "Reference Person 1",
+    referenceTitle: "Reference",
     name: "Name",
     relation: "Relation",
     email: "Email",
@@ -390,14 +390,13 @@ export const references = {
     answerRequired:
       "All required questions have to be answered before submitting.",
     sendEmail: "Send Email",
-    reference2Title: "Reference Person 2",
   },
   de: {
     reference: "Referenz / Empfehlung",
     referenceDescription:
       "Als der/die {0} von {1} wurdest du ausgewählt, damit wir besser beurteilen können, ob {1} angenommen werden kann. Bitte beantworte alle Fragen ehrlich.",
     hello: "Hallo",
-    reference1Title: "Referenz Person 1",
+    referenceTitle: "Referenz",
     name: "Name",
     relation: "Beziehung",
     email: "Email",
@@ -407,7 +406,6 @@ export const references = {
     answerRequired:
       "Alle erforderlichen Fragen müssen beantwortet werden bevor die Referenz abgeschickt werden kann.",
     sendEmail: "Email Abschicken",
-    reference2Title: "Referenz Person 2",
   },
 };
 

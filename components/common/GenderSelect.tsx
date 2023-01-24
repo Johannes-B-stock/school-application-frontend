@@ -11,14 +11,16 @@ export default function GenderSelect({
   value,
   onInputChange,
   locale,
+  required = false,
 }: {
   value?: string;
   onInputChange: (e: any) => void;
   locale: Locales;
+  required?: boolean;
 }) {
   return (
     <div className="control is-expanded has-icons-left">
-      <div className="select">
+      <div className={`select ${required && !value ? "is-danger" : ""}`}>
         <select
           name="gender"
           id="gender"

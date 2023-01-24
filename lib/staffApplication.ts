@@ -1,21 +1,29 @@
-import { API_URL } from "../config";
+import { API_URL, NEXT_URL } from "../config";
 import axios from "axios";
 import qs from "qs";
-import { ApplicationState, StaffApplication } from "api-definitions/backend";
+import {
+  StaffApplication,
+  StaffApplicationSetting,
+} from "api-definitions/backend";
 import {
   ArrayDataResponse,
   SingleDataResponse,
 } from "api-definitions/strapiBaseTypes";
+import { createHeaders } from "./common";
 
 export async function getStaffApplicationDetails(
   id: string,
   token: string,
-  queryObject: object
+  query?: object | string
 ) {
-  const query = qs.stringify(queryObject, { encodeValuesOnly: true });
-
+  let queryString = query === undefined ? "" : "?";
+  if (typeof query === "object") {
+    queryString += qs.stringify(query, { encodeValuesOnly: true });
+  } else {
+    queryString += query;
+  }
   const result = await axios.get<SingleDataResponse<StaffApplication>>(
-    `${API_URL}/api/staff-applications/${id}?${query}`,
+    `${API_URL}/api/staff-applications/${id}${queryString}`,
     {
       headers: {
         "Content-Type": "application/json",
@@ -40,55 +48,7 @@ export async function getAllStaffApplications(token: string, query: string) {
   return allStaff.data;
 }
 
-export async function updateState(
-  id: number,
-  token: string,
-  desiredState: ApplicationState
-) {
-  const changeFetch = await fetch(`${API_URL}/api/staff-applications/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      data: {
-        state: desiredState,
-      },
-    }),
-  });
-  if (!changeFetch.ok) {
-    const result = await changeFetch.json();
-    throw new Error(result.error?.message ?? changeFetch.statusText);
-  }
-}
-
-export async function updateStep(id: number, step: number, token: string) {
-  const fetchUpdate = await fetch(`${API_URL}/api/staff-applications/${id}`, {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify({
-      data: {
-        step,
-      },
-    }),
-  });
-  const result = await fetchUpdate.json();
-
-  if (fetchUpdate.ok) {
-    return { ok: true };
-  } else {
-    return {
-      ok: false,
-      errorMessage: result.message || fetchUpdate.statusText,
-    };
-  }
-}
-
-export async function updateApplication(
+export async function updateApplicationDates(
   token: string,
   application: StaffApplication
 ) {
@@ -107,4 +67,40 @@ export async function updateApplication(
       },
     }
   );
+}
+
+export async function getStaffApplicationSettings(options?: {
+  token?: string;
+  query?: string;
+}) {
+  const headers = createHeaders(options?.token);
+
+  const result = await axios.get<SingleDataResponse<StaffApplicationSetting>>(
+    `${API_URL}/api/staff-application-setting${
+      options?.query ? "?" + options?.query : ""
+    }`,
+    {
+      headers: headers,
+    }
+  );
+  return result.data;
+}
+
+export async function createApplication(
+  userId: number,
+  questionCollectionId: number
+) {
+  const application = await axios.post<StaffApplication>(
+    `${NEXT_URL}/api/application/create-staff-application`,
+    {
+      questionCollectionId: questionCollectionId,
+      userId,
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  return application.data;
 }

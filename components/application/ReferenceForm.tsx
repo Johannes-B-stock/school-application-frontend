@@ -26,10 +26,14 @@ export default function ReferenceForm({
   const [sendingReference1, setSendingReference1] = useState(false);
   const [sendingReference2, setSendingReference2] = useState(false);
   const [reference1, setReference1] = useState<Partial<Reference> | undefined>(
-    application?.reference1
+    application?.references != undefined && application?.references?.length > 0
+      ? application?.references?.[0]
+      : undefined
   );
   const [reference2, setReference2] = useState<Partial<Reference> | undefined>(
-    application?.reference2
+    application?.references != undefined && application?.references?.length > 1
+      ? application?.references?.[1]
+      : undefined
   );
   const locale = useLocale();
   const onReference1ValueChanged = (e: ChangeEvent<HTMLInputElement>) => {
@@ -66,7 +70,7 @@ export default function ReferenceForm({
     try {
       setSendingReference1(true);
 
-      await sendReference("reference1", application, reference1, user);
+      await sendReference(application, reference1, user);
       setReference1({ ...reference1, emailSend: true });
       reference1Send && reference1Send(true);
       toast.success("email send successfully");
@@ -92,7 +96,7 @@ export default function ReferenceForm({
 
     try {
       setSendingReference2(true);
-      await sendReference("reference2", application, reference2, user);
+      await sendReference(application, reference2, user);
       setReference2({ ...reference2, emailSend: true });
       reference2Send && reference2Send(true);
       toast.success("email send successfully");
@@ -107,7 +111,7 @@ export default function ReferenceForm({
     <form className="form">
       <div className="columns has-text-left">
         <div className="column">
-          <h4>{references[locale].reference1Title}</h4>
+          <h4>{references[locale].referenceTitle} 1</h4>
 
           {reference1?.emailSend ? (
             <>
@@ -193,7 +197,7 @@ export default function ReferenceForm({
           )}
         </div>
         <div className="column">
-          <h4>{references[locale].reference2Title}</h4>
+          <h4>{references[locale].referenceTitle} 2</h4>
 
           {reference2?.emailSend ? (
             <>

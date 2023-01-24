@@ -7,6 +7,7 @@ $switch-background-active: $grey-lighter;
 
 @import "../node_modules/bulma/bulma.sass";
 @import "bulma-switch";
+@import "../node_modules/css-tooltip/dist/css-tooltip.min.css";
 
 // @import "../node_modules/bulma-steps/bulma-steps.sass";
 
@@ -17,6 +18,10 @@ $switch-background-active: $grey-lighter;
 
 .loading {
   @include loader;
+}
+
+.border-red {
+  border-color: $danger !important;
 }
 
 .avatarInner {

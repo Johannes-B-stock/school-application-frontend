@@ -4,15 +4,35 @@ import axios from "axios";
 import {
   SchoolApplication,
   Reference,
-  StaffApplicationSetting,
   User,
   StaffApplication,
   School,
 } from "api-definitions/backend";
 import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import { getStaffApplicationSettings } from "./staffApplication";
+
+export async function submitReference(referenceId: number, uid: string) {
+  const updateResult = await axios.put<SingleDataResponse<Reference>>(
+    `${API_URL}/api/references/${referenceId}?uid=${uid}`,
+    {
+      data: {
+        submitted: true,
+      },
+    },
+    {
+      headers: {
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  if (!updateResult.data || updateResult.data.error) {
+    throw new Error(
+      updateResult.data?.error?.message ?? updateResult.statusText
+    );
+  }
+}
 
 export async function sendReference(
-  referenceName: string,
   application: StaffApplication | SchoolApplication,
   reference: Partial<Reference>,
   user: User
@@ -20,7 +40,6 @@ export async function sendReference(
   const newReference = await axios.post<Reference>(
     `${NEXT_URL}/api/references/send-reference`,
     {
-      referenceName,
       application,
       reference,
       user,
@@ -34,14 +53,14 @@ export async function sendReference(
   return newReference.data;
 }
 
-export async function updateReferenceInSchoolApplication(
-  application: SchoolApplication,
+export async function addReferenceToApplication(
+  application: SchoolApplication | StaffApplication,
   token: string,
-  referenceName: string,
-  result: any
+  referenceId: number
 ) {
+  const table = "school" in application ? "school" : "staff";
   const addReferenceToApplicationFetch = await fetch(
-    `${API_URL}/api/school-applications/${application.id}`,
+    `${API_URL}/api/${table}-applications/${application.id}`,
     {
       method: "PUT",
       headers: {
@@ -50,41 +69,19 @@ export async function updateReferenceInSchoolApplication(
       },
       body: JSON.stringify({
         data: {
-          [referenceName]: result.data.id,
+          references: [
+            ...(application.references?.map((ref) => ref.id) ?? []),
+            referenceId,
+          ],
         },
       }),
     }
   );
   if (!addReferenceToApplicationFetch.ok) {
     const errorResult = await addReferenceToApplicationFetch.json();
-    throw new Error(errorResult.error.message);
-  }
-}
-
-export async function updateReferenceInStaffApplication(
-  application: StaffApplication,
-  token: string,
-  referenceName: string,
-  result: any
-) {
-  const addReferenceToApplicationFetch = await fetch(
-    `${API_URL}/api/staff-applications/${application.id}`,
-    {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({
-        data: {
-          [referenceName]: result.data.id,
-        },
-      }),
-    }
-  );
-  if (!addReferenceToApplicationFetch.ok) {
-    const errorResult = await addReferenceToApplicationFetch.json();
-    throw new Error(errorResult.error.message);
+    throw new Error(
+      errorResult.error?.message ?? addReferenceToApplicationFetch.statusText
+    );
   }
 }
 
@@ -149,13 +146,9 @@ export async function getQuestionCollectionIdFromStaffApplication(
     },
     { encodeValuesOnly: true }
   );
-  const staffApplicationSetting = await axios.get<
-    SingleDataResponse<StaffApplicationSetting>
-  >(`${API_URL}/api/staff-application-setting?${query}`, {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-    },
+  const staffApplicationSetting = await getStaffApplicationSettings({
+    token,
+    query,
   });
-  return staffApplicationSetting.data.data?.referenceQuestions?.id;
+  return staffApplicationSetting.data?.referenceQuestions?.id;
 }

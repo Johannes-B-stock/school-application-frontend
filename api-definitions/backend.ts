@@ -20,6 +20,7 @@ export interface Reference extends BaseData {
   emailSend: boolean;
   submitted: boolean;
   answers?: Answer[];
+  uid: string;
 }
 
 export interface ErrorResponse {
@@ -49,6 +50,7 @@ export interface School extends LocaleInfo, Localization<School>, BaseData {
   applications?: SchoolApplication[];
   referenceQuestions?: QuestionCollection;
   applicationQuestions?: QuestionCollection;
+  referencesNeeded: number;
 }
 
 export interface User extends BaseData {
@@ -59,10 +61,9 @@ export interface User extends BaseData {
   middle_names?: string;
   gender?: "male" | "female";
   birthday?: string;
-  address?: Address;
+  addresses?: Address[];
   picture?: Image;
   role?: Role;
-  emergency_address?: Address;
   details?: UserDetails;
   schools?: School[];
 }
@@ -88,6 +89,7 @@ export interface Address extends BaseData {
   id: number;
   firstname: string;
   lastname: string;
+  type: "main" | "emergency" | "secondary" | "old";
   street: string;
   number: string;
   city: string;
@@ -96,8 +98,7 @@ export interface Address extends BaseData {
 }
 
 export interface Application extends BaseData {
-  reference1?: Reference;
-  reference2?: Reference;
+  references?: Reference[];
   user: User;
   answers: Answer[];
   step: number;
@@ -143,7 +144,7 @@ export interface Question extends BaseData, Localization<Question> {
 
 export interface QuestionCollection extends BaseData {
   name: string;
-  questions: ArrayDataResponse<Question>;
+  questions: Question[];
 }
 
 export interface StaffApplicationSetting
@@ -154,8 +155,9 @@ export interface StaffApplicationSetting
   allowApplications: boolean;
   locale: string;
   cardImage: Image;
-  questions: QuestionCollection;
+  applicationQuestions: QuestionCollection;
   referenceQuestions: QuestionCollection;
+  referencesNeeded: number;
 }
 
 export interface PageContentData
