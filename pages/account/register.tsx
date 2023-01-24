@@ -10,6 +10,7 @@ import { general, register as t } from "@/i18n";
 import { useLocale } from "i18n/useLocale";
 import { getEnabledProviders } from "lib/auth";
 import SocialButton from "@/components/common/SocialButton";
+import * as EmailValidator from "email-validator";
 
 export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
@@ -51,18 +52,26 @@ export default function Register() {
     if (isLoading) {
       return;
     }
-    setIsLoading(true);
-    if (formData.password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
-    } else {
-      const userData = {
-        username: formData.name,
-        email: formData.email,
-        password: formData.password,
-      };
-      await register(userData);
+    try {
+      setIsLoading(true);
+      const emailValid = EmailValidator.validate(formData.email);
+      if (!emailValid) {
+        toast.error("Email is not valid. Please provide a valid email");
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        toast.error("Passwords do not match");
+      } else {
+        const userData = {
+          username: formData.name,
+          email: formData.email,
+          password: formData.password,
+        };
+        await register(userData);
+      }
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
   return (
     <div className="columns is-centered has-text-centered ">

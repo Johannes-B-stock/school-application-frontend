@@ -11,6 +11,7 @@ import { useLocale } from "i18n/useLocale";
 import { sendReference } from "lib/references";
 import { ChangeEvent, Dispatch, SetStateAction, useState } from "react";
 import { toast } from "react-toastify";
+import * as EmailValidator from "email-validator";
 
 export default function ReferenceForm({
   application,
@@ -67,6 +68,8 @@ export default function ReferenceForm({
       return;
     }
 
+    EmailValidator.validate(reference1.email!);
+
     try {
       setSendingReference1(true);
 
@@ -87,10 +90,18 @@ export default function ReferenceForm({
     }
 
     const allInfoSet =
-      reference2?.email && reference2.relation && reference2.name;
+      reference2?.email != undefined &&
+      reference2.relation != undefined &&
+      reference2.name != undefined;
 
     if (!allInfoSet) {
       toast.error("Please fill in all fields for reference 2.");
+      return;
+    }
+
+    const emailValid = EmailValidator.validate(reference2.email!);
+    if (!emailValid) {
+      toast.error("Email is not valid. Please provide a valid email");
       return;
     }
 

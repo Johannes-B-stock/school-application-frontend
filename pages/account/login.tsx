@@ -13,6 +13,7 @@ import { general, login as t } from "@/i18n";
 import { useLocale } from "i18n/useLocale";
 import { getEnabledProviders } from "lib/auth";
 import SocialButton from "@/components/common/SocialButton";
+import * as EmailValidator from "email-validator";
 
 export default function Login() {
   const [isLoading, setIsLoading] = useState(false);
@@ -49,9 +50,19 @@ export default function Login() {
     if (isLoading) {
       return;
     }
-    setIsLoading(true);
-    await login(formData);
-    setIsLoading(false);
+    try {
+      setIsLoading(true);
+
+      const emailValid = EmailValidator.validate(formData.email);
+      if (!emailValid) {
+        toast.error("Email is not valid. Please provide a valid email");
+        return;
+      }
+
+      await login(formData);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (

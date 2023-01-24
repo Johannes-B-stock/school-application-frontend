@@ -28,6 +28,7 @@
     "css-tooltip": "^0.3.4",
     "currency-list": "^1.0.8",
     "currency-symbol-map": "^5.1.0",
+    "email-validator": "^2.0.4",
     "i18n-iso-countries": "^7.4.0",
     "lodash": "^4.17.21",
     "next": "12.1.4",
