@@ -183,6 +183,30 @@ export default function ApplicationAdminView({
                 </div>
                 <div className="column">{application.state}</div>
               </div>
+              <div className="columns is-mobile">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
+                  Created:
+                </div>
+                <div className="column">
+                  {application.createdAt
+                    ? new Date(application.createdAt).toLocaleDateString(locale)
+                    : ""}
+                </div>
+              </div>
+              <div className="columns is-mobile">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
+                  Updated:
+                </div>
+                <div className="column">
+                  {application.updatedAt
+                    ? new Date(application.updatedAt).toLocaleDateString(locale)
+                    : ""}
+                </div>
+              </div>
               {application.state === "submitted" && (
                 <div className="columns is-mobile">
                   <div
@@ -219,7 +243,7 @@ export default function ApplicationAdminView({
                 <div className="column">
                   {application.state === "submitted" && (
                     <button
-                      className={`button mx-1 is-success tooltip-bottom`}
+                      className={`button mx-1 is-info tooltip-bottom`}
                       data-tooltip="Review application"
                       onClick={() => reviewApplication(application)}
                     >
@@ -380,13 +404,12 @@ export default function ApplicationAdminView({
         </div>
         <div className="column">
           <div className="card my-5">
-            <header className="card-header background-gradient-success-link">
+            <header
+              className="card-header background-gradient-success-link pointer"
+              onClick={toggleShowQuestionary}
+            >
               <p className="card-header-title">Questionary</p>
-              <button
-                className="card-header-icon"
-                aria-label="show"
-                onClick={toggleShowQuestionary}
-              >
+              <button className="card-header-icon" aria-label="show">
                 <span className="icon">
                   {showQuestionary ? (
                     <FontAwesomeIcon icon={faAngleUp} />
@@ -421,13 +444,12 @@ export default function ApplicationAdminView({
             </div>
           </div>
           <div className="card my-5">
-            <header className="card-header background-gradient-info-right">
+            <header
+              className="card-header background-gradient-info-right pointer"
+              onClick={toggleShowReference1}
+            >
               <p className="card-header-title">Reference 1</p>
-              <button
-                className="card-header-icon"
-                aria-label="more options"
-                onClick={toggleShowReference1}
-              >
+              <button className="card-header-icon" aria-label="more options">
                 <span className="icon">
                   {showReference1 ? (
                     <FontAwesomeIcon icon={faAngleUp} />
@@ -452,15 +474,11 @@ export default function ApplicationAdminView({
           </div>
           <div className="card my-5">
             <header
-              className="card-header background-gradient-info-right"
+              className="card-header background-gradient-info-right pointer"
               onClick={toggleShowReference2}
             >
               <p className="card-header-title">Reference 2</p>
-              <button
-                className="card-header-icon"
-                aria-label="more options"
-                onClick={toggleShowReference2}
-              >
+              <button className="card-header-icon" aria-label="more options">
                 <span className="icon">
                   {showReference2 ? (
                     <FontAwesomeIcon icon={faAngleUp} />

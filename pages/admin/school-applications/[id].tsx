@@ -146,7 +146,7 @@ export default function ApplicationAdminView({
       </h3>
       <div className="columns">
         <div className="column is-7">
-          <div className="card my-5 overflow-scroll">
+          <div className="card my-5">
             <header className="card-header">
               <p className="card-header-title background-gradient-primary-info">
                 General
@@ -250,7 +250,7 @@ export default function ApplicationAdminView({
             </div>
           </div>
 
-          <div className="card my-5 overflow-scroll">
+          <div className="card my-5">
             <header className="card-header">
               <p className="card-header-title background-gradient-primary-right">
                 User
@@ -330,7 +330,7 @@ export default function ApplicationAdminView({
             </div>
           </div>
 
-          <div className="card my-5 overflow-scroll">
+          <div className="card my-5">
             <header className="card-header">
               <p className="card-header-title background-gradient-primary-right">
                 Address
@@ -378,7 +378,7 @@ export default function ApplicationAdminView({
           </div>
         </div>
         <div className="column">
-          <div className="card my-5 overflow-scroll">
+          <div className="card my-5">
             <header
               className="card-header pointer background-gradient-success-link"
               onClick={toggleShowQuestionary}
@@ -418,7 +418,7 @@ export default function ApplicationAdminView({
               ))}
             </div>
           </div>
-          <div className="card my-5 overflow-scroll">
+          <div className="card my-5">
             <header
               className="card-header pointer background-gradient-info-right"
               onClick={toggleShowReference1}
@@ -447,7 +447,7 @@ export default function ApplicationAdminView({
               )}
             </div>
           </div>
-          <div className="card my-5 overflow-scroll">
+          <div className="card my-5">
             <header
               className="card-header pointer background-gradient-info-right"
               onClick={toggleShowReference2}
