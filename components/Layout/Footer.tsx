@@ -8,12 +8,13 @@ import AnimatedModeSwitch from "./AnimatedModeSwitch";
 import { useLocale } from "i18n/useLocale";
 import { LOCALES } from "@/config/index";
 import Socials from "./Socials";
+import ReactMarkdown from "react-markdown";
 
 export default function Footer() {
   const router = useRouter();
   const locale = useLocale();
   const [langActive, setLangActive] = useState(false);
-  const { triggerSetPageContent } = useContext(PageContentContext);
+  const { triggerSetPageContent, pageContent } = useContext(PageContentContext);
 
   const changeLocale = (e: MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -92,7 +93,11 @@ export default function Footer() {
           <Socials />
           <AnimatedModeSwitch size={30} />
 
-          <p className="has-text-grey is-size-6">&copy; Johannes Birkenstock</p>
+          <div className="has-text-grey is-size-6">
+            <ReactMarkdown>
+              {pageContent?.footerText ?? "©Johannes Birkenstock"}
+            </ReactMarkdown>
+          </div>
         </div>
       </div>
     </footer>

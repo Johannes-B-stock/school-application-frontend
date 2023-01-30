@@ -14,6 +14,7 @@ import { faPlus, faSearch, faXmark } from "@fortawesome/free-solid-svg-icons";
 import _ from "lodash";
 import Link from "next/link";
 import { User } from "api-definitions/backend";
+import { defaultAvatarPath } from "@/config/index";
 
 export default function AddUserTable({
   token,
@@ -48,7 +49,7 @@ export default function AddUserTable({
           const users = await findUsersWithName(
             [userSearch],
             token,
-            ["picture"],
+            ["picture", "role"],
             {
               id: {
                 $notIn: excludedUsers?.map((usr) => usr.id) ?? [],
@@ -116,7 +117,8 @@ export default function AddUserTable({
                         alt={user.username}
                         src={
                           user.picture?.formats.thumbnail.url ??
-                          "/images/defaultAvatar.png"
+                          user.picture?.url ??
+                          defaultAvatarPath
                         }
                         className="image is-32x32 is-rounded"
                         objectFit="cover"
@@ -132,6 +134,7 @@ export default function AddUserTable({
                 <td>
                   {user.firstname} {user.lastname}
                 </td>
+                <td className="is-italic">{user.role?.name}</td>
                 <td>
                   <div
                     className="button is-small is-success"
@@ -156,8 +159,9 @@ export default function AddUserTable({
                     <Image
                       alt={user.username}
                       src={
-                        user.picture?.formats?.small?.url ??
-                        "/images/defaultAvatar.png"
+                        user.picture?.formats?.thumbnail?.url ??
+                        user.picture?.url ??
+                        defaultAvatarPath
                       }
                       className="image is-32x32 is-rounded"
                       objectFit="cover"

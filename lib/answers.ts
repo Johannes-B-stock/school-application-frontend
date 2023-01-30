@@ -53,7 +53,6 @@ export async function updateAnswers(
   token?: string,
   reference?: Reference
 ) {
-  console.log(answers);
   const requiredNotAnswered = answers.some(
     (answer) => answer.question.required && !answer.answer
   );

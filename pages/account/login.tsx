@@ -1,6 +1,13 @@
 import Layout from "@/components/Layout/Layout";
 import Link from "next/link";
-import { useEffect, useState, useContext, ChangeEvent, FormEvent } from "react";
+import {
+  useEffect,
+  useState,
+  useContext,
+  ChangeEvent,
+  FormEvent,
+  useMemo,
+} from "react";
 import { toast } from "react-toastify";
 import AuthContext from "@/context/AuthContext";
 import { useRouter } from "next/router";
@@ -22,11 +29,10 @@ export default function Login() {
     password: "",
   });
   const [providers, setProviders] = useState<string[]>([]);
-  const { login, error } = useContext(AuthContext);
+  const { login, error, user } = useContext(AuthContext);
   useEffect(() => {
     error && toast.error(error);
   }, [error]);
-
   const router = useRouter();
   const locale = useLocale();
 
@@ -35,6 +41,12 @@ export default function Login() {
       .then((providers) => setProviders(providers))
       .catch((err) => console.log(err));
   }, []);
+
+  useMemo(() => {
+    if (user) {
+      router.back();
+    }
+  }, [user]);
 
   const isRedirecting = router.query["returnUrl"] != undefined;
 

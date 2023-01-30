@@ -2,6 +2,8 @@ import Head from "next/head";
 import Header from "./Header";
 import Footer from "./Footer";
 import "react-toastify/dist/ReactToastify.css";
+import { useContext } from "react";
+import PageContentContext from "@/context/PageContentContext";
 
 export default function DashboardLayout({
   title,
@@ -9,17 +11,22 @@ export default function DashboardLayout({
   description,
   children,
 }: {
-  title: string;
-  keywords: string;
-  description: string;
+  title?: string;
+  keywords?: string;
+  description?: string;
   children?: any;
 }) {
+  const { pageContent } = useContext(PageContentContext);
+
   return (
     <div className="content-wrapper">
       <Head>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <meta name="keywords" content={keywords} />
+        <title>{title ?? pageContent?.pageTitle + " - Admin"}</title>
+        <meta
+          name="description"
+          content={description ?? pageContent?.pageDescription}
+        />
+        <meta name="keywords" content={keywords ?? pageContent?.pageKeywords} />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1"
@@ -34,9 +41,3 @@ export default function DashboardLayout({
     </div>
   );
 }
-
-DashboardLayout.defaultProps = {
-  title: "School Application | Apply for schools",
-  description: "Apply for schools and manage your schools",
-  keywords: "ywam, school application, base, university",
-};

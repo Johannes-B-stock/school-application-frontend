@@ -11,8 +11,8 @@ import {
 import { general, profile } from "@/i18n";
 import { UserDetails } from "api-definitions/backend";
 import { useLocale } from "i18n/useLocale";
-import CountrySelect from "../common/CountrySelect";
-import { allCountries } from "lib/countries";
+import NationalitySelect from "../common/NationalitySelect";
+import { allNationalities } from "lib/countries";
 
 export default function UserDetailsEdit({
   allowEdit = false,
@@ -75,6 +75,9 @@ export default function UserDetailsEdit({
         );
       } else {
         setUpdatedUser(userEdit);
+        if (showSave) {
+          toast.success("User Details saved successfully");
+        }
       }
       return;
     }
@@ -94,6 +97,10 @@ export default function UserDetailsEdit({
       );
     } else {
       setUpdatedUser(userEdit);
+
+      if (showSave) {
+        toast.success("User Details saved successfully");
+      }
     }
   };
   setSaveFunction && setSaveFunction(onSaveDetails);
@@ -158,9 +165,9 @@ export default function UserDetailsEdit({
         <div className="field-body">
           <div className="field">
             <div className="control is-expanded has-icons-left">
-              <CountrySelect
-                country={userEdit?.nationality}
-                countryChanged={handleNationalityChange}
+              <NationalitySelect
+                nationality={userEdit?.nationality}
+                nationalityChanged={handleNationalityChange}
                 locale={locale}
                 required={true}
               />
@@ -278,7 +285,7 @@ export default function UserDetailsEdit({
         </div>
         <div className="column">
           {updatedUser?.nationality
-            ? allCountries.getName(updatedUser?.nationality, locale)
+            ? allNationalities.getName(updatedUser?.nationality, locale)
             : ""}
         </div>
       </div>

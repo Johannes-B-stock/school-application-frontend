@@ -31,7 +31,7 @@ export default function UserView({
     <section className="section has-background-link-light">
       <div className="level is-centered has-text-centered ">
         <div className="level-item p-5">
-          <ProfileCard user={user} />
+          <ProfileCard userProfile={user} />
         </div>
       </div>
     </section>
@@ -49,15 +49,12 @@ export const getServerSideProps: GetServerSideProps = async ({
   const id = typeof params?.id === "string" ? params?.id : params?.id?.[0];
   const { token } = parseCookie(req);
 
-  if (!id) {
-    throw new Error("No user id given");
-  }
-  if (!token) {
-    throw new Error("Not logged in");
+  if (!id || !token) {
+    return { notFound: true };
   }
 
   try {
-    const user = await getUser(+id, token, ["picture", "role"]);
+    const user = await getUser(+id, token, ["picture", "role", "details"]);
     return { props: { user, error: null } };
   } catch (error: any) {
     let status = 500;

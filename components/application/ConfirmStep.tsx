@@ -13,39 +13,47 @@ export default function ConfirmStep({
 }) {
   const locale = useLocale();
   return (
-    <>
-      {applicationState === "created" && (
-        <>
-          <p className="my-5">{applicationDetails[locale].confirmText}</p>
+    <div className="columns is-centered">
+      <div style={{ maxWidth: "500px" }} className="column">
+        {applicationState === "created" && (
+          <>
+            <p className="my-5">{applicationDetails[locale].confirmText}</p>
 
-          <div
-            className={`button is-primary ${submitLoading && "is-loading"}`}
-            onClick={submitApplication}
-          >
-            {general.buttons[locale].submit}
-          </div>
-        </>
-      )}
-      {applicationState === "submitted" && (
-        <>
-          <p className="my-5">{applicationDetails[locale].submittedText}</p>
-        </>
-      )}
-      {applicationState === "reviewed" && (
-        <>
-          <p className="my-5">{applicationDetails[locale].reviewedText}</p>
-        </>
-      )}
-      {applicationState === "approved" && (
-        <>
-          <p className="my-5">{applicationDetails[locale].approvedText}</p>
-        </>
-      )}
-      {applicationState === "revoked" && (
-        <>
-          <p className="my-5">{applicationDetails[locale].revokedText}</p>
-        </>
-      )}
-    </>
+            <div
+              className={`button is-primary ${submitLoading && "is-loading"}`}
+              onClick={submitApplication}
+            >
+              {general.buttons[locale].submit}
+            </div>
+          </>
+        )}
+        {applicationState === "submitted" && (
+          <>
+            <p className="my-5">{applicationDetails[locale].submittedText}</p>
+          </>
+        )}
+        {applicationState === "reviewed" && (
+          <>
+            <p className="my-5">{applicationDetails[locale].reviewedText}</p>
+          </>
+        )}
+
+        {applicationState === "reviewing" && (
+          <>
+            <p className="my-5">{applicationDetails[locale].reviewingText}</p>
+          </>
+        )}
+        {applicationState === "approved" && (
+          <>
+            <p className="my-5">{applicationDetails[locale].approvedText}</p>
+          </>
+        )}
+        {applicationState === "revoked" && (
+          <>
+            <p className="my-5">{applicationDetails[locale].revokedText}</p>
+          </>
+        )}
+      </div>
+    </div>
   );
 }

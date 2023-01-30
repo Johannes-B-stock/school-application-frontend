@@ -183,6 +183,8 @@ export const applicationDetails = {
       "I hereby confirm that I answered all questions to my best knowledge and that I want to apply.",
     submittedText:
       "Your application has been submitted already and is now in review.",
+    reviewingText:
+      "Your application is in review right now and will be processed by one of our staff. You will soon know if it has been approved or revoked.",
     reviewedText:
       "Your application has been reviewed. You will soon know if it has been approved or revoked.",
     approvedText: "Congratulations, your application has been approved!",
@@ -207,6 +209,8 @@ export const applicationDetails = {
       "Deine Anmeldung wurde bereits abgeschickt und ist jetzt in Bearbeitung",
     reviewedText:
       "Deine Anmeldung wurde bearbeitet. Du wirst bald erfahren, ob sie abgelehnt oder angenommen wurde.",
+    reviewingText:
+      "Deine Anmeldung wird von einem unserer Mitarbeiter bearbeitet. Du wirst bald erfahren, ob sie abgelehnt oder angenommen wurde.",
     approvedText: "Herzlichen Glückwunsch, deine Anmeldung wurde angenommen!",
     revokedText: "Leider wurde deine Anmeldung abgelehnt.",
   },
@@ -336,7 +340,7 @@ export const applications = {
     applicationFeePaid: "Fee paid",
     schoolStarts: "School starts",
     schoolEnds: "School ends",
-    status: "status",
+    status: "Status",
     created: "created",
     updated: "updated",
     //---status---
@@ -344,6 +348,7 @@ export const applications = {
     submitted: "submitted",
     approved: "approved",
     reviewed: "reviewed",
+    reviewing: "in review",
     revoked: "revoked",
     //---Staff Applications---
     staffApplication: "Staff Application",
@@ -365,6 +370,7 @@ export const applications = {
     submitted: "Eingesandt",
     approved: "Angenommen",
     reviewed: "Überprüft",
+    reviewing: "wird überprüft",
     revoked: "Abgelehnt",
     //---Staff Applications---
     staffApplication: "Mitarbeiter Anmeldung",
@@ -576,6 +582,7 @@ export const userSchool = {
     fees: "Fees",
     applicationFee: "Application Fee",
     schoolFee: "School Fee",
+    outreachFee: "Outreach Fee",
     students: "Students",
     noStudentsAccepted: "No students are accepted yet",
     staff: "Staff",
@@ -591,6 +598,7 @@ export const userSchool = {
     fees: "Gebühren",
     applicationFee: "Anmeldungs-gebühr",
     schoolFee: "Schulgebühr",
+    outreachFee: "Outreachkosten",
     students: "Studenten",
     noStudentsAccepted: "Es wurden noch keine Studenten angenommen",
     staff: "Mitarbeiter",

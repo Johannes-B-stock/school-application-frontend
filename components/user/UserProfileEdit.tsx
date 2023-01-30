@@ -9,7 +9,7 @@ import {
 import Image from "next/image";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope, faUser } from "@fortawesome/free-regular-svg-icons";
-import { API_URL } from "@/config/index";
+import { API_URL, defaultAvatarPath } from "@/config/index";
 import { toast } from "react-toastify";
 import { faUpload } from "@fortawesome/free-solid-svg-icons";
 import { getMyDetails } from "lib/user";
@@ -20,22 +20,19 @@ import { useLocale } from "i18n/useLocale";
 import PasswordResetModal from "@/components/auth/PasswordResetModal";
 
 export default function UserProfileEdit({
-  allowEdit = false,
   token,
   user,
 }: {
-  allowEdit?: boolean;
   token: string;
   user: User;
 }) {
   const locale = useLocale();
   const { setUser } = useContext(AuthContext);
   const [loadingPicture, setLoadingPicture] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
 
   const [userEdit, setUserEdit] = useState(user);
-  const [allowPersonalEdit, setAllowPersonalEdit] = useState(
-    allowEdit ?? false
-  );
+  const [enableEdit, setEnableEdit] = useState(false);
   const [showPasswordModal, setShowPasswordModal] = useState(false);
 
   useEffect(() => {
@@ -50,28 +47,34 @@ export default function UserProfileEdit({
   const onSavePersonal = async (e: MouseEvent<HTMLDivElement>) => {
     e.preventDefault();
 
-    const hasOnlyEmptyValues = Object.values(userEdit).every(
-      (value) => value === ""
-    );
+    try {
+      setIsSaving(true);
+      const necessaryFieldsFilled = necessaryFieldsAreFilled(userEdit);
 
-    if (hasOnlyEmptyValues) {
-      toast.error("Please fill in the necessary fields!");
-      return;
-    }
+      if (!necessaryFieldsFilled) {
+        toast.error("Please fill in the necessary fields!");
+        return;
+      }
 
-    const res = await fetch(`${API_URL}/api/users/me`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify({ data: userEdit }),
-    });
-    if (!res.ok) {
-      toast.error(res.statusText ?? "Something went wrong.");
-    } else {
-      const updatedUser = (await res.json()) as User;
-      setUser({ ...user, ...updatedUser });
+      const res = await fetch(`${API_URL}/api/users/me`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ data: userEdit }),
+      });
+      if (!res.ok) {
+        toast.error(res.statusText ?? "Something went wrong.");
+      } else {
+        const updatedUser = (await res.json()) as User;
+        setUser({ ...user, ...updatedUser });
+        setEnableEdit(false);
+      }
+    } catch (error: any) {
+      toast.error(error?.message, error);
+    } finally {
+      setIsSaving(false);
     }
   };
 
@@ -116,11 +119,11 @@ export default function UserProfileEdit({
   };
 
   const handlePersonalEditCancel = () => {
-    setAllowPersonalEdit(false);
+    setEnableEdit(false);
     setUserEdit(user);
   };
 
-  return allowPersonalEdit ? (
+  return enableEdit ? (
     <>
       <PasswordResetModal
         show={showPasswordModal}
@@ -139,8 +142,9 @@ export default function UserProfileEdit({
                   className="image is-32x32 is-rounded"
                   alt="Profile"
                   src={
-                    user.picture?.formats.thumbnail.url ??
-                    "/images/defaultAvatar.png"
+                    user.picture?.formats?.thumbnail.url ??
+                    user.picture?.url ??
+                    defaultAvatarPath
                   }
                   width="32"
                   height="32"
@@ -340,12 +344,14 @@ export default function UserProfileEdit({
         </div>
         <div className="field is-grouped">
           <div className="control">
-            <div className="button is-primary" onClick={onSavePersonal}>
+            <div
+              className={`button is-primary ${isSaving ? "is-loading" : ""}`}
+              onClick={onSavePersonal}
+            >
               {general.buttons[locale].save}
             </div>
           </div>
           <div className="control">
-            {" "}
             <div className="button" onClick={handlePersonalEditCancel}>
               {general.buttons[locale].cancel}
             </div>
@@ -365,8 +371,9 @@ export default function UserProfileEdit({
               className="image is-32x32 is-rounded"
               alt="Profile"
               src={
-                user?.picture?.formats.thumbnail.url ??
-                "/images/defaultAvatar.png"
+                user?.picture?.formats?.thumbnail.url ??
+                user?.picture?.url ??
+                defaultAvatarPath
               }
               width="32"
               height="32"
@@ -427,12 +434,12 @@ export default function UserProfileEdit({
             : "-"}
         </div>
       </div>
-      <div
-        className="button is-primary"
-        onClick={() => setAllowPersonalEdit(true)}
-      >
+      <div className="button is-primary" onClick={() => setEnableEdit(true)}>
         {general.buttons[locale].edit}
       </div>
     </>
   );
+}
+function necessaryFieldsAreFilled(userEdit: User) {
+  return userEdit.username?.length > 0 && userEdit.email?.length > 0;
 }

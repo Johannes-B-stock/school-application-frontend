@@ -6,6 +6,8 @@ import {
   faCheck,
   faTrash,
   faXmark,
+  faMagnifyingGlass,
+  faUserPen,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { getApplicationDetails } from "lib/schoolApplication";
@@ -28,6 +30,8 @@ import { getMainAddress } from "lib/address";
 import { allCountries } from "lib/countries";
 import AdminReference from "@/components/admin/AdminReference";
 import { deleteApplicationRequest, updateState } from "lib/applications";
+import styles from "@/styles/Application.module.css";
+import { defaultAvatarPath } from "@/config/index";
 
 export default function ApplicationAdminView({
   application,
@@ -97,6 +101,17 @@ export default function ApplicationAdminView({
     await changeState(application, "revoked", token);
   };
 
+  const reviewApplication = async (application: SchoolApplication) => {
+    try {
+      if (!token || application.state !== "submitted") {
+        return;
+      }
+      await changeState(application, "reviewing", token);
+    } catch (error: any) {
+      toast.error(error.message ?? error);
+    }
+  };
+
   const approveApplication = async (application: SchoolApplication) => {
     try {
       if (!token || application.state === "approved") {
@@ -131,7 +146,7 @@ export default function ApplicationAdminView({
       </h3>
       <div className="columns">
         <div className="column is-7">
-          <div className="card my-5">
+          <div className="card my-5 overflow-scroll">
             <header className="card-header">
               <p className="card-header-title background-gradient-primary-info">
                 General
@@ -139,7 +154,9 @@ export default function ApplicationAdminView({
             </header>
             <div className="card-content">
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
                   Applied For:
                 </div>
                 <div className="column">
@@ -149,12 +166,18 @@ export default function ApplicationAdminView({
                 </div>
               </div>
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">Status:</div>
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
+                  Status:
+                </div>
                 <div className="column">{application.state}</div>
               </div>
               {application.state === "submitted" && (
                 <div className="columns is-mobile">
-                  <div className="column is-3 has-text-weight-bold">
+                  <div
+                    className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                  >
                     Submitted at:
                   </div>
                   <div className="column">
@@ -167,7 +190,9 @@ export default function ApplicationAdminView({
                 </div>
               )}
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
                   Progress:
                 </div>
                 <div className="column is-7 has-text-weight-bold">
@@ -182,16 +207,28 @@ export default function ApplicationAdminView({
               </div>
               <div className="columns-is-mobile">
                 <div className="column">
-                  <button
-                    className={`button mx-1 is-success tooltip-bottom`}
-                    data-tooltip="Approve"
-                    disabled={application.state === "approved"}
-                    onClick={() => approveApplication(application)}
-                  >
-                    <span className="icon">
-                      <FontAwesomeIcon icon={faCheck} />
-                    </span>
-                  </button>
+                  {application.state === "submitted" && (
+                    <button
+                      className={`button mx-1 is-success tooltip-bottom`}
+                      data-tooltip="Review application"
+                      onClick={() => reviewApplication(application)}
+                    >
+                      <span className="icon">
+                        <FontAwesomeIcon icon={faUserPen} />
+                      </span>
+                    </button>
+                  )}
+                  {application.state === "reviewing" && (
+                    <button
+                      className={`button mx-1 is-success tooltip-bottom`}
+                      data-tooltip="Approve"
+                      onClick={() => approveApplication(application)}
+                    >
+                      <span className="icon">
+                        <FontAwesomeIcon icon={faCheck} />
+                      </span>
+                    </button>
+                  )}
                   <button
                     className="button mx-1 is-warning tooltip-bottom"
                     data-tooltip="Revoke"
@@ -213,7 +250,7 @@ export default function ApplicationAdminView({
             </div>
           </div>
 
-          <div className="card my-5">
+          <div className="card my-5 overflow-scroll">
             <header className="card-header">
               <p className="card-header-title background-gradient-primary-right">
                 User
@@ -228,7 +265,8 @@ export default function ApplicationAdminView({
                       alt="Profile"
                       src={
                         user.picture?.formats.thumbnail?.url ??
-                        "/images/defaultAvatar.png"
+                        user.picture?.url ??
+                        defaultAvatarPath
                       }
                       layout="fill"
                       objectFit="cover"
@@ -238,35 +276,51 @@ export default function ApplicationAdminView({
                 </div>
               </div>
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
                   User name:
                 </div>
                 <div className="column">{user.username}</div>
               </div>
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
                   First name:
                 </div>
                 <div className="column">{user.firstname}</div>
               </div>
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
                   Last name:
                 </div>
                 <div className="column">{user.lastname}</div>
               </div>
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">Email:</div>
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
+                  Email:
+                </div>
                 <div className="column">
                   <a href={`mailto:${user.email}`}> {user.email}</a>
                 </div>
               </div>
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">Gender:</div>
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
+                  Gender:
+                </div>
                 <div className="column">{user.gender}</div>
               </div>
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
                   Birthday:
                 </div>
                 <div className="column">
@@ -276,7 +330,7 @@ export default function ApplicationAdminView({
             </div>
           </div>
 
-          <div className="card my-5">
+          <div className="card my-5 overflow-scroll">
             <header className="card-header">
               <p className="card-header-title background-gradient-primary-right">
                 Address
@@ -284,27 +338,35 @@ export default function ApplicationAdminView({
             </header>
             <div className="card-content">
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-semibold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-semibold`}
+                >
                   Street:
                 </div>
                 <div className="column is-5">{mainAddress?.street}</div>
                 <div className="column is-2">{mainAddress?.number}</div>
               </div>
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-semibold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-semibold`}
+                >
                   City:
                 </div>
                 <div className="column">{mainAddress?.city}</div>
               </div>
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-semibold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-semibold`}
+                >
                   Postal Code:
                 </div>
                 <div className="column">{mainAddress?.postalCode}</div>
               </div>
 
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-semibold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-semibold`}
+                >
                   Country:
                 </div>
                 <div className="column">
@@ -316,7 +378,7 @@ export default function ApplicationAdminView({
           </div>
         </div>
         <div className="column">
-          <div className="card my-5">
+          <div className="card my-5 overflow-scroll">
             <header
               className="card-header pointer background-gradient-success-link"
               onClick={toggleShowQuestionary}
@@ -356,7 +418,7 @@ export default function ApplicationAdminView({
               ))}
             </div>
           </div>
-          <div className="card my-5">
+          <div className="card my-5 overflow-scroll">
             <header
               className="card-header pointer background-gradient-info-right"
               onClick={toggleShowReference1}
@@ -385,7 +447,7 @@ export default function ApplicationAdminView({
               )}
             </div>
           </div>
-          <div className="card my-5">
+          <div className="card my-5 overflow-scroll">
             <header
               className="card-header pointer background-gradient-info-right"
               onClick={toggleShowReference2}

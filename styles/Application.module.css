@@ -1,3 +1,7 @@
 .stepContent {
-    padding: 0px 5vw
+  padding: 0px 5vw;
+}
+
+.columnLabel {
+  min-width: 140px;
 }

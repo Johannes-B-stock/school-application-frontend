@@ -20,7 +20,7 @@ export async function getStaffApplicationDetails(
   if (typeof query === "object") {
     queryString += qs.stringify(query, { encodeValuesOnly: true });
   } else {
-    queryString += query;
+    queryString += query ? query : "";
   }
   const result = await axios.get<SingleDataResponse<StaffApplication>>(
     `${API_URL}/api/staff-applications/${id}${queryString}`,

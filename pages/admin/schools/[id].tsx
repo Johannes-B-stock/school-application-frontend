@@ -211,7 +211,7 @@ export default function SchoolAdmin({
                 <div className="column">
                   <Currency
                     currency={school.currency}
-                    value={+school.applicationFee}
+                    value={school.applicationFee}
                   />
                 </div>
               </div>
@@ -222,7 +222,7 @@ export default function SchoolAdmin({
                 <div className="column">
                   <Currency
                     currency={school.currency}
-                    value={+school.schoolFee}
+                    value={school.schoolFee}
                   />
                 </div>
               </div>

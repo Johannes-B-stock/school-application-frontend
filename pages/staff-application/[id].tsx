@@ -41,6 +41,7 @@ import { getMainAddress } from "lib/address";
 import { getQuestionsFromAPI } from "lib/questions";
 import NotFound from "@/components/common/NotFound";
 import { updateState, updateStep } from "lib/applications";
+import { AxiosError } from "axios";
 
 export default function StaffApplicationPage({
   application,
@@ -638,34 +639,35 @@ export const getServerSideProps: GetServerSideProps = async ({
   req,
   params,
 }) => {
-  const id = typeof params?.id === "string" ? params.id : params?.id?.[0];
-  if (!id) {
-    throw new Error("id params is missing");
-  }
-  const query = qs.stringify({
-    populate: {
-      answers: {
-        populate: {
-          question: {
-            populate: ["type.localizations", "localizations"],
-          },
-        },
-      },
-      user: {
-        populate: ["addresses"],
-      },
-      references: { populate: "*" },
-    },
-  });
-
+  const id = typeof params?.id === "string" ? params?.id : params?.id?.[0];
   const { token } = parseCookie(req);
-  if (!token) {
-    throw new Error("Not logged in!");
+  if (!id || !token) {
+    return {
+      notFound: true,
+    };
   }
 
   try {
-    const application = await getStaffApplicationDetails(id, token, query);
+    const query = qs.stringify(
+      {
+        populate: {
+          answers: {
+            populate: {
+              question: {
+                populate: ["type.localizations", "localizations"],
+              },
+            },
+          },
+          user: {
+            populate: ["addresses"],
+          },
+          references: { populate: "*" },
+        },
+      },
+      { encodeValuesOnly: true }
+    );
 
+    const application = await getStaffApplicationDetails(id, token, query);
     if (application.error) {
       return {
         props: {
@@ -686,7 +688,6 @@ export const getServerSideProps: GetServerSideProps = async ({
       token,
       query: settingsQuery,
     });
-
     if (applicationSettings.error) {
       return {
         props: {
@@ -705,7 +706,6 @@ export const getServerSideProps: GetServerSideProps = async ({
     });
 
     const questions = await getQuestionsFromAPI(token, questionsQuery);
-
     if (questions.error) {
       return {
         props: {
@@ -722,9 +722,16 @@ export const getServerSideProps: GetServerSideProps = async ({
       },
     };
   } catch (error: any) {
+    if (error instanceof AxiosError) {
+      return {
+        props: {
+          error: { message: error.message, status: error.code ?? "" },
+        },
+      };
+    }
     return {
       props: {
-        error: error.message ?? error,
+        error: { message: error.message ?? error },
       },
     };
   }

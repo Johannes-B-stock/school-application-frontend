@@ -35,6 +35,7 @@ export interface School extends LocaleInfo, Localization<School>, BaseData {
   isPublic: boolean;
   acceptingStudents: boolean;
   schoolFee: string;
+  outreachFee: string;
   applicationFee: string;
   startDate: string;
   endDate: string;
@@ -111,7 +112,8 @@ export type ApplicationState =
   | "submitted"
   | "reviewed"
   | "revoked"
-  | "approved";
+  | "approved"
+  | "reviewing";
 
 export interface SchoolApplication extends Application {
   school: School;
@@ -170,8 +172,13 @@ export interface PageContentData
   contact?: string;
   facebookLink?: string;
   twitterLink?: string;
+  tiktokLink?: string;
   instagramLink?: string;
   navbar_brand: Image;
+  pageTitle: string;
+  pageDescription: string;
+  pageKeywords: string;
+  footerText?: string;
 }
 
 export interface AboutPage {

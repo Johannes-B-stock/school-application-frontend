@@ -10,13 +10,18 @@ import UserDetailsEdit from "@/components/user/UserDetailsEdit";
 import { profile } from "@/i18n";
 import { useLocale } from "i18n/useLocale";
 import { GetServerSideProps } from "next";
+import NotAuthorized from "@/components/auth/NotAuthorized";
 
-export default function ProfilePage({ token }: { token: string }) {
+export default function ProfilePage({ token }: { token?: string }) {
   const { user } = useContext(AuthContext);
   const locale = useLocale();
 
   if (!user) {
     return <GoogleSpinner />;
+  }
+
+  if (!token) {
+    return <NotAuthorized />;
   }
 
   return (
@@ -59,6 +64,6 @@ export const getServerSideProps: GetServerSideProps = async ({ req }) => {
   const { token } = parseCookie(req);
 
   return {
-    props: { token: token },
+    props: { token: token ?? null },
   };
 };

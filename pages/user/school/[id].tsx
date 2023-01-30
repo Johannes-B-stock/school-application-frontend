@@ -6,6 +6,7 @@ import { GetServerSideProps } from "next";
 import Currency from "@/components/common/Currency";
 import { School } from "api-definitions/backend";
 import { useLocale } from "i18n/useLocale";
+import styles from "@/styles/Application.module.css";
 
 export default function MySchoolPage({ school }: { school: School }) {
   const locale = useLocale();
@@ -23,20 +24,26 @@ export default function MySchoolPage({ school }: { school: School }) {
           </div>
           <div className="card-content">
             <div className="columns is-mobile">
-              <div className="column is-3 has-text-weight-bold">
+              <div
+                className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+              >
                 {userSchool[locale].name}:
               </div>
               <div className="column">{localizedSchool.name}</div>
             </div>
             <div className="columns is-mobile">
-              <div className="column is-3 has-text-weight-bold">
+              <div
+                className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+              >
                 {userSchool[locale].description}:
               </div>
               <div className="column">{localizedSchool.description}</div>
             </div>
             {school.contactEmail && (
               <div className="columns is-mobile">
-                <div className="column is-3 has-text-weight-bold">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
                   {userSchool[locale].contact}:
                 </div>
                 <div className="column">
@@ -48,7 +55,9 @@ export default function MySchoolPage({ school }: { school: School }) {
             )}
 
             <div className="columns is-mobile">
-              <div className="column is-3 has-text-weight-bold">
+              <div
+                className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+              >
                 {userSchool[locale].startsAt}:
               </div>
               <div className="column">
@@ -56,7 +65,9 @@ export default function MySchoolPage({ school }: { school: School }) {
               </div>
             </div>
             <div className="columns is-mobile">
-              <div className="column is-3 has-text-weight-bold">
+              <div
+                className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+              >
                 {userSchool[locale].endsAt}:
               </div>
               <div className="column">
@@ -64,25 +75,26 @@ export default function MySchoolPage({ school }: { school: School }) {
               </div>
             </div>
             <div className="columns is-mobile">
-              <div className="column is-3 has-text-weight-bold">
+              <div
+                className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+              >
                 {userSchool[locale].applicationFee}:
               </div>
               <div className="column">
                 <Currency
-                  value={+school.applicationFee}
+                  value={school.applicationFee}
                   currency={school.currency}
                 />
               </div>
             </div>
             <div className="columns is-mobile">
-              <div className="column is-3 has-text-weight-bold">
+              <div
+                className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+              >
                 {userSchool[locale].schoolFee}:
               </div>
               <div className="column">
-                <Currency
-                  value={+school.schoolFee}
-                  currency={school.currency}
-                />
+                <Currency value={school.schoolFee} currency={school.currency} />
               </div>
             </div>
           </div>
@@ -163,8 +175,8 @@ export const getServerSideProps: GetServerSideProps = async ({
     staff: {
       populate: ["picture"],
     },
-    image: {},
-    localizations: {},
+    image: { populate: "" },
+    localizations: { populate: "" },
   });
   return {
     props: {

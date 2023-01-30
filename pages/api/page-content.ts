@@ -27,6 +27,9 @@ export default async function pageContent(
 
 const pageContentDefault: PageContentData = {
   id: 1,
+  pageTitle: "Y-Apply",
+  pageDescription: "Apply for schools and staff",
+  pageKeywords: "ywam, university, schools",
   locale: "en",
   createdAt: "01-01-1999",
   updatedAt: "01-01-1999",
@@ -37,6 +40,7 @@ const pageContentDefault: PageContentData = {
     "Please contact us if you have any questions. We will try to answer as soon as possible.",
   facebookLink: "",
   twitterLink: "",
+  footerText: "©Y-Apply",
   instagramLink: "",
   navbar_brand: {
     id: 1,

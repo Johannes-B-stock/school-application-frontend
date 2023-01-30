@@ -4,18 +4,32 @@ import Footer from "./Footer";
 import { useRouter } from "next/router";
 import Showcase from "./Showcase";
 import "react-toastify/dist/ReactToastify.css";
-import { ReactElement } from "react";
+import { ReactElement, useContext } from "react";
+import PageContentContext from "@/context/PageContentContext";
 
-export default function Layout({ title, keywords, description, children }: {title: string, keywords: string, description: string, children: ReactElement}) {
-  
+export default function Layout({
+  title,
+  keywords,
+  description,
+  children,
+}: {
+  title?: string;
+  keywords?: string;
+  description?: string;
+  children: ReactElement;
+}) {
+  const { pageContent } = useContext(PageContentContext);
   const router = useRouter();
 
   return (
     <div className="content-wrapper">
       <Head>
-        <title>{title}</title>
-        <meta name="description" content={description} />
-        <meta name="keywords" content={keywords} />
+        <title>{title ?? pageContent?.pageTitle}</title>
+        <meta
+          name="description"
+          content={description ?? pageContent?.pageDescription}
+        />
+        <meta name="keywords" content={keywords ?? pageContent?.pageKeywords} />
         <meta
           name="viewport"
           content="width=device-width, initial-scale=1"
@@ -32,9 +46,3 @@ export default function Layout({ title, keywords, description, children }: {titl
     </div>
   );
 }
-
-Layout.defaultProps = {
-  title: "School Application | Apply for schools",
-  description: "Apply for schools and manage your schools",
-  keywords: "ywam, school application, base, university",
-};

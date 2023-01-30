@@ -1,3 +1,5 @@
+import { Role } from "api-definitions/backend";
+
 export function createHeaders(token?: string | undefined) {
   let headers = {};
   if (token) {
@@ -10,4 +12,11 @@ export function createHeaders(token?: string | undefined) {
       "Content-Type": "application/json",
     };
   return headers;
+}
+
+export function isAdmin(role: Role | undefined) {
+  return (
+    role?.name.toLowerCase() === "admin" ||
+    role?.name.toLowerCase() === "schooladmin"
+  );
 }

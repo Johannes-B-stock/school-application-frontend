@@ -37,7 +37,6 @@ export default function CreateStaffApplicationPage({
           token,
           query,
         });
-        console.log(staffAppDetails);
         const questionCollection = staffAppDetails.data?.applicationQuestions;
         if (!questionCollection) {
           throw new Error(

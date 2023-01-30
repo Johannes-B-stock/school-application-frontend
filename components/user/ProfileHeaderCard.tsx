@@ -3,6 +3,7 @@ import styles from "@/styles/ProfilePage.module.css";
 import { profile } from "@/i18n";
 import { User } from "api-definitions/backend";
 import { useLocale } from "i18n/useLocale";
+import { defaultAvatarPath } from "@/config/index";
 
 export default function ProfileHeaderCard({ user }: { user?: User }) {
   const locale = useLocale();
@@ -35,9 +36,10 @@ export default function ProfileHeaderCard({ user }: { user?: User }) {
                 className="image is-128x128 is-rounded"
                 alt="Profile"
                 src={
-                  user?.picture?.formats.small?.url ??
-                  user?.picture?.formats.thumbnail?.url ??
-                  "/images/defaultAvatar.png"
+                  user?.picture?.formats?.small?.url ??
+                  user?.picture?.formats?.thumbnail?.url ??
+                  user?.picture?.url ??
+                  defaultAvatarPath
                 }
                 layout="fill"
                 objectFit="cover"

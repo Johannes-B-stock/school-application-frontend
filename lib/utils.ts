@@ -31,6 +31,18 @@ export function formatCurrency(
   }).format(value);
 }
 
+export function formatCurrencyRange(
+  locale: Locales,
+  currency: string,
+  start: number,
+  end: number
+) {
+  return new Intl.NumberFormat(locale, {
+    style: "currency",
+    currency: currency ?? defaultCurrency,
+  }).formatRange(start, end);
+}
+
 export function encryptToken(jwt: string) {
   return cryptr.encrypt(jwt);
 }

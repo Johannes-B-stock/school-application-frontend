@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styles from "@/styles/AdminOverview.module.css";
 import Image from "next/image";
 import { User } from "api-definitions/backend";
+import { defaultAvatarPath } from "@/config/index";
 
 export default function UserAvatar({
   user,
@@ -33,7 +34,8 @@ export default function UserAvatar({
             alt={user.username}
             src={
               user.picture?.formats.thumbnail?.url ??
-              "/images/defaultAvatar.png"
+              user.picture?.url ??
+              defaultAvatarPath
             }
             objectFit="cover"
             width="50"

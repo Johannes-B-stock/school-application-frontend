@@ -4,13 +4,14 @@ import {
   faTrash,
   faXmark,
   faEye,
+  faUserPen,
 } from "@fortawesome/free-solid-svg-icons";
 import Image from "next/image";
 import Pagination from "@/components/common/Pagination";
 import Link from "next/link";
 import _ from "lodash";
 import { toast } from "react-toastify";
-import { API_URL } from "@/config/index";
+import { API_URL, defaultAvatarPath } from "@/config/index";
 import { useRouter } from "next/router";
 import {
   Application,
@@ -82,11 +83,13 @@ export default function ApplicationsTable<
   const approveApplication = async (
     application: SchoolApplication | StaffApplication
   ) => {
-    try {
-      await changeState(application, "approved");
-    } catch (error: any) {
-      toast.error(error.message ?? error);
-    }
+    await changeState(application, "approved");
+  };
+
+  const reviewApplication = async (
+    application: SchoolApplication | StaffApplication
+  ) => {
+    await changeState(application, "reviewing");
   };
 
   async function changeState(
@@ -95,17 +98,15 @@ export default function ApplicationsTable<
   ) {
     try {
       const isSchoolApplication = "school" in application;
-      const currentState = application.state;
-      if (currentState !== "submitted" && currentState !== "reviewed") {
-        return;
-      }
       await updateState(
         application.id,
         token,
         desiredState,
         isSchoolApplication ? "school" : "staff"
       );
-      toast.success(`Application was successful ${desiredState}`);
+      toast.success(
+        `Application state was successfuly changed to ${desiredState}`
+      );
       application.state = desiredState;
       setApplications([...applications]);
     } catch (err: any) {
@@ -138,14 +139,15 @@ export default function ApplicationsTable<
           )}
           {applications.map((application) => (
             <tr key={application.id}>
-              <td>
+              <td onClick={navigateToApplication(application)}>
                 <div className="image is-32x32 is-rounded">
                   <Image
                     className="image is-32x32 is-rounded"
                     alt="Profile"
                     src={
                       application.user?.picture?.formats?.thumbnail?.url ??
-                      "/images/defaultAvatar.png"
+                      application.user?.picture?.url ??
+                      defaultAvatarPath
                     }
                     width="32"
                     height="32"
@@ -159,11 +161,13 @@ export default function ApplicationsTable<
                 </Link>
               </td>
               {"school" in application ? (
-                <td>{application.school?.name}</td>
+                <td onClick={navigateToApplication(application)}>
+                  {application.school?.name}
+                </td>
               ) : (
                 <></>
               )}
-              <td width="12%">
+              <td width="12%" onClick={navigateToApplication(application)}>
                 <progress
                   className="progress is-primary is-small my-2"
                   value={application.step}
@@ -172,13 +176,15 @@ export default function ApplicationsTable<
                   {application.step} / 3
                 </progress>
               </td>
-              <td>{application.state}</td>
-              <td>
+              <td onClick={navigateToApplication(application)}>
+                {application.state}
+              </td>
+              <td onClick={navigateToApplication(application)}>
                 <span className="is-italic">
                   {new Date(application.createdAt).toLocaleDateString()}
                 </span>
               </td>
-              <td>
+              <td onClick={navigateToApplication(application)}>
                 <span className="is-italic">
                   {new Date(application.updatedAt).toLocaleDateString()}
                 </span>
@@ -186,31 +192,39 @@ export default function ApplicationsTable<
               <td>
                 <div className="field is-grouped">
                   <button
-                    className={`button is-responsive is-small mx-1 is-success tooltip-bottom`}
-                    data-tooltip="Approve"
+                    className={`button is-small mx-1 tooltip-bottom`}
+                    data-tooltip="Review"
                     disabled={application.state !== "submitted"}
+                    onClick={() => reviewApplication(application)}
+                  >
+                    <span className="icon">
+                      <FontAwesomeIcon icon={faUserPen} />
+                    </span>
+                  </button>
+                  <button
+                    className={`button is-small mx-1 is-success tooltip-bottom`}
+                    data-tooltip="Approve"
+                    disabled={application.state !== "reviewing"}
                     onClick={() => approveApplication(application)}
                   >
                     <span className="icon">
                       <FontAwesomeIcon icon={faCheck} />
                     </span>
-                  </button>{" "}
+                  </button>
                   <button
                     className="button is-small mx-1 is-warning tooltip-bottom"
                     data-tooltip="Revoke"
                     disabled={application.state !== "submitted"}
                     onClick={() => revokeApplication(application)}
                   >
-                    <FontAwesomeIcon icon={faXmark} />
+                    <span className="icon">
+                      <FontAwesomeIcon icon={faXmark} />
+                    </span>
                   </button>
                   <div
                     className="button is-small mx-1 is-link tooltip-bottom"
                     data-tooltip="Show Details"
-                    onClick={() =>
-                      router.push(
-                        `${applicationLink(application)}/${application.id}`
-                      )
-                    }
+                    onClick={navigateToApplication(application)}
                   >
                     <span className="icon">
                       <FontAwesomeIcon icon={faEye} />
@@ -221,7 +235,9 @@ export default function ApplicationsTable<
                     data-tooltip="Delete"
                     onClick={() => deleteApplication(application.id)}
                   >
-                    <FontAwesomeIcon icon={faTrash} />
+                    <span className="icon">
+                      <FontAwesomeIcon icon={faTrash} />
+                    </span>
                   </div>
                 </div>
               </td>
@@ -234,4 +250,9 @@ export default function ApplicationsTable<
       </div>
     </div>
   );
+
+  function navigateToApplication(application: T) {
+    return () =>
+      router.push(`${applicationLink(application)}/${application.id}`);
+  }
 }

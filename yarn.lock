@@ -568,6 +568,11 @@
   dependencies:
     "@types/ms" "*"
 
+"@types/diacritics@^1.3.1":
+  version "1.3.1"
+  resolved "https://registry.yarnpkg.com/@types/diacritics/-/diacritics-1.3.1.tgz#925fbaf4bfbaafbcafe5ac1be67c58c965a0ad40"
+  integrity sha512-tAH+RY51Zbz7ZSzN7yxQBKEue78U6weZ1UUBNjFoitoLbJGFJCKI7KVHwGsnYo4s2xSFr9KGEkjst2FolpYqyA==
+
 "@types/hast@^2.0.0":
   version "2.3.4"
   resolved "https://registry.npmjs.org/@types/hast/-/hast-2.3.4.tgz"
@@ -1532,7 +1537,7 @@ detect-libc@^2.0.0, detect-libc@^2.0.1:
   resolved "https://registry.yarnpkg.com/detect-libc/-/detect-libc-2.0.1.tgz#e1897aa88fa6ad197862937fbc0441ef352ee0cd"
   integrity sha512-463v3ZeIrcWtdgIg6vI6XUncguvr2TnGl4SzDXinkt9mSLpBJKXT3mW6xT3VQdDN11+WVs29pgvivTc4Lp8v+w==
 
-diacritics@1.3.0:
+diacritics@1.3.0, diacritics@^1.3.0:
   version "1.3.0"
   resolved "https://registry.npmjs.org/diacritics/-/diacritics-1.3.0.tgz"
   integrity sha1-PvqHMj67hj5mls67AILUj/PW96E=
@@ -2347,6 +2352,14 @@ i18n-iso-countries@^7.4.0:
   integrity sha512-I0yT48cJbKaq0OdaCcCORN/rbdszsbq2we6CGk1OAbwMNvQ4EzYSKK5Yqp6M3h4arfRMUD8QEoJ02Y66mvnPvQ==
   dependencies:
     diacritics "1.3.0"
+
+i18n-nationality@^1.2.0:
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/i18n-nationality/-/i18n-nationality-1.2.0.tgz#4b8e8d38a5cb443ca665403e530946a88403fb89"
+  integrity sha512-6qweraSNHCOglgScm3fuqe/OZEapulY7B67AaF6bTWte8ILNNbQ6TipV8KsbvcNPxKzo0xRZDJ3iQ5hJcvZJPA==
+  dependencies:
+    "@types/diacritics" "^1.3.1"
+    diacritics "^1.3.0"
 
 icon-gen@^3.0.1:
   version "3.0.1"

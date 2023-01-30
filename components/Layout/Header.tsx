@@ -5,6 +5,7 @@ import AuthContext from "@/context/AuthContext";
 import PageContentContext from "@/context/PageContentContext";
 import { header } from "@/i18n";
 import { useLocale } from "i18n/useLocale";
+import { defaultAvatarPath } from "@/config/index";
 
 export default function Header() {
   const { user, logout } = useContext(AuthContext);
@@ -130,8 +131,9 @@ export default function Header() {
                       className="image avatarInner is-38x38 is-rounded "
                       alt="Profile"
                       src={
-                        user.picture?.formats.thumbnail.url ??
-                        "/images/defaultAvatar.png"
+                        user.picture?.formats?.thumbnail.url ??
+                        user.picture?.url ??
+                        defaultAvatarPath
                       }
                       width="38"
                       height="38"

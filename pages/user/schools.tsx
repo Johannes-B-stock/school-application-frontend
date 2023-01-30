@@ -28,9 +28,13 @@ export default function MySchools({ schools }: { schools: School[] }) {
       {schools.length === 0 ? (
         <p className="subtitle">{useri18n[locale].noSchools}</p>
       ) : (
-        schools.map((school) => (
-          <MySchoolItem key={school.id} school={school} />
-        ))
+        <div className="columns is-multiline">
+          {schools.map((school) => (
+            <div key={school.id} className="column is-4-tablet">
+              <MySchoolItem key={school.id} school={school} />
+            </div>
+          ))}
+        </div>
       )}
       <br />
     </section>

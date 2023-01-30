@@ -21,3 +21,5 @@ export const LOCALES = ["en", "de"] as const;
 
 type LocalesTuple = typeof LOCALES;
 export type Locales = LocalesTuple[number];
+
+export const defaultAvatarPath = "/images/defaultAvatar.png";

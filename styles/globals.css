@@ -42,3 +42,12 @@ body {
 .pointer {
   cursor: pointer;
 }
+
+.overflow-scroll {
+  overflow-x: scroll;
+  overflow-y: visible;
+}
+
+/* button.tooltip-bottom {
+  z-index: 10000;
+} */

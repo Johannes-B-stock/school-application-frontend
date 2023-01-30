@@ -15,7 +15,7 @@ export default function UserCardModal({
           <p className="modal-card-title">{user.username}</p>
         </header>
         <section className="modal-card-body">
-          <ProfileCard user={user} />
+          <ProfileCard userProfile={user} />
         </section>
       </div>
     </div>

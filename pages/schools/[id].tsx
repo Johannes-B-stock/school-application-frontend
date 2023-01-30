@@ -76,12 +76,16 @@ export default function SchoolDetailsPage({ school }: { school: School }) {
               {userSchool[locale].applicationFee}:&nbsp;
               <Currency
                 currency={school.currency}
-                value={+school.applicationFee}
+                value={school.applicationFee}
               />
             </p>
             <p>
               {userSchool[locale].schoolFee}:&nbsp;
-              <Currency currency={school.currency} value={+school.schoolFee} />
+              <Currency currency={school.currency} value={school.schoolFee} />
+            </p>
+            <p>
+              {userSchool[locale].outreachFee}:&nbsp;
+              <Currency currency={school.currency} value={school.outreachFee} />
             </p>
 
             {school.acceptingStudents && (
