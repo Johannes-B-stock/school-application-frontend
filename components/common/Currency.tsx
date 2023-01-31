@@ -20,7 +20,7 @@ export default function Currency({
         output = formatCurrencyRange(locale, currency, from, to);
       }
     } else {
-      output = `${value} ${getSymbolFromCurrency(currency)}`;
+      output = `${value} ${getSymbolFromCurrency(currency) ?? ""}`;
     }
   } else {
     output = formatCurrency(locale, currency, valueAsNumber);

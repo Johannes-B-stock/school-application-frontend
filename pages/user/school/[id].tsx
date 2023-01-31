@@ -178,10 +178,14 @@ export const getServerSideProps: GetServerSideProps = async ({
     image: { populate: "" },
     localizations: { populate: "" },
   });
+
+  if (!schoolDetails.data) {
+    return { notFound: true };
+  }
+
   return {
     props: {
       school: schoolDetails.data,
-      token,
     },
   };
 };

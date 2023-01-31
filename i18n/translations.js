@@ -151,7 +151,8 @@ export const profileSidebar = {
     addresses: "Addresses",
     settings: "Settings",
     schools: "Schools",
-    applications: "My Applications",
+    applications: "Applications",
+    myApplications: "My Applications",
     mySchools: "My Schools",
   },
   de: {
@@ -160,7 +161,8 @@ export const profileSidebar = {
     addresses: "Adressen",
     settings: "Einstellungen",
     schools: "Schulen",
-    applications: "Meine Anmeldungen",
+    applications: "Anmeldungen",
+    myApplications: "Meine Anmeldungen",
     mySchools: "Meine Schulen",
   },
 };
@@ -247,7 +249,7 @@ export const address = {
 
 export const schoolApplicationDetails = {
   en: {
-    title: "Application for School {0}",
+    title: "Application for school {0}",
     subtitle1: "This is your application for the school {0}",
     subtitle2:
       "You have to pay an application fee of {0} for the application to be processed.",
@@ -335,6 +337,7 @@ export const home = {
 
 export const applications = {
   en: {
+    startApplication: "Start Application",
     applications: "My Applications",
     noApplications: "You don't have any open applications yet",
     applicationFeePaid: "Fee paid",
@@ -357,6 +360,7 @@ export const applications = {
     unknown: "unknown",
   },
   de: {
+    startApplication: "Anmeldung erstellen",
     applications: "Meine Anmeldungen",
     noApplications: "Du hast noch keine Anmeldungen.",
     applicationFeePaid: "Anmeldegebühr bezahlt",

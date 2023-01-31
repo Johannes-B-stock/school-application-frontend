@@ -6,7 +6,6 @@ import {
   faCheck,
   faTrash,
   faXmark,
-  faMagnifyingGlass,
   faUserPen,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -32,6 +31,7 @@ import AdminReference from "@/components/admin/AdminReference";
 import { deleteApplicationRequest, updateState } from "lib/applications";
 import styles from "@/styles/Application.module.css";
 import { defaultAvatarPath } from "@/config/index";
+import UserDetailsEdit from "@/components/user/UserDetailsEdit";
 
 export default function ApplicationAdminView({
   application,
@@ -142,7 +142,7 @@ export default function ApplicationAdminView({
   return (
     <section className="section has-background-light">
       <h3 className="title is-3">
-        Application for School {application.school.name}
+        Application for school {application.school.name}
       </h3>
       <div className="columns">
         <div className="column is-7">
@@ -173,7 +173,31 @@ export default function ApplicationAdminView({
                 </div>
                 <div className="column">{application.state}</div>
               </div>
-              {application.state === "submitted" && (
+              <div className="columns is-mobile">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
+                  Created:
+                </div>
+                <div className="column">
+                  {application.createdAt
+                    ? new Date(application.createdAt).toLocaleDateString(locale)
+                    : ""}
+                </div>
+              </div>
+              <div className="columns is-mobile">
+                <div
+                  className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
+                >
+                  Updated:
+                </div>
+                <div className="column">
+                  {application.updatedAt
+                    ? new Date(application.updatedAt).toLocaleDateString(locale)
+                    : ""}
+                </div>
+              </div>
+              {application.submittedAt && (
                 <div className="columns is-mobile">
                   <div
                     className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
@@ -327,6 +351,13 @@ export default function ApplicationAdminView({
                   {new Date(user.birthday ?? "").toLocaleDateString()}
                 </div>
               </div>
+
+              <UserDetailsEdit
+                userDetails={user?.details}
+                token={token}
+                allowEdit={false}
+                showSave={false}
+              />
             </div>
           </div>
 
@@ -516,7 +547,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         populate: "",
       },
       user: {
-        populate: ["addresses", "picture", "role"],
+        populate: ["addresses", "picture", "role", "details"],
       },
     },
   });

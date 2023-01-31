@@ -8,12 +8,16 @@ import AuthContext from "@/context/AuthContext";
 import styles from "@/styles/Showcase.module.css";
 import DashboardLayout from "@/components/Layout/DashboardLayout";
 import ReactMarkdown from "react-markdown";
-import { SingleDataResponse } from "api-definitions/strapiBaseTypes";
+import {
+  ArrayDataResponse,
+  SingleDataResponse,
+} from "api-definitions/strapiBaseTypes";
 import { School } from "api-definitions/backend";
 import Currency from "@/components/common/Currency";
 import { general, userSchool } from "@/i18n";
 import { useLocale } from "i18n/useLocale";
-import { GetServerSideProps } from "next";
+import { GetStaticPaths, GetStaticProps } from "next";
+import axios from "axios";
 
 export default function SchoolDetailsPage({ school }: { school: School }) {
   const { user } = useContext(AuthContext);
@@ -119,7 +123,47 @@ SchoolDetailsPage.getLayout = function getLayout(page: any) {
   return <DashboardLayout title="School details">{page}</DashboardLayout>;
 };
 
-export const getServerSideProps: GetServerSideProps = async ({ params }) => {
+export const getStaticPaths: GetStaticPaths = async ({
+  locales,
+  defaultLocale,
+}) => {
+  const query = qs.stringify(
+    {
+      populate: "applicationQuestions",
+      filters: {
+        isPublic: {
+          $eq: true,
+        },
+      },
+    },
+    {
+      encodeValuesOnly: true,
+    }
+  );
+
+  const schoolsResult = await axios.get<ArrayDataResponse<School>>(
+    `${API_URL}/api/schools?${query}`
+  );
+
+  const schools = schoolsResult.data?.data;
+
+  const paths: any[] = [];
+  const definedLocales = locales ? locales : [defaultLocale];
+
+  definedLocales?.forEach((locale) =>
+    paths.push(
+      ...(schools?.map((school) => ({
+        params: { id: school.id.toString() },
+        locale,
+      })) ?? [])
+    )
+  );
+
+  // { fallback: blocking } means if path does not exists it behaves like ssr
+  return { paths, fallback: "blocking" };
+};
+
+export const getStaticProps: GetStaticProps = async ({ params }) => {
   const id = params?.id;
   const query = qs.stringify(
     {
@@ -134,13 +178,19 @@ export const getServerSideProps: GetServerSideProps = async ({ params }) => {
       encodeValuesOnly: true,
     }
   );
-  const res = await fetch(`${API_URL}/api/schools/${id}?${query}`);
-  const result = (await res.json()) as SingleDataResponse<School>;
-  const school = result.data;
 
+  const schoolResult = await axios.get<SingleDataResponse<School>>(
+    `${API_URL}/api/schools/${id}?${query}`
+  );
+
+  const school = schoolResult.data?.data;
+
+  if (!school) {
+    return { notFound: true };
+  }
   return {
     props: {
-      school: school,
+      school: school ?? null,
     },
   };
 };

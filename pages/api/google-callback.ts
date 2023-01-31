@@ -33,7 +33,7 @@ export default async function googleCallback(
           })
         );
         const user = await getMyDetails(data.jwt);
-        res.status(200).json({ user });
+        res.status(200).json({ user, token: data.jwt });
       } else {
         res.status(strapiRes.status).json({ message: data.error.message });
       }

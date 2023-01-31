@@ -33,7 +33,7 @@ export default async function register(
             path: "/",
           })
         );
-        res.status(200).json({ user: data.user });
+        res.status(200).json({ user: data.user, token: data.jwt });
       } else {
         res.status(strapiRes.status).json({ message: data.error.message });
       }

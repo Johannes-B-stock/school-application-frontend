@@ -77,7 +77,7 @@ export default function AdminDashboard({
       <div className="container">
         <div className="level has-text-centered">
           <div className="level-item">
-            <p className="title">Schools Dashboard</p>
+            <p className="title">Schools Admin Dashboard</p>
           </div>
         </div>
         <SchoolInfoTiles schools={schools} />

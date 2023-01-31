@@ -13,12 +13,26 @@ import { GetStaticPaths, GetStaticProps } from "next";
 import AuthContext from "@/context/AuthContext";
 import { createApplication } from "lib/schoolApplication";
 import axios from "axios";
+import { applications as t, general as t2 } from "@/i18n";
+import { useLocale } from "i18n/useLocale";
 
 export default function ApplyPage({ school }: { school: School }) {
   const [isLoading, setIsLoading] = useState(false);
   const { user } = useContext(AuthContext);
 
   const router = useRouter();
+  const locale = useLocale();
+
+  let schoolInfo = school;
+
+  if (locale !== router.defaultLocale) {
+    const localizedSchool = school.localizations?.find(
+      (schoolLoc) => schoolLoc.locale === locale
+    );
+    if (localizedSchool) {
+      schoolInfo = localizedSchool;
+    }
+  }
 
   const handleSubmit = async (e: MouseEvent) => {
     try {
@@ -40,7 +54,7 @@ export default function ApplyPage({ school }: { school: School }) {
 
   return (
     <div className="content">
-      <ReactMarkdown>{school?.preApplicationText}</ReactMarkdown>
+      <ReactMarkdown>{schoolInfo?.preApplicationText}</ReactMarkdown>
       <div className="field is-grouped">
         <div className="control">
           <button
@@ -50,12 +64,12 @@ export default function ApplyPage({ school }: { school: School }) {
             }`}
             onClick={handleSubmit}
           >
-            Start Application
+            {t[locale].startApplication}
           </button>
         </div>
         <div className="control">
           <a className="button" onClick={() => router.back()}>
-            Cancel
+            {t2.buttons[locale].cancel}
           </a>
         </div>
       </div>
@@ -63,10 +77,13 @@ export default function ApplyPage({ school }: { school: School }) {
   );
 }
 
-export const getStaticPaths: GetStaticPaths = async () => {
+export const getStaticPaths: GetStaticPaths = async ({
+  locales,
+  defaultLocale,
+}) => {
   const query = qs.stringify(
     {
-      populate: "applicationQuestions",
+      populate: ["applicationQuestions", "image", "localizations"],
       filters: {
         $and: [
           {
@@ -91,10 +108,17 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
   const schools = schoolsResult.data?.data;
 
-  const paths =
-    schools?.map((school) => ({
-      params: { id: school.id.toString() },
-    })) ?? [];
+  const paths: any[] = [];
+  const definedLocales = locales ? locales : [defaultLocale];
+
+  definedLocales?.forEach((locale) =>
+    paths.push(
+      ...(schools?.map((school) => ({
+        params: { id: school.id.toString() },
+        locale,
+      })) ?? [])
+    )
+  );
 
   // { fallback: blocking } means if path does not exists it behaves like ssr
   return { paths, fallback: "blocking" };
@@ -102,12 +126,6 @@ export const getStaticPaths: GetStaticPaths = async () => {
 
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const id = params?.id;
-
-  // if (!req.headers.cookie) {
-  //   res.statusCode = 403;
-  //   res.write(JSON.stringify({ message: "Not authorized" }));
-  //   return { notFound: true };
-  // }
   const query = qs.stringify({
     populate: "applicationQuestions",
   });

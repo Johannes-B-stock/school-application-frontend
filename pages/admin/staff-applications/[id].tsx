@@ -30,6 +30,7 @@ import AdminReference from "@/components/admin/AdminReference";
 import { deleteApplicationRequest, updateState } from "lib/applications";
 import styles from "@/styles/Application.module.css";
 import { defaultAvatarPath } from "@/config/index";
+import UserDetailsEdit from "@/components/user/UserDetailsEdit";
 
 export default function ApplicationAdminView({
   application,
@@ -207,7 +208,7 @@ export default function ApplicationAdminView({
                     : ""}
                 </div>
               </div>
-              {application.state === "submitted" && (
+              {application.submittedAt && (
                 <div className="columns is-mobile">
                   <div
                     className={`${styles.columnLabel} column is-3 has-text-weight-bold`}
@@ -360,6 +361,13 @@ export default function ApplicationAdminView({
                   {new Date(user.birthday ?? "").toLocaleDateString()}
                 </div>
               </div>
+
+              <UserDetailsEdit
+                userDetails={user?.details}
+                token={token}
+                allowEdit={false}
+                showSave={false}
+              />
             </div>
           </div>
 
@@ -538,7 +546,7 @@ export const getServerSideProps: GetServerSideProps = async ({
         populate: "",
       },
       user: {
-        populate: ["addresses", "picture", "schools"],
+        populate: ["addresses", "picture", "schools", "details"],
       },
     },
     sort: "createdAt:asc",

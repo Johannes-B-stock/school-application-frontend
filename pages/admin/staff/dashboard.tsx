@@ -108,7 +108,7 @@ export default function StaffDashboardPage({
       <div className="container has-text-centered">
         <div className="level has-text-centered">
           <div className="level-item">
-            <p className="title">Staff Dashboard</p>
+            <p className="title">Staff Admin Dashboard</p>
           </div>
         </div>
         <InfoTiles data={infoTilesData} />

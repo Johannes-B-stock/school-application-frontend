@@ -14,6 +14,7 @@ export interface IAuthContext {
   user?: User;
   setUser: Dispatch<SetStateAction<User | undefined>>;
   error?: string;
+  token?: string;
   googleCallback: (values: any) => Promise<void>;
   facebookCallback: (values: any) => Promise<void>;
   register: (user: any) => Promise<void>;
@@ -39,6 +40,7 @@ export const AuthContext = createContext<IAuthContext>({} as IAuthContext);
 
 export const AuthProvider = ({ children }: { children: any }) => {
   const [user, setUser] = useState<User | undefined>(undefined);
+  const [token, setToken] = useState<string | undefined>(undefined);
   const [error, setError] = useState(undefined);
   const [loadingInitial, setLoadingInitial] = useState(true);
   const router = useRouter();
@@ -176,10 +178,10 @@ export const AuthProvider = ({ children }: { children: any }) => {
         },
         body: JSON.stringify({ identifier: email, password }),
       });
-
       const data = await res.json();
       if (res.ok) {
         setUser(data.user);
+        setToken(data.token);
         let returnUrl = router.query?.returnUrl ?? "/";
         if (typeof returnUrl !== "string") returnUrl = returnUrl[0];
         router.push(returnUrl);
@@ -196,6 +198,7 @@ export const AuthProvider = ({ children }: { children: any }) => {
 
     if (res.ok) {
       setUser(undefined);
+      setToken(undefined);
       router.push("/");
     }
   };
@@ -221,6 +224,7 @@ export const AuthProvider = ({ children }: { children: any }) => {
       value={{
         user,
         setUser,
+        token,
         error,
         googleCallback,
         facebookCallback,

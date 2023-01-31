@@ -46,7 +46,7 @@ export default function Login() {
     if (user) {
       router.back();
     }
-  }, [user]);
+  }, [router, user]);
 
   const isRedirecting = router.query["returnUrl"] != undefined;
 

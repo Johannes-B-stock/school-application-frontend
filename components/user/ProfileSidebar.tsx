@@ -44,7 +44,7 @@ export default function ProfileSidebar() {
             </a>
           </Link>
         </li>
-        <p className="menu-label">{profileSidebar[locale].schools}</p>
+        <p className="menu-label">{profileSidebar[locale].applications}</p>
         <li>
           <Link href="/user/applications">
             <a
@@ -52,7 +52,7 @@ export default function ProfileSidebar() {
                 router.pathname === "/user/applications" ? "is-active" : ""
               }`}
             >
-              {profileSidebar[locale].applications}
+              {profileSidebar[locale].myApplications}
             </a>
           </Link>
         </li>
