@@ -9,18 +9,19 @@ import axios from "axios";
 
 export const contentFileName = ".pageContent";
 
-const CONTENT_CACHE_PATH = path.resolve(
-  path.join(__dirname, "..", "..", "..", "static", contentFileName)
+export const CONTENT_CACHE_PATH = path.join(
+  process.cwd(),
+  ".cache",
+  contentFileName
 );
 
 export default async function getAndCachePageContent(
-  locale: string,
-  cachePath: string = CONTENT_CACHE_PATH
+  locale: string
 ): Promise<PageContentData | undefined> {
   let cachedData: PageContentData | undefined;
 
   try {
-    const filePath = cachePath + toUpper(locale);
+    const filePath = CONTENT_CACHE_PATH + toUpper(locale);
     if (fs.existsSync(filePath)) {
       const cacheContent = fs.readFileSync(filePath, "utf8");
       cachedData = cacheContent ? JSON.parse(cacheContent) : undefined;
@@ -30,6 +31,8 @@ export default async function getAndCachePageContent(
       const data = await fetchPageContentDataFromDb(locale);
 
       try {
+        const cacheFolder = path.join(filePath, "..");
+        if (!fs.existsSync(cacheFolder)) fs.mkdirSync(cacheFolder);
         fs.writeFileSync(filePath, JSON.stringify(data), "utf8");
         console.log("Wrote to page content cache");
       } catch (error) {

@@ -54,7 +54,7 @@ export async function updateAnswers(
   reference?: Reference
 ) {
   const requiredNotAnswered = answers.some(
-    (answer) => answer.question.required && !answer.answer
+    (answer) => answer.question.required && (answer.answer?.length ?? -1) < 1
   );
 
   if (requiredNotAnswered) {
