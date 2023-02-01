@@ -74,14 +74,13 @@ export default function AddressEdit({
       lastname: addressEdit?.lastname || user.lastname,
       type: isEmergencyAddress ? "emergency" : "main",
     };
-
+    console.log(newAddress);
     const addressComplete = checkIfAddressComplete(newAddress);
-
     if (!addressComplete) {
       if (noButtons) {
-        throw new Error("Please fill in all required fields!");
+        throw new Error("Please fill in all required address fields!");
       } else {
-        toast.error("Please fill in all required fields!");
+        toast.error("Please fill in all required address fields!");
         return;
       }
     }
@@ -151,29 +150,7 @@ export default function AddressEdit({
             "Something went wrong."
         );
       }
-      // return;
     }
-    // await axios
-    //   .put(
-    //     `${API_URL}/api/users/me`,
-    //     {
-    //       data: {
-    //         [userField]: addressResult.data?.id,
-    //       },
-    //     },
-    //     {
-    //       headers: {
-    //         "Content-Type": "application/json",
-    //         Authorization: `Bearer ${token}`,
-    //       },
-    //     }
-    //   )
-    //   .catch((reason) => {
-    //     if (noButtons) {
-    //       throw reason;
-    //     }
-    //     toast.error(reason.message ?? reason);
-    //   });
 
     return addressResult.data;
   }
@@ -400,13 +377,20 @@ export default function AddressEdit({
 }
 function checkIfAddressComplete(address: Partial<Address>): boolean {
   return (
-    address.city != undefined &&
-    address.country != undefined &&
-    address.firstname != undefined &&
-    address.lastname != undefined &&
-    address.number != undefined &&
-    address.postalCode != undefined &&
-    address.street != undefined
+    address.city !== undefined &&
+    address.city.length > 0 &&
+    address.country !== undefined &&
+    address.country.length > 0 &&
+    address.firstname !== undefined &&
+    address.firstname.length > 0 &&
+    address.lastname !== undefined &&
+    address.lastname.length > 0 &&
+    address.number !== undefined &&
+    address.number.length > 0 &&
+    address.postalCode !== undefined &&
+    address.postalCode > 0 &&
+    address.street !== undefined &&
+    address.street.length > 0
   );
 }
 

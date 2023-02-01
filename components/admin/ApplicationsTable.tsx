@@ -21,8 +21,9 @@ import {
   StaffApplication,
 } from "api-definitions/backend";
 import { Pagination as ApiPagination } from "api-definitions/strapiBaseTypes";
-import { Dispatch, SetStateAction } from "react";
+import { Dispatch, SetStateAction, useContext } from "react";
 import { updateState } from "lib/applications";
+import AuthContext from "@/context/AuthContext";
 
 export default function ApplicationsTable<
   T extends Application & { school?: School }
@@ -31,15 +32,14 @@ export default function ApplicationsTable<
   applicationPagination,
   setPage,
   setApplications,
-  token,
 }: {
   applications: T[];
   applicationPagination?: ApiPagination;
   setPage: Dispatch<SetStateAction<number>>;
   setApplications: Dispatch<SetStateAction<T[]>>;
-  token: string;
 }): JSX.Element {
   const router = useRouter();
+  const { token } = useContext(AuthContext);
 
   const hasSchoolApplications = applications.some((app) => "school" in app);
 
@@ -96,6 +96,9 @@ export default function ApplicationsTable<
     application: SchoolApplication | StaffApplication,
     desiredState: ApplicationState
   ) {
+    if (!token) {
+      throw new Error("not logged in!");
+    }
     try {
       const isSchoolApplication = "school" in application;
       await updateState(

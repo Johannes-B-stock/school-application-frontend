@@ -193,7 +193,6 @@ export default function StaffDashboardPage({
                     applicationPagination={staffApplicationPagination}
                     setPage={setPage}
                     setApplications={setStaffApplications}
-                    token={token}
                   />
                 )}
               </nav>

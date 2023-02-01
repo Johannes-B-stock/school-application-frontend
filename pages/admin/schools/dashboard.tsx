@@ -145,7 +145,6 @@ export default function AdminDashboard({
                     applicationPagination={applicationPagination}
                     setPage={setPage}
                     setApplications={setApplications}
-                    token={token}
                   />
                 )}
               </nav>

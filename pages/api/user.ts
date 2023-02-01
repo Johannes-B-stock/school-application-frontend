@@ -16,7 +16,7 @@ export default async function user(req: NextApiRequest, res: NextApiResponse) {
     }
     try {
       const user = await getMyDetails(token);
-      res.status(200).json({ user });
+      res.status(200).json({ user, token });
     } catch (error) {
       res.status(403).json({ message: "User forbidden" });
     }

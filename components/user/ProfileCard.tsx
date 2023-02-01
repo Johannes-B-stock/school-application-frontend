@@ -11,13 +11,9 @@ import { User } from "api-definitions/backend";
 import { allNationalities } from "lib/countries";
 import { useLocale } from "i18n/useLocale";
 import { defaultAvatarPath } from "@/config/index";
-import { useContext } from "react";
-import AuthContext from "@/context/AuthContext";
-import { isAdmin } from "lib/common";
 
 export default function ProfileCard({ userProfile }: { userProfile: User }) {
   const locale = useLocale();
-  const { user } = useContext(AuthContext);
 
   return (
     <div className={`box ${styles.profileBox} backgroundGradient`}>

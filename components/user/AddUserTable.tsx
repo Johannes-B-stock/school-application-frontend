@@ -3,6 +3,7 @@ import {
   ChangeEvent,
   Dispatch,
   SetStateAction,
+  useContext,
   useEffect,
   useState,
 } from "react";
@@ -15,18 +16,18 @@ import _ from "lodash";
 import Link from "next/link";
 import { User } from "api-definitions/backend";
 import { defaultAvatarPath } from "@/config/index";
+import AuthContext from "@/context/AuthContext";
 
 export default function AddUserTable({
-  token,
   load,
   excludedUsers,
   addedUsers,
 }: {
-  token: string;
   load: boolean;
   excludedUsers: User[];
   addedUsers: Dispatch<SetStateAction<User[]>>;
 }) {
+  const { token } = useContext(AuthContext);
   const [users, setUsers] = useState<User[]>([]);
   const [usersLoading, setUsersLoading] = useState(false);
   const [userSearch, setUserSearch] = useState("");
@@ -42,6 +43,7 @@ export default function AddUserTable({
 
   useEffect(() => {
     async function fetchData() {
+      if (!token) return;
       if (load) {
         try {
           setUsersLoading(true);

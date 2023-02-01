@@ -375,18 +375,16 @@ export default function StaffApplicationPage({
         </div>
 
         <div className={`steps-content ${styles.stepContent}`}>
-          <div
+          {/* <div
             className={`step-content has-text-centered ${
               isLoadingBack || isLoadingNext ? "is-active" : ""
             }`}
           >
             <GoogleSpinner />
-          </div>
+          </div> */}
           <div
             className={`step-content has-text-centered ${
-              applicationEdit?.step === 0 && !(isLoadingBack || isLoadingNext)
-                ? "is-active"
-                : ""
+              applicationEdit?.step === 0 ? "is-active" : ""
             }`}
           >
             {" "}
@@ -560,9 +558,7 @@ export default function StaffApplicationPage({
           </div>
           <div
             className={`step-content has-text-centered ${
-              applicationEdit?.step === 1 && !(isLoadingBack || isLoadingNext)
-                ? "is-active"
-                : ""
+              applicationEdit?.step === 1 ? "is-active" : ""
             }`}
           >
             {questionCollection && (
@@ -578,9 +574,7 @@ export default function StaffApplicationPage({
           </div>
           <div
             className={`step-content has-text-centered ${
-              applicationEdit?.step === 2 && !(isLoadingBack || isLoadingNext)
-                ? "is-active"
-                : ""
+              applicationEdit?.step === 2 ? "is-active" : ""
             }`}
           >
             <h1 className="title is-4">

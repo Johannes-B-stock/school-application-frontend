@@ -74,6 +74,7 @@ export const AuthProvider = ({ children }: { children: any }) => {
         const user = data.user;
         if (user?.confirmed) {
           setUser(user);
+          setToken(data.token);
           let returnUrl = router.query?.returnUrl ?? "/";
           if (typeof returnUrl !== "string") returnUrl = returnUrl[0];
           router.push(returnUrl);
@@ -98,6 +99,7 @@ export const AuthProvider = ({ children }: { children: any }) => {
       const resultData = await res.json();
       if (res.ok && resultData.user) {
         setUser(resultData.user);
+        setToken(resultData.token);
         let returnUrl = router.query?.returnUrl ?? "/";
         if (typeof returnUrl !== "string") returnUrl = returnUrl[0];
         router.push(returnUrl);
@@ -119,6 +121,7 @@ export const AuthProvider = ({ children }: { children: any }) => {
       const resultData = await res.json();
       if (res.ok && resultData.user) {
         setUser(resultData.user);
+        setToken(resultData.token);
         let returnUrl = router.query?.returnUrl ?? "/";
         if (typeof returnUrl !== "string") returnUrl = returnUrl[0];
         router.push(returnUrl);
@@ -209,11 +212,14 @@ export const AuthProvider = ({ children }: { children: any }) => {
       const data = await res.json();
       if (res.ok) {
         setUser(data.user);
+        setToken(data.token);
       } else {
         setUser(undefined);
+        setToken(undefined);
       }
     } catch (err) {
       setUser(undefined);
+      setToken(undefined);
     } finally {
       setLoadingInitial(false);
     }

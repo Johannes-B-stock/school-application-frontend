@@ -95,7 +95,7 @@ export interface Address extends BaseData {
   number: string;
   city: string;
   country?: string;
-  postalCode: string;
+  postalCode: number;
 }
 
 export interface Application extends BaseData {
